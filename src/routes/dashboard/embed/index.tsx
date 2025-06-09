@@ -136,9 +136,6 @@ export default component$(() => {
     if (user.showUploadDate) {
       initialDesc += "\\n📅 Uploaded " + new Date().toLocaleDateString();
     }
-    if (user.showUserStats) {
-      initialDesc += "\\n\\n📊 127 files uploaded • 2.1 GB used • 5,432 total views";
-    }
 
     // Set initial footer based on user stats setting
     let initialFooter = footer;
@@ -195,9 +192,6 @@ export default component$(() => {
     }
     if (showUploadDate.value) {
       desc += "\\n📅 Uploaded " + new Date().toLocaleDateString();
-    }
-    if (showUserStats.value) {
-      desc += "\\n\\n📊 127 files uploaded • 2.1 GB used • 5,432 total views";
     }
 
     // Update footer based on user stats setting
