@@ -23,24 +23,20 @@ function generateDiscordEmbed(upload: any, user: any, baseUrl: string, userStats
     const uploadDate = new Date(upload.createdAt).toLocaleDateString();
     description += `<br>📅 Uploaded ${uploadDate}`;
   }
-  if (showUserStats && userStats) {
-    const storageUsedMB = (userStats.totalStorage / 1024 / 1024).toFixed(2);
-    description += `<br><br>👤 <strong>User Stats</strong><br>📊 ${userStats.totalFiles} files uploaded • ${storageUsedMB} MB used<br>👀 ${userStats.totalViews.toLocaleString()} total views`;
-  }
   const domain = user?.customDomain || baseUrl.replace(/^https?:\/\//, '');
-    // Create plain text version for meta tags (Discord doesn't support HTML or markdown)
+  // Create plain text version for meta tags (Discord doesn't support HTML or markdown)
   let plainDescription = embedDescription;
   if (showFileInfo) {
     const fileSize = (upload.size / 1024 / 1024).toFixed(2);
-    plainDescription += ` • ${upload.originalName} • ${fileSize} MB • ${upload.mimeType}<br>`;
+    plainDescription += `\n${upload.originalName}\n${fileSize} MB • ${upload.mimeType}`;
   }
   if (showUploadDate) {
     const uploadDate = new Date(upload.createdAt).toLocaleDateString();
-    plainDescription += ` • Uploaded ${uploadDate}<br>`;
+    plainDescription += `\nUploaded ${uploadDate}`;
   }
   if (showUserStats && userStats) {
     const storageUsedMB = (userStats.totalStorage / 1024 / 1024).toFixed(2);
-    plainDescription += ` • ${userStats.totalFiles} files • ${storageUsedMB} MB used • ${userStats.totalViews.toLocaleString()} views`;
+    plainDescription += `\n${userStats.totalFiles} files uploaded • ${storageUsedMB} MB used • ${userStats.totalViews.toLocaleString()} total views`;
   }
   
   return `<!DOCTYPE html>
@@ -52,15 +48,14 @@ function generateDiscordEmbed(upload: any, user: any, baseUrl: string, userStats
   <!-- Discord Embed Meta Tags -->
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="${domain}">
-  <meta property="og:title" content="${embedTitle}">
-  <meta property="og:description" content="${plainDescription.replace(/\n/g, ' ')}">
+  <meta property="og:title" content="${embedTitle}">  <meta property="og:description" content="${plainDescription}">
   <meta property="og:url" content="${upload.url}">
   <meta name="theme-color" content="${embedColor}">
   
   <!-- Twitter Card Meta Tags -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${embedTitle}">
-  <meta name="twitter:description" content="${plainDescription.replace(/\n/g, ' ')}">
+  <meta name="twitter:description" content="${plainDescription}">
     ${upload.mimeType.startsWith('image/') ? `
   <meta property="og:image" content="${upload.url}?direct=true">
   <meta property="og:image:type" content="${upload.mimeType}">
