@@ -14,6 +14,7 @@ export const { onRequest, useSession, useSignIn, useSignOut } = QwikAuth$(
     ],
     secret: process.env.AUTH_SECRET,
     trustHost: true,
+    useSecureCookies: process.env.NODE_ENV === 'production',
     callbacks: {
       session: async ({ session, user }) => {
         if (session?.user) {
