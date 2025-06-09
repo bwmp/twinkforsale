@@ -1,4 +1,4 @@
-# Production deployment package.json
+# Production deployment package.json for Bun
 # This file should be used on your VPS after copying the built server/ and dist/ folders
 {
   "name": "twink-for-sale-production",
@@ -8,9 +8,10 @@
     "node": "^18.17.0 || ^20.3.0 || >=21.0.0"
   },
   "scripts": {
-    "start": "NODE_ENV=production node server/entry.node-server.js",
-    "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate deploy"
+    "start": "NODE_ENV=production bun server/entry.node-server.js",
+    "start:node": "NODE_ENV=production node server/entry.node-server.js",
+    "prisma:generate": "bun prisma generate",
+    "prisma:migrate": "bun prisma migrate deploy"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.9.1",
