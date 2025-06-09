@@ -28,6 +28,12 @@ export default defineConfig(({ command, mode }): UserConfig => {
       // For example ['better-sqlite3'] if you use that in server functions.
       exclude: [],
     },
+    // Ensure environment variables are available in SSR
+    define: {
+      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
+    },
+    // Load environment variables
+    envPrefix: ['VITE_', 'BASE_URL', 'UPLOAD_DIR', 'MAX_FILE_SIZE', 'ALLOWED_MIME_TYPES'],
     /**
      * This is an advanced setting. It improves the bundling of your server code. To use it, make sure you understand when your consumed packages are dependencies or dev dependencies. (otherwise things will break in production)
      */

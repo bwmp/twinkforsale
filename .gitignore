@@ -40,3 +40,5 @@ lerna-debug.log*
 # Yarn
 .yarn/*
 !.yarn/releases
+prisma/dev.db
+.github/

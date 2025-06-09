@@ -10,8 +10,126 @@ datasource db {
   url      = "file:./dev.db"
 }
 
+// Auth.js required models
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verificationtokens")
+}
+
 model User {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  name  String?
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // User approval system
+  isApproved    Boolean   @default(false)
+  isAdmin       Boolean   @default(false)
+  approvedAt    DateTime?
+  approvedById  String?
+  approvedBy    User?     @relation("UserApprovals", fields: [approvedById], references: [id])
+  approvedUsers User[]    @relation("UserApprovals")
+  
+  // Upload settings
+  maxUploads    Int     @default(100)
+  maxFileSize   Int     @default(10485760) // 10MB
+  storageUsed   Int     @default(0)
+  
+  // Discord embed settings
+  embedTitle    String?   @default("File Upload")
+  embedDescription String? @default("Uploaded via twink.forsale")
+  embedColor    String?   @default("#8B5CF6") // Purple color
+  embedAuthor   String?   // Author name
+  embedFooter   String?   @default("twink.forsale")
+  showFileInfo  Boolean   @default(true) // Show file size, type etc
+  showUploadDate Boolean  @default(true)
+  customDomain  String?   // Custom domain for embeds
+  
+  // URL/Shortcode preferences
+  useCustomWords Boolean @default(false) // Use cute words instead of random chars
+  
+  // Auth.js relations
+  accounts Account[]
+  sessions Session[]
+  
+  // App relations
+  uploads  Upload[]
+  apiKeys  ApiKey[]
+  
+  @@map("users")
+}
+
+model Upload {
+  id          String   @id @default(cuid())
+  filename    String   // Stored filename
+  originalName String  // Original upload name
+  mimeType    String
+  size        Int
+  url         String   @unique // Full URL
+  shortCode   String   @unique // Short identifier
+  deletionKey String   @unique
+  
+  createdAt   DateTime @default(now())
+  expiresAt   DateTime?
+  
+  // User association (nullable for anonymous uploads)
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  // Analytics
+  views       Int      @default(0)
+  lastViewed  DateTime?
+  
+  @@map("uploads")
+}
+
+model ApiKey {
+  id        String   @id @default(cuid())
+  key       String   @unique @default(cuid())
+  name      String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  lastUsed  DateTime?
+  isActive  Boolean  @default(true)
+  
+  @@map("api_keys")
 }
