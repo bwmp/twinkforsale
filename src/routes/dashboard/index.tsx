@@ -1,17 +1,17 @@
-import { component$ } from "@builder.io/qwik";
+import { component$, $, useContext } from "@builder.io/qwik";
 import { routeLoader$, Link } from "@builder.io/qwik-city";
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { db } from "~/lib/db";
-import { Folder, Eye, HardDrive, Key, Sparkle, Settings, Share } from "lucide-icons-qwik";
-import { useImagePreview } from "~/lib/use-image-preview";
+import { Folder, Eye, HardDrive, Key, Settings, Share, File } from "lucide-icons-qwik";
+import { ImagePreviewContext } from "~/lib/image-preview-store";
 
 export const useUserData = routeLoader$(async (requestEvent) => {
   const session = requestEvent.sharedMap.get("session");
-  
+
   if (!session?.user?.email) {
     throw requestEvent.redirect(302, "/");
   }
-  
+
   // Find or create user
   let user = await db.user.findUnique({
     where: { email: session.user.email },
@@ -26,7 +26,7 @@ export const useUserData = routeLoader$(async (requestEvent) => {
       }
     }
   });
-  
+
   if (!user) {
     user = await db.user.create({
       data: {
@@ -40,17 +40,16 @@ export const useUserData = routeLoader$(async (requestEvent) => {
       }
     });
   }
-  
+
   // Calculate stats
   const totalUploads = await db.upload.count({
     where: { userId: user.id }
   });
-  
+
   const totalViews = await db.upload.aggregate({
     where: { userId: user.id },
     _sum: { views: true }
   });
-  
   return {
     user,
     stats: {
@@ -58,20 +57,37 @@ export const useUserData = routeLoader$(async (requestEvent) => {
       totalViews: totalViews._sum.views || 0,
       storageUsed: user.storageUsed,
       maxStorage: 10737418240 // 10GB
-    }
+    },
+    origin: requestEvent.url.origin
   };
 });
 
 export default component$(() => {
   const userData = useUserData();
-  const imagePreview = useImagePreview();
+  const imagePreviewStore = useContext(ImagePreviewContext);
+  const copyToClipboard = $((shortCode: string) => {
+    const url = `${userData.value.origin}/f/${shortCode}`;
+    navigator.clipboard.writeText(url);
+    // Could add a toast notification here
+  });
+  const handleImageClick = $((shortCode: string, fileName: string) => {
+    const imageUrl = `/f/${shortCode}`;
+    imagePreviewStore.openPreview(imageUrl, fileName);
+  });
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  };
 
   return (
     <>      {/* Page Header */}
       <div class="mb-6 sm:mb-8 text-center">
         <h1 class="text-3xl sm:text-4xl font-bold text-gradient-cute mb-3 flex items-center justify-center gap-2 sm:gap-3 flex-wrap">
           Welcome back, {userData.value.user.name || "cutie"}!
-          <Sparkle class="w-8 sm:w-10 h-8 sm:h-10" />
         </h1>
         <p class="text-pink-200 text-base sm:text-lg px-4">
           Your kawaii dashboard is ready~ Manage uploads, API keys, and more! (◕‿◕)♡
@@ -129,11 +145,10 @@ export default component$(() => {
           <div class="flex items-center">
             <div class="p-2 sm:p-3 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-full" style="animation-delay: 0.4s;">
               <HardDrive class="w-4 sm:w-6 h-4 sm:h-6 text-white" />
-            </div>
-            <div class="ml-3 sm:ml-4">
+            </div>            <div class="ml-3 sm:ml-4">
               <p class="text-xs sm:text-sm font-medium text-pink-200">Storage Used</p>
               <p class="text-lg sm:text-2xl font-bold text-white">
-                {Math.round(userData.value.stats.storageUsed / 1024 / 1024)}MB
+                {formatFileSize(userData.value.stats.storageUsed)}
               </p>
             </div>
           </div>
@@ -153,11 +168,10 @@ export default component$(() => {
       <div class="mb-6 sm:mb-8">
         <h2 class="text-xl sm:text-2xl font-bold text-gradient-cute mb-4 sm:mb-6 text-center flex items-center justify-center gap-2">
           Quick Actions
-          <Sparkle class="w-5 sm:w-6 h-5 sm:h-6" />
         </h2>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          <Link 
-            href="/dashboard/uploads" 
+          <Link
+            href="/dashboard/uploads"
             class="card-cute p-4 sm:p-6 rounded-3xl group"
           >
             <div class="flex items-center mb-3 sm:mb-4">
@@ -173,8 +187,8 @@ export default component$(() => {
             </p>
           </Link>
 
-          <Link 
-            href="/dashboard/api-keys" 
+          <Link
+            href="/dashboard/api-keys"
             class="card-cute p-4 sm:p-6 rounded-3xl group"
           >
             <div class="flex items-center mb-3 sm:mb-4">
@@ -190,8 +204,8 @@ export default component$(() => {
             </p>
           </Link>
 
-          <Link 
-            href="/dashboard/embed" 
+          <Link
+            href="/dashboard/embed"
             class="card-cute p-4 sm:p-6 rounded-3xl group"
           >
             <div class="flex items-center mb-3 sm:mb-4">
@@ -207,8 +221,8 @@ export default component$(() => {
             </p>
           </Link>
 
-          <Link 
-            href="/setup/sharex" 
+          <Link
+            href="/setup/sharex"
             class="card-cute p-4 sm:p-6 rounded-3xl group"
           >
             <div class="flex items-center mb-3 sm:mb-4">
@@ -228,73 +242,69 @@ export default component$(() => {
       <div class="card-cute rounded-3xl p-4 sm:p-6">
         <h2 class="text-lg sm:text-xl font-bold text-gradient-cute mb-4 flex items-center gap-2">
           Recent Uploads
-          <Sparkle class="w-4 sm:w-5 h-4 sm:h-5" />
-          <Folder class="w-4 sm:w-5 h-4 sm:h-5" />
         </h2>
         {userData.value.user.uploads.length > 0 ? (
           <div class="space-y-3">            {userData.value.user.uploads.map((upload) => (
-              <div key={upload.id} class="flex items-center justify-between p-4 glass rounded-2xl">
-                <div class="flex items-center space-x-3">                  <div class="flex-shrink-0">
-                    {upload.mimeType.startsWith('image/') ? (
-                      <div 
-                        class="w-12 h-12 rounded-xl overflow-hidden border border-pink-300/30 hover:border-pink-300/60 transition-all duration-300 cursor-pointer"
-                        onClick$={() => imagePreview.openPreview(upload.url, upload.originalName)}
-                      >
-                        <img 
-                          src={upload.url} 
-                          alt={upload.originalName}
-                          class="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
-                          width="48"
-                          height="48"
-                        />
-                      </div>
-                    ) : upload.mimeType.startsWith('video/') ? (
-                      <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-pink-500 rounded-xl flex items-center justify-center pulse-soft">
-                        <div class="text-lg">🎬</div>
-                      </div>
-                    ) : upload.mimeType.startsWith('audio/') ? (
-                      <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center pulse-soft">
-                        <div class="text-lg">🎵</div>
-                      </div>
-                    ) : upload.mimeType.includes('pdf') ? (
-                      <div class="w-12 h-12 bg-gradient-to-br from-red-600 to-red-500 rounded-xl flex items-center justify-center pulse-soft">
-                        <div class="text-lg">📄</div>
-                      </div>
-                    ) : upload.mimeType.includes('zip') || upload.mimeType.includes('rar') || upload.mimeType.includes('archive') ? (
-                      <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-yellow-500 rounded-xl flex items-center justify-center pulse-soft">
-                        <div class="text-lg">📦</div>
-                      </div>
-                    ) : upload.mimeType.includes('text') ? (
-                      <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center pulse-soft">
-                        <div class="text-lg">📝</div>
-                      </div>
-                    ) : (
-                      <div class="w-12 h-12 bg-gradient-to-br from-pink-500 to-purple-500 rounded-xl flex items-center justify-center pulse-soft">
-                        <div class="text-lg">📄</div>
-                      </div>
-                    )}
-                  </div>
-                  <div>
-                    <p class="text-white font-medium">{upload.originalName}</p>
-                    <p class="text-pink-200 text-sm">
-                      {upload.views} views • {new Date(upload.createdAt).toLocaleDateString()}
-                    </p>
-                  </div>
+            <div key={upload.id} class="flex items-center justify-between p-4 glass rounded-2xl">
+              <div class="flex items-center space-x-3">                  <div class="flex-shrink-0">                {upload.mimeType.startsWith('image/') ? (<div
+                  class="w-12 h-12 rounded-xl overflow-hidden border border-pink-300/30 hover:border-pink-300/60 transition-all duration-300 cursor-pointer"                  onClick$={() => handleImageClick(upload.shortCode, upload.originalName)}
+                >
+                  <img
+                    src={`/f/${upload.shortCode}`}
+                    alt={upload.originalName}
+                    class="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
+                    width="48"
+                    height="48"
+                  />
                 </div>
-                <div class="flex space-x-2">
-                  <a
-                    href={upload.url}
-                    target="_blank"
-                    class="text-pink-400 hover:text-pink-300 text-sm px-3 py-1 rounded-full hover:bg-white/10 transition-all duration-300"
-                  >
-                    View 👀
-                  </a>
-                  <button class="text-pink-200 hover:text-white text-sm px-3 py-1 rounded-full hover:bg-white/10 transition-all duration-300">
-                    Copy URL 📋
-                  </button>
-                </div>
+                ) : upload.mimeType.startsWith('video/') ? (
+                  <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-pink-500 rounded-xl flex items-center justify-center pulse-soft">
+                    <div class="text-lg">🎬</div>
+                  </div>
+                ) : upload.mimeType.startsWith('audio/') ? (
+                  <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center pulse-soft">
+                    <div class="text-lg">🎵</div>
+                  </div>
+                ) : upload.mimeType.includes('pdf') ? (
+                  <div class="w-12 h-12 bg-gradient-to-br from-red-600 to-red-500 rounded-xl flex items-center justify-center pulse-soft">
+                    <div class="text-lg">📄</div>
+                  </div>
+                ) : upload.mimeType.includes('zip') || upload.mimeType.includes('rar') || upload.mimeType.includes('archive') ? (
+                  <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-yellow-500 rounded-xl flex items-center justify-center pulse-soft">
+                    <div class="text-lg">📦</div>
+                  </div>
+                ) : upload.mimeType.includes('text') ? (
+                  <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center pulse-soft">
+                    <div class="text-lg">📝</div>
+                  </div>
+                ) : (
+                  <div class="w-12 h-12 bg-gradient-to-br from-pink-500 to-purple-500 rounded-xl flex items-center justify-center pulse-soft">
+                    <div class="text-lg">📄</div>
+                  </div>
+                )}
               </div>
-            ))}
+                <div>
+                  <p class="text-white font-medium">{upload.originalName}</p>
+                  <p class="text-pink-200 text-sm">
+                    {upload.views} views • {new Date(upload.createdAt).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>                <div class="flex space-x-2">
+                <a
+                  href={`/f/${upload.shortCode}`}
+                  target="_blank"
+                  class="text-pink-400 hover:text-pink-300 text-sm px-3 py-1 rounded-full hover:bg-white/10 transition-all duration-300"
+                >
+                  View <Eye class="inline w-4 h-4" />
+                </a>                  <button
+                  onClick$={() => copyToClipboard(upload.shortCode)}
+                  class="text-pink-200 hover:text-white text-sm px-3 py-1 rounded-full hover:bg-white/10 transition-all duration-300"
+                >
+                  Copy URL <File class="inline w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          ))}
           </div>
         ) : (
           <div class="text-center py-12">

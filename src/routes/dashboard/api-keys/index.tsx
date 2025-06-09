@@ -2,15 +2,14 @@ import { component$, useSignal, $ } from "@builder.io/qwik";
 import { routeLoader$, server$ } from "@builder.io/qwik-city";
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { db } from "~/lib/db";
-import { Key, Sparkle, Shield } from "lucide-icons-qwik";
 
 export const useApiKeys = routeLoader$(async (requestEvent) => {
   const session = requestEvent.sharedMap.get("session");
-  
+
   if (!session?.user?.email) {
     throw requestEvent.redirect(302, "/");
   }
-  
+
   // Find user
   const user = await db.user.findUnique({
     where: { email: session.user.email },
@@ -21,37 +20,41 @@ export const useApiKeys = routeLoader$(async (requestEvent) => {
       }
     }
   });
-  
+
   if (!user) {
     throw requestEvent.redirect(302, "/");
   }
-  
+
+  // Get the current origin from the request
+  const origin = requestEvent.url.origin;
+
   return {
     user,
-    apiKeys: user.apiKeys
+    apiKeys: user.apiKeys,
+    origin
   };
 });
 
-export const createApiKey = server$(async function(name: string) {
+export const createApiKey = server$(async function (name: string) {
   const session = this.sharedMap.get("session");
-  
+
   if (!session?.user?.email) {
     throw new Error("Not authenticated");
   }
-    // Find user
+  // Find user
   const user = await db.user.findUnique({
     where: { email: session.user.email }
   });
-  
+
   if (!user) {
     throw new Error("User not found");
   }
-  
+
   // Check if user is approved
   if (!user.isApproved) {
     throw new Error("Account pending approval. Please wait for admin approval before creating API keys.");
   }
-  
+
   // Create new API key
   const apiKey = await db.apiKey.create({
     data: {
@@ -59,7 +62,7 @@ export const createApiKey = server$(async function(name: string) {
       userId: user.id
     }
   });
-  
+
   return {
     id: apiKey.id,
     key: apiKey.key,
@@ -68,29 +71,29 @@ export const createApiKey = server$(async function(name: string) {
   };
 });
 
-export const deleteApiKey = server$(async function(keyId: string) {
+export const deleteApiKey = server$(async function (keyId: string) {
   const session = this.sharedMap.get("session");
-  
+
   if (!session?.user?.email) {
     throw new Error("Not authenticated");
   }
-  
+
   // Find the API key and verify ownership
   const apiKey = await db.apiKey.findUnique({
     where: { id: keyId },
     include: { user: true }
   });
-  
+
   if (!apiKey || apiKey.user.email !== session.user.email) {
     throw new Error("API key not found or access denied");
   }
-  
+
   // Soft delete by setting isActive to false
   await db.apiKey.update({
     where: { id: keyId },
     data: { isActive: false }
   });
-  
+
   return { success: true };
 });
 
@@ -102,7 +105,7 @@ export default component$(() => {
 
   const handleCreateApiKey = $(async () => {
     if (!newKeyName.value.trim()) return;
-    
+
     isCreating.value = true;
     try {
       const newKey = await createApiKey(newKeyName.value.trim());
@@ -122,7 +125,7 @@ export default component$(() => {
     if (!confirm(`Are you sure you want to delete the API key "${keyName}"?`)) {
       return;
     }
-    
+
     try {
       await deleteApiKey(keyId);
       // Reload the page to show updated list
@@ -141,12 +144,11 @@ export default component$(() => {
       console.error("Failed to copy:", error);
       alert("Failed to copy API key");
     }
-  });  return (
+  }); return (
     <>      {/* Page Header */}
       <div class="mb-6 sm:mb-8 text-center">
         <h1 class="text-3xl sm:text-4xl font-bold text-gradient-cute mb-3 flex items-center justify-center gap-2 flex-wrap">
           API Keys Manager
-          <Shield class="w-8 sm:w-10 h-8 sm:h-10" />
         </h1>
         <p class="text-pink-200 text-base sm:text-lg px-4">
           Create and manage API keys for ShareX integration~ Keep them safe and secure! (◕‿◕)♡
@@ -171,8 +173,6 @@ export default component$(() => {
         <div class="card-cute rounded-3xl p-4 sm:p-6 mb-6 sm:mb-8">
           <h2 class="text-lg sm:text-xl font-bold text-gradient-cute mb-4 flex items-center gap-2">
             Create New API Key
-            <Sparkle class="w-4 sm:w-5 h-4 sm:h-5" />
-            <Key class="w-4 sm:w-5 h-4 sm:h-5" />
           </h2>
           <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
             <input
@@ -234,9 +234,9 @@ export default component$(() => {
       {/* API Keys List */}
       <div class="card-cute rounded-3xl p-4 sm:p-6">
         <h2 class="text-lg sm:text-xl font-bold text-gradient-cute mb-4 flex items-center flex-wrap">
-          Your API Keys 📝 <span class="ml-2 text-sm">🗝️</span>
+          Your API Keys
         </h2>
-        
+
         {apiKeysData.value.apiKeys.length === 0 ? (
           <div class="text-center py-8 sm:py-12">
             <div class="w-12 sm:w-16 h-12 sm:h-16 glass rounded-full flex items-center justify-center mx-auto mb-4">
@@ -285,14 +285,14 @@ export default component$(() => {
                 </div>
               </div>
             ))}
-          </div>        )}
+          </div>)}
       </div>
 
       {/* ShareX Integration Info */}
       {apiKeysData.value.user.isApproved && (
         <div class="bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border border-blue-400/30 rounded-3xl p-4 sm:p-6 mt-6 sm:mt-8 glass">
           <h3 class="text-base sm:text-lg font-bold text-blue-400 mb-2 flex items-center flex-wrap">
-            ShareX Integration 🔗 <span class="ml-2 sparkle">✨</span>
+            ShareX Integration
           </h3>
           <p class="text-pink-200 mb-4 text-sm sm:text-base">
             Use your API key to configure ShareX for automatic uploads~ Visit the{" "}
@@ -300,10 +300,9 @@ export default component$(() => {
               Setup page
             </a>{" "}
             to download ShareX configuration files! (◕‿◕)♡
-          </p>
-          <div class="glass rounded-2xl p-3 sm:p-4 border border-cyan-400/20">
+          </p>          <div class="glass rounded-2xl p-3 sm:p-4 border border-cyan-400/20">
             <p class="text-xs sm:text-sm text-pink-200 mb-2">API Endpoint:</p>
-            <code class="text-cyan-300 font-mono text-xs sm:text-sm break-all">{typeof window !== 'undefined' ? window.location.origin : ''}/api/upload</code>
+            <code class="text-cyan-300 font-mono text-xs sm:text-sm break-all">{apiKeysData.value.origin}/api/upload</code>
           </div>
         </div>
       )}

@@ -82,6 +82,9 @@ model User {
   showUploadDate Boolean  @default(true)
   customDomain  String?   // Custom domain for embeds
   
+  // Custom domain settings
+  customUploadDomain String? // Custom domain for file URLs (e.g., "cute.twink.forsale")
+  
   // URL/Shortcode preferences
   useCustomWords Boolean @default(false) // Use cute words instead of random chars
   

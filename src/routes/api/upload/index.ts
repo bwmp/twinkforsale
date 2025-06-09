@@ -74,34 +74,49 @@ export const onPost: RequestHandler = async ({ request, json }) => {
     if (file.size > 5242880) { // 5MB for anonymous
       throw json(413, { error: "File too large for anonymous upload" });
     }
-  }
-    // Generate unique identifiers
+  }  // Generate unique identifiers
   let useCuteWords = false;
+  let customUploadDomain: string | null = null;
   
-  // Get user's shortcode preference if authenticated
+  // Get user's preferences if authenticated
   if (userId) {
     const user = await db.user.findUnique({
       where: { id: userId },
-      select: { useCustomWords: true }
+      select: { useCustomWords: true, customUploadDomain: true }
     });
     useCuteWords = user?.useCustomWords || false;
+    customUploadDomain = user?.customUploadDomain || null;
   }
-  
-  const shortCode = generateShortCode(useCuteWords);
+    const shortCode = generateShortCode(useCuteWords);
   const deletionKey = nanoid(32);
   const filename = `${shortCode}_${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
     // Save file to storage
   await saveFile(file, filename);
-    // Create database record
+    // Determine the upload domain based on request or user preference
+  const requestHost = request.headers.get("host");
   const config = getEnvConfig();
-  const baseUrl = config.BASE_URL;
+  let uploadDomain = config.BASE_URL;
+  
+  // Check if request came from a custom domain
+  if (requestHost && requestHost !== new URL(config.BASE_URL).host) {
+    // Validate this is an allowed custom domain (*.twink.forsale or user's custom domain)
+    if (requestHost.endsWith('.twink.forsale') || 
+        (customUploadDomain && requestHost === customUploadDomain)) {
+      uploadDomain = `https://${requestHost}`;
+    }
+  } else if (customUploadDomain && !requestHost?.endsWith('.twink.forsale')) {
+    // Use user's preferred custom domain if no specific subdomain was used
+    uploadDomain = `https://${customUploadDomain}`;
+  }
+  
+  // Create database record
   const upload = await db.upload.create({
     data: {
       filename,
       originalName: file.name,
       mimeType: file.type,
       size: file.size,
-      url: `${baseUrl}/f/${shortCode}`,
+      url: `${uploadDomain}/f/${shortCode}`,
       shortCode,
       deletionKey,
       userId
@@ -123,10 +138,9 @@ export const onPost: RequestHandler = async ({ request, json }) => {
   const response: any = {
     url: upload.url
   };
-  
-  // Add thumbnail URL for images
+    // Add thumbnail URL for images
   if (file.type.startsWith("image/")) {
-    response.thumbnail_url = `${baseUrl}/f/${shortCode}/thumb`;
+    response.thumbnail_url = `${uploadDomain}/f/${shortCode}/thumb`;
   }
   
   throw json(201, response);

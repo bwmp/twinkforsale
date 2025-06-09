@@ -1,4 +1,4 @@
-import { component$, useSignal, $, useVisibleTask$ } from "@builder.io/qwik";
+import { component$, useSignal, $ } from "@builder.io/qwik";
 import { routeLoader$, Form, routeAction$, z, zod$ } from "@builder.io/qwik-city";
 import { db } from "~/lib/db";
 import { Palette } from "lucide-icons-qwik";
@@ -25,11 +25,12 @@ export const useUserLoader = routeLoader$(async (requestEvent) => {
       email: user.email,
       embedTitle: user.embedTitle,
       embedDescription: user.embedDescription,
-      embedColor: user.embedColor,
-      embedAuthor: user.embedAuthor,      embedFooter: user.embedFooter,
+      embedColor: user.embedColor,      embedAuthor: user.embedAuthor,
+      embedFooter: user.embedFooter,
       showFileInfo: Boolean(user.showFileInfo),
       showUploadDate: Boolean(user.showUploadDate),
       customDomain: user.customDomain,
+      customUploadDomain: user.customUploadDomain,
       useCustomWords: Boolean(user.useCustomWords)
     }
   };
@@ -56,11 +57,12 @@ export const useUpdateEmbedSettings = routeAction$(
       data: {
         embedTitle: values.embedTitle || null,
         embedDescription: values.embedDescription || null,
-        embedColor: values.embedColor || null,
-        embedAuthor: values.embedAuthor || null,        embedFooter: values.embedFooter || null,
+        embedColor: values.embedColor || null,        embedAuthor: values.embedAuthor || null,
+        embedFooter: values.embedFooter || null,
         showFileInfo: Boolean(values.showFileInfo),
         showUploadDate: Boolean(values.showUploadDate),
         customDomain: values.customDomain || null,
+        customUploadDomain: values.customUploadDomain || null,
         useCustomWords: Boolean(values.useCustomWords)
       }
     });
@@ -71,10 +73,11 @@ export const useUpdateEmbedSettings = routeAction$(
     embedTitle: z.string().optional(),
     embedDescription: z.string().optional(),
     embedColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
-    embedAuthor: z.string().optional(),
-    embedFooter: z.string().optional(),    showFileInfo: z.preprocess((val) => val === "on" || val === true, z.boolean().default(false)),
+    embedAuthor: z.string().optional(),    embedFooter: z.string().optional(),
+    showFileInfo: z.preprocess((val) => val === "on" || val === true, z.boolean().default(false)),
     showUploadDate: z.preprocess((val) => val === "on" || val === true, z.boolean().default(false)),
     customDomain: z.string().optional(),
+    customUploadDomain: z.string().optional(),
     useCustomWords: z.preprocess((val) => val === "on" || val === true, z.boolean().default(false))
   })
 );
@@ -82,7 +85,6 @@ export const useUpdateEmbedSettings = routeAction$(
 export default component$(() => {
   const userData = useUserLoader();
   const updateAction = useUpdateEmbedSettings();
-
   const previewCode = useSignal("");
   
   // Reactive form state
@@ -90,26 +92,26 @@ export default component$(() => {
   const showUploadDate = useSignal(userData.value.user.showUploadDate);
   const useCustomWords = useSignal(userData.value.user.useCustomWords);
 
-  // Function to generate preview from user data (for initial load)
-  const generateInitialPreview = $(() => {
-    const user = userData.value.user;    const title = user.embedTitle || "File Upload";
-    const description = user.embedDescription || "Uploaded via twink.forsale";
-    const color = user.embedColor || "#8B5CF6";
-    const author = user.embedAuthor || user.name || "User";
-    const footer = user.embedFooter || "twink.forsale";
+  // Initialize preview code with user data (non-reactive)
+  const user = userData.value.user;
+  const title = user.embedTitle || "File Upload";
+  const description = user.embedDescription || "Uploaded via twink.forsale";
+  const color = user.embedColor || "#8B5CF6";
+  const author = user.embedAuthor || user.name || "User";
+  const footer = user.embedFooter || "twink.forsale";
 
-    let desc = description;
-    if (showFileInfo.value) {
-      desc += "\\n\\n📁 **example-image.png**\\n📏 2.34 MB • image/png";
-    }
-    if (showUploadDate.value) {
-      desc += "\\n📅 Uploaded " + new Date().toLocaleDateString();
-    }
+  let initialDesc = description;
+  if (user.showFileInfo) {
+    initialDesc += "\\n\\n📁 **example-image.png**\\n📏 2.34 MB • image/png";
+  }
+  if (user.showUploadDate) {
+    initialDesc += "\\n📅 Uploaded " + new Date().toLocaleDateString();
+  }
 
-    previewCode.value = `{
+  previewCode.value = `{
   "type": "rich",
   "title": "${title}",
-  "description": "${desc}",
+  "description": "${initialDesc}",
   "color": ${parseInt(color.slice(1), 16)},
   "author": {
     "name": "${author}"
@@ -121,7 +123,7 @@ export default component$(() => {
     "url": "https://twink.forsale/f/abc123"
   }
 }`;
-  });
+
   // Function to generate preview from form data (for live updates)
   const generatePreview = $(() => {
     const formData = new FormData(document.querySelector('form') as HTMLFormElement);
@@ -154,12 +156,7 @@ export default component$(() => {
     "url": "https://twink.forsale/f/abc123"
   }
 }`;
-  });
-  // Generate initial preview when component mounts
-  // eslint-disable-next-line qwik/no-use-visible-task
-  useVisibleTask$(() => {
-    generateInitialPreview();
-  }); return (
+  });return (
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div class="mb-6 sm:mb-8 text-center">
         <h1 class="text-3xl sm:text-4xl font-bold text-gradient-cute mb-3 flex items-center justify-center gap-2 flex-wrap">
@@ -259,7 +256,23 @@ export default component$(() => {
                 <p class="text-xs text-pink-300/70 mt-2 pl-3 sm:pl-4">
                   Override the domain shown in embeds (for custom domains)~ ✨
                 </p>
-              </div>              <div class="space-y-3 sm:space-y-4">
+              </div>
+
+              <div>
+                <label class="block text-xs sm:text-sm font-medium text-pink-200 mb-2">
+                  Upload Domain (Optional)~ 🔗
+                </label>
+                <input
+                  type="text"
+                  name="customUploadDomain"
+                  value={userData.value.user.customUploadDomain || ""}
+                  placeholder="files.your-domain.com"
+                  class="w-full px-3 sm:px-4 py-2 sm:py-3 glass rounded-full text-white placeholder-pink-300/60 focus:outline-none focus:ring-2 focus:ring-pink-500/50 transition-all duration-300 text-sm sm:text-base"
+                />
+                <p class="text-xs text-pink-300/70 mt-2 pl-3 sm:pl-4">
+                  Custom domain for file URLs (e.g., subdomain.twink.forsale)~ 🌟
+                </p>
+              </div><div class="space-y-3 sm:space-y-4">
                 <label class="flex items-center p-3 glass rounded-full hover:bg-pink-500/10 transition-all duration-300 cursor-pointer">
                   <input
                     type="checkbox"

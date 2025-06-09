@@ -185,8 +185,7 @@ export const onRequest: RequestHandler = async ({ params, send, status, url, req
     if (isDirect || (!isBotOrCrawler && upload.mimeType.startsWith('image/'))) {
       // Read and serve file directly
       const fileBuffer = fs.readFileSync(filePath);
-      
-      const response = new Response(fileBuffer, {
+        const response = new Response(fileBuffer, {
         headers: {
           "Content-Type": upload.mimeType,
           "Content-Length": upload.size.toString(),
@@ -195,13 +194,14 @@ export const onRequest: RequestHandler = async ({ params, send, status, url, req
         }
       });
       
-      send(response);    } else {
+      send(response);
+      return;
+    } else {
       // Generate and serve Discord embed HTML
       const config = getServerEnvConfig();
       const baseUrl = config.BASE_URL;
       const embedHtml = generateDiscordEmbed(upload, upload.user, baseUrl);
-      
-      const response = new Response(embedHtml, {
+        const response = new Response(embedHtml, {
         headers: {
           "Content-Type": "text/html",
           "Cache-Control": "public, max-age=300" // 5 minutes cache for embeds
@@ -209,6 +209,7 @@ export const onRequest: RequestHandler = async ({ params, send, status, url, req
       });
       
       send(response);
+      return;
     }
     
   } catch (error) {

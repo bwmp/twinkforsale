@@ -1,4 +1,4 @@
-import { component$, $ } from "@builder.io/qwik";
+import { component$, $, useContext } from "@builder.io/qwik";
 import { routeLoader$, routeAction$, Link } from "@builder.io/qwik-city";
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { db } from "~/lib/db";
@@ -6,7 +6,7 @@ import { getServerEnvConfig } from "~/lib/env";
 import fs from "fs";
 import path from "path";
 import { Folder, Eye, HardDrive, Clock, Copy, Trash2, Sparkle, FileText, Ruler, Calendar, Zap } from "lucide-icons-qwik";
-import { useImagePreview } from "~/lib/use-image-preview";
+import { ImagePreviewContext } from "~/lib/image-preview-store";
 
 export const useDeleteUpload = routeAction$(async (data, requestEvent) => {
   const session = requestEvent.sharedMap.get("session");
@@ -85,19 +85,20 @@ export const useUserUploads = routeLoader$(async (requestEvent) => {
       }
     }
   });
-
   if (!user) {
     throw requestEvent.redirect(302, "/");
   }
 
-  return { user };
+  return { 
+    user,
+    origin: requestEvent.url.origin
+  };
 });
 
 export default component$(() => {
   const userData = useUserUploads();
   const deleteUploadAction = useDeleteUpload();
-  const imagePreview = useImagePreview();
-
+  const imagePreview = useContext(ImagePreviewContext);
   const copyToClipboard = $((text: string) => {
     navigator.clipboard.writeText(text);
     // Could add a toast notification here
@@ -117,7 +118,6 @@ export default component$(() => {
       alert(result.value.error || "Failed to delete file");
     }
   });
-
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return "0 Bytes";
     const k = 1024;
@@ -125,6 +125,7 @@ export default component$(() => {
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
+
   return (
     <>      {/* Page Header */}
       <div class="mb-6 sm:mb-8 text-center">
@@ -230,51 +231,51 @@ export default component$(() => {
               <tbody class="divide-y divide-pink-300/20">
                 {userData.value.user.uploads.map((upload) => (
                   <tr key={upload.id} class="hover:bg-pink-500/10 transition-all duration-300">                    <td class="px-3 sm:px-6 py-4">
-                      <div class="flex items-center space-x-2 sm:space-x-3">                        <div class="flex-shrink-0">
-                          {upload.mimeType.startsWith('image/') ? (                            <div 
-                              class="w-8 sm:w-10 h-8 sm:h-10 rounded-lg overflow-hidden border border-pink-300/30 hover:border-pink-300/60 transition-all duration-300 cursor-pointer"
-                              onClick$={() => imagePreview.openPreview(upload.url, upload.originalName)}
-                            >
-                              <img 
-                                src={upload.url} 
-                                alt={upload.originalName}
-                                class="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
-                                width="40"
-                                height="40"
-                              />
-                            </div>
-                          ) : upload.mimeType.startsWith('video/') ? (
-                            <div class="w-8 sm:w-10 h-8 sm:h-10 bg-gradient-to-r from-red-500 to-pink-500 rounded-lg flex items-center justify-center">
-                              <div class="text-sm sm:text-base">🎬</div>
-                            </div>
-                          ) : upload.mimeType.startsWith('audio/') ? (
-                            <div class="w-8 sm:w-10 h-8 sm:h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
-                              <div class="text-sm sm:text-base">🎵</div>
-                            </div>
-                          ) : upload.mimeType.includes('pdf') ? (
-                            <div class="w-8 sm:w-10 h-8 sm:h-10 bg-gradient-to-r from-red-600 to-red-500 rounded-lg flex items-center justify-center">
-                              <div class="text-sm sm:text-base">📄</div>
-                            </div>
-                          ) : upload.mimeType.includes('zip') || upload.mimeType.includes('rar') || upload.mimeType.includes('archive') ? (
-                            <div class="w-8 sm:w-10 h-8 sm:h-10 bg-gradient-to-r from-orange-500 to-yellow-500 rounded-lg flex items-center justify-center">
-                              <div class="text-sm sm:text-base">📦</div>
-                            </div>
-                          ) : upload.mimeType.includes('text') ? (
-                            <div class="w-8 sm:w-10 h-8 sm:h-10 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
-                              <div class="text-sm sm:text-base">📝</div>
-                            </div>
-                          ) : (
-                            <div class="w-8 sm:w-10 h-8 sm:h-10 glass rounded-lg flex items-center justify-center">
-                              <div class="text-sm sm:text-base">📄</div>
-                            </div>
-                          )}
-                        </div>
-                        <div class="min-w-0 flex-1">
-                          <p class="text-white font-medium text-sm sm:text-base truncate">{upload.originalName}</p>
-                          <p class="text-pink-200 text-xs sm:text-sm truncate">{upload.mimeType}</p>
-                        </div>
+                    <div class="flex items-center space-x-2 sm:space-x-3">                        <div class="flex-shrink-0">
+                      {upload.mimeType.startsWith('image/') ? (<div
+                        class="w-8 sm:w-10 h-8 sm:h-10 rounded-lg overflow-hidden border border-pink-300/30 hover:border-pink-300/60 transition-all duration-300 cursor-pointer"
+                        onClick$={() => imagePreview.openPreview(`/f/${upload.shortCode}`, upload.originalName)}
+                      >
+                        <img
+                          src={`/f/${upload.shortCode}`}
+                          alt={upload.originalName}
+                          class="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
+                          width="40"
+                          height="40"
+                        />
                       </div>
-                    </td>
+                      ) : upload.mimeType.startsWith('video/') ? (
+                        <div class="w-8 sm:w-10 h-8 sm:h-10 bg-gradient-to-r from-red-500 to-pink-500 rounded-lg flex items-center justify-center">
+                          <div class="text-sm sm:text-base">🎬</div>
+                        </div>
+                      ) : upload.mimeType.startsWith('audio/') ? (
+                        <div class="w-8 sm:w-10 h-8 sm:h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
+                          <div class="text-sm sm:text-base">🎵</div>
+                        </div>
+                      ) : upload.mimeType.includes('pdf') ? (
+                        <div class="w-8 sm:w-10 h-8 sm:h-10 bg-gradient-to-r from-red-600 to-red-500 rounded-lg flex items-center justify-center">
+                          <div class="text-sm sm:text-base">📄</div>
+                        </div>
+                      ) : upload.mimeType.includes('zip') || upload.mimeType.includes('rar') || upload.mimeType.includes('archive') ? (
+                        <div class="w-8 sm:w-10 h-8 sm:h-10 bg-gradient-to-r from-orange-500 to-yellow-500 rounded-lg flex items-center justify-center">
+                          <div class="text-sm sm:text-base">📦</div>
+                        </div>
+                      ) : upload.mimeType.includes('text') ? (
+                        <div class="w-8 sm:w-10 h-8 sm:h-10 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
+                          <div class="text-sm sm:text-base">📝</div>
+                        </div>
+                      ) : (
+                        <div class="w-8 sm:w-10 h-8 sm:h-10 glass rounded-lg flex items-center justify-center">
+                          <div class="text-sm sm:text-base">📄</div>
+                        </div>
+                      )}
+                    </div>
+                      <div class="min-w-0 flex-1">
+                        <p class="text-white font-medium text-sm sm:text-base truncate">{upload.originalName}</p>
+                        <p class="text-pink-200 text-xs sm:text-sm truncate">{upload.mimeType}</p>
+                      </div>
+                    </div>
+                  </td>
                     <td class="px-3 sm:px-6 py-4 text-pink-100 text-sm">
                       {formatFileSize(upload.size)}
                     </td>
@@ -285,15 +286,14 @@ export default component$(() => {
                       {new Date(upload.createdAt).toLocaleDateString()}
                     </td>
                     <td class="px-3 sm:px-6 py-4">
-                      <div class="flex flex-col sm:flex-row space-y-1 sm:space-y-0 sm:space-x-2">
-                        <button
-                          onClick$={() => copyToClipboard(upload.url)}
-                          class="text-purple-400 hover:text-purple-300 text-xs sm:text-sm font-medium px-2 sm:px-3 py-1 rounded-full hover:bg-purple-500/20 transition-all duration-300 whitespace-nowrap"
-                        >
-                          Copy URL <Copy class="inline w-4 h-4" />
-                        </button>
+                      <div class="flex flex-col sm:flex-row space-y-1 sm:space-y-0 sm:space-x-2">                        <button
+                        onClick$={() => copyToClipboard(`${userData.value.origin}/f/${upload.shortCode}`)}
+                        class="text-purple-400 hover:text-purple-300 text-xs sm:text-sm font-medium px-2 sm:px-3 py-1 rounded-full hover:bg-purple-500/20 transition-all duration-300 whitespace-nowrap"
+                      >
+                        Copy URL <Copy class="inline w-4 h-4" />
+                      </button>
                         <a
-                          href={upload.url}
+                          href={`/f/${upload.shortCode}`}
                           target="_blank"
                           class="text-cyan-400 hover:text-cyan-300 text-xs sm:text-sm font-medium px-2 sm:px-3 py-1 rounded-full hover:bg-cyan-500/20 transition-all duration-300 whitespace-nowrap text-center"
                         >
