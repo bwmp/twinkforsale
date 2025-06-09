@@ -91,7 +91,6 @@ export default component$(() => {
   const showUploadDate = useSignal(userData.value.user.showUploadDate);
   const showUserStats = useSignal(userData.value.user.showUserStats);
   const useCustomWords = useSignal(userData.value.user.useCustomWords);
-
   // Initialize preview code with user data (non-reactive)
   const user = userData.value.user;
   const title = user.embedTitle || "File Upload";
@@ -100,7 +99,29 @@ export default component$(() => {
   const author = user.embedAuthor || user.name || "User";
   const footer = user.embedFooter || "twink.forsale";
 
-  let initialDesc = description;
+  // Replace placeholders with example values for initial preview
+  const replacedTitle = title
+    .replace(/\{filename\}/g, "example-image.png")
+    .replace(/\{filesize\}/g, "2.34 MB")
+    .replace(/\{filetype\}/g, "image/png")
+    .replace(/\{uploaddate\}/g, new Date().toLocaleDateString())
+    .replace(/\{views\}/g, "42")
+    .replace(/\{username\}/g, user.name || "User")
+    .replace(/\{totalfiles\}/g, "127")
+    .replace(/\{totalstorage\}/g, "2.1 GB")
+    .replace(/\{totalviews\}/g, "5,432");
+
+  let initialDesc = description
+    .replace(/\{filename\}/g, "example-image.png")
+    .replace(/\{filesize\}/g, "2.34 MB")
+    .replace(/\{filetype\}/g, "image/png")
+    .replace(/\{uploaddate\}/g, new Date().toLocaleDateString())
+    .replace(/\{views\}/g, "42")
+    .replace(/\{username\}/g, user.name || "User")
+    .replace(/\{totalfiles\}/g, "127")
+    .replace(/\{totalstorage\}/g, "2.1 GB")
+    .replace(/\{totalviews\}/g, "5,432");
+
   if (user.showFileInfo) {
     initialDesc += "\\n\\n📁 **example-image.png**\\n📏 2.34 MB • image/png";
   }  if (user.showUploadDate) {
@@ -112,7 +133,7 @@ export default component$(() => {
 
   previewCode.value = `{
   "type": "rich",
-  "title": "${title}",
+  "title": "${replacedTitle}",
   "description": "${initialDesc}",
   "color": ${parseInt(color.slice(1), 16)},
   "author": {
@@ -125,7 +146,6 @@ export default component$(() => {
     "url": "https://twink.forsale/f/abc123"
   }
 }`;
-
   // Function to generate preview from form data (for live updates)
   const generatePreview = $(() => {
     const formData = new FormData(document.querySelector('form') as HTMLFormElement);
@@ -135,7 +155,29 @@ export default component$(() => {
     const author = (formData.get('embedAuthor') as string) || userData.value.user.name;
     const footer = (formData.get('embedFooter') as string) || "twink.forsale";
 
-    let desc = description;
+    // Replace placeholders with example values
+    const replacedTitle = title
+      .replace(/\{filename\}/g, "example-image.png")
+      .replace(/\{filesize\}/g, "2.34 MB")
+      .replace(/\{filetype\}/g, "image/png")
+      .replace(/\{uploaddate\}/g, new Date().toLocaleDateString())
+      .replace(/\{views\}/g, "42")
+      .replace(/\{username\}/g, userData.value.user.name || "User")
+      .replace(/\{totalfiles\}/g, "127")
+      .replace(/\{totalstorage\}/g, "2.1 GB")
+      .replace(/\{totalviews\}/g, "5,432");
+
+    let desc = description
+      .replace(/\{filename\}/g, "example-image.png")
+      .replace(/\{filesize\}/g, "2.34 MB")
+      .replace(/\{filetype\}/g, "image/png")
+      .replace(/\{uploaddate\}/g, new Date().toLocaleDateString())
+      .replace(/\{views\}/g, "42")
+      .replace(/\{username\}/g, userData.value.user.name || "User")
+      .replace(/\{totalfiles\}/g, "127")
+      .replace(/\{totalstorage\}/g, "2.1 GB")
+      .replace(/\{totalviews\}/g, "5,432");
+
     if (showFileInfo.value) {
       desc += "\\n\\n📁 **example-image.png**\\n📏 2.34 MB • image/png";
     }    if (showUploadDate.value) {
@@ -147,7 +189,7 @@ export default component$(() => {
 
     previewCode.value = `{
   "type": "rich",
-  "title": "${title}",
+  "title": "${replacedTitle}",
   "description": "${desc}",
   "color": ${parseInt(color.slice(1), 16)},
   "author": {
@@ -179,8 +221,7 @@ export default component$(() => {
             Embed Configuration~ ⚙️ <span class="ml-2 sparkle">✨</span>
           </h2>
           <Form action={updateAction} onSubmit$={generatePreview}>
-            <div class="space-y-4 sm:space-y-6">
-              <div>
+            <div class="space-y-4 sm:space-y-6">              <div>
                 <label class="block text-xs sm:text-sm font-medium text-pink-200 mb-2">
                   Embed Title~ 💝
                 </label>
@@ -192,9 +233,10 @@ export default component$(() => {
                   class="w-full px-3 sm:px-4 py-2 sm:py-3 glass rounded-full text-white placeholder-pink-300/60 focus:outline-none focus:ring-2 focus:ring-pink-500/50 transition-all duration-300 text-sm sm:text-base"
                   onInput$={generatePreview}
                 />
-              </div>
-
-              <div>
+                <p class="text-xs text-pink-300/70 mt-2 pl-3 sm:pl-4">
+                  Use placeholders: {'{filename}'}, {'{filesize}'}, {'{filetype}'}, {'{uploaddate}'}, {'{views}'}, {'{username}'}, {'{totalfiles}'}, {'{totalstorage}'}, {'{totalviews}'}~ ✨
+                </p>
+              </div>              <div>
                 <label class="block text-xs sm:text-sm font-medium text-pink-200 mb-2">
                   Description~ 📝
                 </label>                <textarea
@@ -205,6 +247,9 @@ export default component$(() => {
                   class="w-full px-3 sm:px-4 py-2 sm:py-3 glass rounded-2xl text-white placeholder-pink-300/60 focus:outline-none focus:ring-2 focus:ring-pink-500/50 transition-all duration-300 resize-none text-sm sm:text-base"
                   onInput$={generatePreview}
                 />
+                <p class="text-xs text-pink-300/70 mt-2 pl-3 sm:pl-4">
+                  Use placeholders: {'{filename}'}, {'{filesize}'}, {'{filetype}'}, {'{uploaddate}'}, {'{views}'}, {'{username}'}, {'{totalfiles}'}, {'{totalstorage}'}, {'{totalviews}'}~ ✨
+                </p>
               </div>
 
               <div>

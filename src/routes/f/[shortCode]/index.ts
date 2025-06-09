@@ -6,8 +6,28 @@ import path from "path";
 
 // Generate Discord embed HTML
 function generateDiscordEmbed(upload: any, user: any, baseUrl: string, userStats?: { totalFiles: number, totalStorage: number, totalViews: number }) {
-  const embedTitle = user?.embedTitle || "File Upload";
-  const embedDescription = user?.embedDescription || "Uploaded via twink.forsale";
+  // Helper function to replace placeholders
+  const replacePlaceholders = (text: string) => {
+    if (!text) return text;
+    
+    const fileSize = (upload.size / 1024 / 1024).toFixed(2);
+    const uploadDate = new Date(upload.createdAt).toLocaleDateString();
+    const storageUsedMB = userStats ? (userStats.totalStorage / 1024 / 1024).toFixed(2) : '0';
+    
+    return text
+      .replace(/\{filename\}/g, upload.originalName)
+      .replace(/\{filesize\}/g, `${fileSize} MB`)
+      .replace(/\{filetype\}/g, upload.mimeType)
+      .replace(/\{uploaddate\}/g, uploadDate)
+      .replace(/\{views\}/g, upload.views.toString())
+      .replace(/\{totalfiles\}/g, userStats?.totalFiles.toString() || '0')
+      .replace(/\{totalstorage\}/g, `${storageUsedMB} MB`)
+      .replace(/\{totalviews\}/g, userStats?.totalViews.toLocaleString() || '0')
+      .replace(/\{username\}/g, user?.name || 'Anonymous');
+  };
+
+  const embedTitle = replacePlaceholders(user?.embedTitle) || "File Upload";
+  const embedDescription = replacePlaceholders(user?.embedDescription) || "Uploaded via twink.forsale";
   const embedColor = user?.embedColor || "#8B5CF6";
   const embedAuthor = user?.embedAuthor || user?.name;
   const embedFooter = user?.embedFooter || "twink.forsale";
@@ -22,6 +42,10 @@ function generateDiscordEmbed(upload: any, user: any, baseUrl: string, userStats
   if (showUploadDate) {
     const uploadDate = new Date(upload.createdAt).toLocaleDateString();
     description += `<br>📅 Uploaded ${uploadDate}`;
+  }
+  if (showUserStats && userStats) {
+    const storageUsedMB = (userStats.totalStorage / 1024 / 1024).toFixed(2);
+    description += `<br><br>👤 <strong>User Stats</strong><br>📊 ${userStats.totalFiles} files uploaded • ${storageUsedMB} MB used<br>👀 ${userStats.totalViews.toLocaleString()} total views`;
   }
   const domain = user?.customDomain || baseUrl.replace(/^https?:\/\//, '');
   // Create plain text version for meta tags (Discord doesn't support HTML or markdown)
@@ -62,9 +86,11 @@ function generateDiscordEmbed(upload: any, user: any, baseUrl: string, userStats
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta name="twitter:image" content="${upload.url}?direct=true">
-  ` : ''}
-  
+  ` : ''}  
   ${embedAuthor ? `<meta name="author" content="${embedAuthor}">` : ''}
+  
+  <!-- oEmbed alternate link for better platform support -->
+  <link rel="alternate" href="${baseUrl}/api/oembed?url=${encodeURIComponent(upload.url)}" type="application/json+oembed" title="${embedTitle}">
   
   <!-- Auto-redirect for direct file access -->
   <script>
