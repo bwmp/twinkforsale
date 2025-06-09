@@ -113,7 +113,7 @@ export const onGet: RequestHandler = async ({ url, json }) => {
     if (error && typeof error === 'object' && error.constructor.name === 'AbortMessage') {
       throw error;
     }
-    
+
     console.error("oEmbed error:", error);
     throw json(500, { error: "Internal server error" });
   }

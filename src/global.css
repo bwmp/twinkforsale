@@ -1,6 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
-
+@import "@luminescent/ui";
+@plugin "@luminescent/ui/lum-bg";
+@config "@luminescent/ui-qwik/config";
+@source "../node_modules/@luminescent/ui-qwik";
 /* Custom styles for cute femboy aesthetic */
 
 :root {
@@ -27,18 +30,39 @@
 
 /* Cute animations */
 @keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
+
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 @keyframes pulse-soft {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.7;
+  }
 }
 
 @keyframes gradient-shift {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
 }
 
 .pulse-soft {
@@ -139,5 +163,3 @@
     height: 1.5rem;
   }
 }
-
-

@@ -42,3 +42,6 @@ lerna-debug.log*
 !.yarn/releases
 prisma/dev.db
 .github/
+
+# Uploads directory (files uploaded by users)
+/uploads/

@@ -32,3 +32,18 @@ export function isImageFile(mimeType: string): boolean {
 export function truncateString(str: string, length: number): string {
   return str.length > length ? str.slice(0, length) + '...' : str
 }
+
+export function parseStorageSize(value: string): number {
+  const trimmed = value.trim().toUpperCase()
+  const number = parseFloat(trimmed)
+
+  if (trimmed.endsWith('GB')) {
+    return number * 1024 * 1024 * 1024
+  } else if (trimmed.endsWith('MB')) {
+    return number * 1024 * 1024
+  } else if (trimmed.endsWith('KB')) {
+    return number * 1024
+  } else {
+    return number // Assume bytes
+  }
+}

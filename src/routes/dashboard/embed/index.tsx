@@ -1,7 +1,7 @@
 import { component$, useSignal, $, useTask$ } from "@builder.io/qwik";
 import { routeLoader$, Form, routeAction$, z, zod$ } from "@builder.io/qwik-city";
+import { ColorPicker, Toggle } from "@luminescent/ui-qwik";
 import { db } from "~/lib/db";
-import { Palette } from "lucide-icons-qwik";
 
 export const useUserLoader = routeLoader$(async (requestEvent) => {
   const session = requestEvent.sharedMap.get("session");
@@ -90,7 +90,7 @@ export default component$(() => {
   const showUploadDate = useSignal(userData.value.user.showUploadDate);
   const showUserStats = useSignal(userData.value.user.showUserStats);
   const useCustomWords = useSignal(userData.value.user.useCustomWords);
-  
+
   // Form field signals to track current values
   const titleValue = useSignal(userData.value.user.embedTitle || "");
   const descriptionValue = useSignal(userData.value.user.embedDescription || "");
@@ -99,6 +99,8 @@ export default component$(() => {
   const footerValue = useSignal(userData.value.user.embedFooter || "");  // Initialize preview code with user data (non-reactive)
   const user = userData.value.user;
 
+  const inputClasses = "w-full px-3 sm:px-4 py-2 sm:py-3 glass rounded-full text-white placeholder-pink-300/60 focus:outline-none focus:ring-2 focus:ring-pink-500/50 transition-all duration-300 text-sm sm:text-base"
+  const toggleClasses = "flex gap-2 items-center p-3 glass rounded-full hover:bg-pink-500/10 transition-all duration-300 cursor-pointer"
   // Use useTask$ to set initial preview without violating Qwik's reactivity rules
   useTask$(() => {
     const title = user.embedTitle || "File Upload";
@@ -144,20 +146,20 @@ export default component$(() => {
     }
 
     previewCode.value = `{
-  "type": "rich",
-  "title": "${replacedTitle}",
-  "description": "${initialDesc}",
-  "color": ${parseInt(color.slice(1), 16)},
-  "author": {
-    "name": "${author}"
-  },
-  "footer": {
-    "text": "${initialFooter}"
-  },
-  "image": {
-    "url": "https://twink.forsale/f/abc123"
-  }
-}`;
+      "type": "rich",
+      "title": "${replacedTitle}",
+      "description": "${initialDesc}",
+      "color": ${parseInt(color.slice(1), 16)},
+      "author": {
+        "name": "${author}"
+      },
+      "footer": {
+        "text": "${initialFooter}"
+      },
+      "image": {
+        "url": "https://twink.forsale/f/abc123"
+      }
+    }`;
   });
   const generatePreview = $(() => {
     const title = titleValue.value || "File Upload";
@@ -187,9 +189,9 @@ export default component$(() => {
       .replace(/\{username\}/g, userData.value.user.name || "User")
       .replace(/\{totalfiles\}/g, "127")
       .replace(/\{totalstorage\}/g, "2.1 GB")
-      .replace(/\{totalviews\}/g, "5,432");    if (showFileInfo.value) {
-      desc += "\\n\\n📁 **example-image.png**\\n📏 2.34 MB • image/png";
-    }
+      .replace(/\{totalviews\}/g, "5,432"); if (showFileInfo.value) {
+        desc += "\\n\\n📁 **example-image.png**\\n📏 2.34 MB • image/png";
+      }
     if (showUploadDate.value) {
       desc += "\\n📅 Uploaded " + new Date().toLocaleDateString();
     }
@@ -201,26 +203,26 @@ export default component$(() => {
     }
 
     previewCode.value = `{
-  "type": "rich",
-  "title": "${replacedTitle}",
-  "description": "${desc}",
-  "color": ${parseInt(color.slice(1), 16)},
-  "author": {
-    "name": "${author}"
-  },
-  "footer": {
-    "text": "${finalFooter}"
-  },
-  "image": {
-    "url": "https://twink.forsale/f/abc123"
-  }
-}`;
-  }); return (
+      "type": "rich",
+      "title": "${replacedTitle}",
+      "description": "${desc}",
+      "color": ${parseInt(color.slice(1), 16)},
+      "author": {
+        "name": "${author}"
+      },
+      "footer": {
+        "text": "${finalFooter}"
+      },
+      "image": {
+        "url": "https://twink.forsale/f/abc123"
+      }
+    }`;
+  });
+  return (
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div class="mb-6 sm:mb-8 text-center">
         <h1 class="text-3xl sm:text-4xl font-bold text-gradient-cute mb-3 flex items-center justify-center gap-2 flex-wrap">
           Discord Embed Settings~
-          <Palette class="w-8 sm:w-10 h-8 sm:h-10" />
         </h1>
         <p class="text-pink-200 text-base sm:text-lg px-4">
           Customize how your cute uploads appear when shared on Discord and other platforms! (◕‿◕)♡
@@ -234,27 +236,31 @@ export default component$(() => {
             Embed Configuration~ ⚙️ <span class="ml-2 sparkle">✨</span>
           </h2>
           <Form action={updateAction} onSubmit$={generatePreview}>
-            <div class="space-y-4 sm:space-y-6">              <div>
-              <label class="block text-xs sm:text-sm font-medium text-pink-200 mb-2">
-                Embed Title~ 💝
-              </label>              <input
-                type="text"
-                name="embedTitle"
-                value={titleValue.value}
-                placeholder="File Upload~ ✨"
-                class="w-full px-3 sm:px-4 py-2 sm:py-3 glass rounded-full text-white placeholder-pink-300/60 focus:outline-none focus:ring-2 focus:ring-pink-500/50 transition-all duration-300 text-sm sm:text-base"
-                onInput$={(event) => {
-                  titleValue.value = (event.target as HTMLInputElement).value;
-                  generatePreview();
-                }}
-              />
-              <p class="text-xs text-pink-300/70 mt-2 pl-3 sm:pl-4">
-                Use placeholders: {'{filename}'}, {'{filesize}'}, {'{filetype}'}, {'{uploaddate}'}, {'{views}'}, {'{username}'}, {'{totalfiles}'}, {'{totalstorage}'}, {'{totalviews}'}~ ✨
-              </p>
-            </div>              <div>
+            <div class="space-y-4 sm:space-y-6">
+              <div>
+                <label class="block text-xs sm:text-sm font-medium text-pink-200 mb-2">
+                  Embed Title~ 💝
+                </label>
+                <input
+                  type="text"
+                  name="embedTitle"
+                  value={titleValue.value}
+                  placeholder="File Upload~ ✨"
+                  class={inputClasses}
+                  onInput$={(event) => {
+                    titleValue.value = (event.target as HTMLInputElement).value;
+                    generatePreview();
+                  }}
+                />
+                <p class="text-xs text-pink-300/70 mt-2 pl-3 sm:pl-4">
+                  Use placeholders: {'{filename}'}, {'{filesize}'}, {'{filetype}'}, {'{uploaddate}'}, {'{views}'}, {'{username}'}, {'{totalfiles}'}, {'{totalstorage}'}, {'{totalviews}'}~ ✨
+                </p>
+              </div>
+              <div>
                 <label class="block text-xs sm:text-sm font-medium text-pink-200 mb-2">
                   Description~ 📝
-                </label>                <textarea
+                </label>
+                <textarea
                   name="embedDescription"
                   value={descriptionValue.value}
                   placeholder="Uploaded via twink.forsale~ (◕‿◕)♡"
@@ -273,27 +279,26 @@ export default component$(() => {
               <div>
                 <label class="block text-xs sm:text-sm font-medium text-pink-200 mb-2">
                   Embed Color~ 🎨
-                </label>                <input
-                  type="color"
-                  name="embedColor"
-                  value={colorValue.value}
-                  class="w-full h-10 sm:h-12 glass rounded-full cursor-pointer border-2 border-pink-300/20 hover:border-pink-300/40 transition-all duration-300"
-                  onChange$={(event) => {
-                    colorValue.value = (event.target as HTMLInputElement).value;
+                </label>
+                <ColorPicker
+                  id="color-picker"
+                  horizontal
+                  value={colorValue.value} onInput$={newColor => {
+                    colorValue.value = newColor;
                     generatePreview();
-                  }}
-                />
+                  }} />
               </div>
 
               <div>
                 <label class="block text-xs sm:text-sm font-medium text-pink-200 mb-2">
                   Author Name~ ✏️
-                </label>                <input
+                </label>
+                <input
                   type="text"
                   name="embedAuthor"
                   value={authorValue.value}
                   placeholder={userData.value.user.name || "Cute User~ 💕"}
-                  class="w-full px-3 sm:px-4 py-2 sm:py-3 glass rounded-full text-white placeholder-pink-300/60 focus:outline-none focus:ring-2 focus:ring-pink-500/50 transition-all duration-300 text-sm sm:text-base"
+                  class={inputClasses}
                   onInput$={(event) => {
                     authorValue.value = (event.target as HTMLInputElement).value;
                     generatePreview();
@@ -304,18 +309,20 @@ export default component$(() => {
               <div>
                 <label class="block text-xs sm:text-sm font-medium text-pink-200 mb-2">
                   Footer Text~ 📄
-                </label>                <input
+                </label>
+                <input
                   type="text"
                   name="embedFooter"
                   value={footerValue.value}
                   placeholder="twink.forsale~ ✨"
-                  class="w-full px-3 sm:px-4 py-2 sm:py-3 glass rounded-full text-white placeholder-pink-300/60 focus:outline-none focus:ring-2 focus:ring-pink-500/50 transition-all duration-300 text-sm sm:text-base"
+                  class={inputClasses}
                   onInput$={(event) => {
                     footerValue.value = (event.target as HTMLInputElement).value;
                     generatePreview();
                   }}
                 />
-              </div>              <div>
+              </div>
+              <div>
                 <label class="block text-xs sm:text-sm font-medium text-pink-200 mb-2">
                   Custom Domain (Optional)~ 🌐
                 </label>
@@ -324,7 +331,7 @@ export default component$(() => {
                   name="customDomain"
                   value={userData.value.user.customDomain || ""}
                   placeholder="your-domain.com"
-                  class="w-full px-3 sm:px-4 py-2 sm:py-3 glass rounded-full text-white placeholder-pink-300/60 focus:outline-none focus:ring-2 focus:ring-pink-500/50 transition-all duration-300 text-sm sm:text-base"
+                  class={inputClasses}
                 />
                 <p class="text-xs text-pink-300/70 mt-2 pl-3 sm:pl-4">
                   Override the domain shown in embeds (for custom domains)~ ✨
@@ -340,57 +347,58 @@ export default component$(() => {
                   name="customUploadDomain"
                   value={userData.value.user.customUploadDomain || ""}
                   placeholder="files.your-domain.com"
-                  class="w-full px-3 sm:px-4 py-2 sm:py-3 glass rounded-full text-white placeholder-pink-300/60 focus:outline-none focus:ring-2 focus:ring-pink-500/50 transition-all duration-300 text-sm sm:text-base"
+                  class={inputClasses}
                 />
                 <p class="text-xs text-pink-300/70 mt-2 pl-3 sm:pl-4">
                   Custom domain for file URLs (e.g., subdomain.twink.forsale)~ 🌟
                 </p>
-              </div><div class="space-y-3 sm:space-y-4">
-                <label class="flex items-center p-3 glass rounded-full hover:bg-pink-500/10 transition-all duration-300 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    name="showFileInfo"
+              </div>
+              <div class="space-y-3 sm:space-y-4">
+                <label class={toggleClasses}>
+                  <Toggle
+                    checkbox
+                    onColor="purple"
                     checked={showFileInfo.value}
-                    class="mr-2 sm:mr-3 w-4 sm:w-5 h-4 sm:h-5 text-pink-500 bg-transparent border-2 border-pink-300/50 rounded-lg focus:ring-pink-500/50 accent-pink-500"
-                    onChange$={(event) => {
-                      showFileInfo.value = (event.target as HTMLInputElement).checked;
+                    onChange$={(e, el) => {
+                      showFileInfo.value = el.checked;
                       generatePreview();
                     }}
                   />
                   <span class="text-xs sm:text-sm text-pink-200">Show file information (name, size, type)~ 📊</span>
-                </label>                <label class="flex items-center p-3 glass rounded-full hover:bg-pink-500/10 transition-all duration-300 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    name="showUploadDate"
+                </label>
+                <label class={toggleClasses}>
+                  <Toggle
+                    checkbox
+                    onColor="purple"
                     checked={showUploadDate.value}
-                    class="mr-2 sm:mr-3 w-4 sm:w-5 h-4 sm:h-5 text-pink-500 bg-transparent border-2 border-pink-300/50 rounded-lg focus:ring-pink-500/50 accent-pink-500"
-                    onChange$={(event) => {
-                      showUploadDate.value = (event.target as HTMLInputElement).checked;
+                    onChange$={(e, el) => {
+                      showUploadDate.value = el.checked;
                       generatePreview();
                     }}
                   />
                   <span class="text-xs sm:text-sm text-pink-200">Show upload date~ 📅</span>
                 </label>
-
-                <label class="flex items-center p-3 glass rounded-full hover:bg-pink-500/10 transition-all duration-300 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    name="showUserStats"
+                <label class={toggleClasses}>
+                  <Toggle
+                    checkbox
+                    onColor="purple"
                     checked={showUserStats.value}
-                    class="mr-2 sm:mr-3 w-4 sm:w-5 h-4 sm:h-5 text-pink-500 bg-transparent border-2 border-pink-300/50 rounded-lg focus:ring-pink-500/50 accent-pink-500"
-                    onChange$={(event) => {
-                      showUserStats.value = (event.target as HTMLInputElement).checked;
+                    onChange$={(e, el) => {
+                      showUserStats.value = el.checked;
                       generatePreview();
-                    }}
+                    }
+                    }
                   />
                   <span class="text-xs sm:text-sm text-pink-200">Show user statistics (files uploaded, storage used, total views)~ 📊</span>
-                </label><label class="flex items-center p-3 glass rounded-full hover:bg-pink-500/10 transition-all duration-300 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    name="useCustomWords"
+                </label>
+                <label class={toggleClasses}>
+                  <Toggle
+                    checkbox
+                    onColor="purple"
                     checked={useCustomWords.value}
-                    class="mr-2 sm:mr-3 w-4 sm:w-5 h-4 sm:h-5 text-pink-500 bg-transparent border-2 border-pink-300/50 rounded-lg focus:ring-pink-500/50 accent-pink-500" onChange$={(event) => {
-                      useCustomWords.value = (event.target as HTMLInputElement).checked;
+                    onChange$={(e, el) => {
+                      useCustomWords.value = el.checked;
+                      generatePreview();
                     }}
                   />
                   <span class="text-xs sm:text-sm text-pink-200">Use cute words for file URLs~ 💕</span>
@@ -429,7 +437,7 @@ export default component$(() => {
         {/* Preview */}
         <div class="card-cute rounded-3xl p-4 sm:p-6">
           <h2 class="text-lg sm:text-xl font-bold text-gradient-cute mb-4 sm:mb-6 flex items-center">
-            Discord Embed Preview~ 👀 <span class="ml-2 sparkle">✨</span>
+            Discord Embed Preview~<span class="ml-2 sparkle">✨</span>
           </h2>
 
           <div class="glass rounded-2xl p-3 sm:p-4 border-l-4 border-gradient-to-b from-purple-500 to-pink-500">

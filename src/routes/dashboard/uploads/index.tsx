@@ -76,6 +76,9 @@ export const useUserUploads = routeLoader$(async (requestEvent) => {
     throw requestEvent.redirect(302, "/");
   }
 
+  // Get environment configuration for storage limits
+  const config = getServerEnvConfig();
+
   // Find user and their uploads
   const user = await db.user.findUnique({
     where: { email: session.user.email },
@@ -89,8 +92,12 @@ export const useUserUploads = routeLoader$(async (requestEvent) => {
     throw requestEvent.redirect(302, "/");
   }
 
-  return { 
+  // Calculate the effective storage limit (user's custom limit or default from env)
+  const effectiveStorageLimit = user.maxStorageLimit || config.BASE_STORAGE_LIMIT;
+
+  return {
     user,
+    effectiveStorageLimit,
     origin: requestEvent.url.origin
   };
 });
@@ -120,10 +127,17 @@ export default component$(() => {
   });
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return "0 Bytes";
+
+    // Handle negative numbers (over quota)
+    const isNegative = bytes < 0;
+    const absoluteBytes = Math.abs(bytes);
+
     const k = 1024;
     const sizes = ["Bytes", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+    const i = Math.floor(Math.log(absoluteBytes) / Math.log(k));
+    const formattedSize = parseFloat((absoluteBytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+
+    return isNegative ? `-${formattedSize}` : formattedSize;
   };
 
   return (
@@ -177,8 +191,8 @@ export default component$(() => {
                 Storage Used~
                 <Sparkle class="w-3 sm:w-4 h-3 sm:h-4" />
               </p>
-              <p class="text-lg sm:text-2xl font-bold text-white">
-                {formatFileSize(userData.value.user.storageUsed)}
+              <p class="text-lg sm:text-xl font-bold text-white">
+                {formatFileSize(userData.value.user.storageUsed)} / {formatFileSize(userData.value.effectiveStorageLimit)}
               </p>
             </div>
           </div>
@@ -192,9 +206,8 @@ export default component$(() => {
               <p class="text-xs sm:text-sm font-medium text-pink-200 flex items-center gap-1">
                 Available Space~
                 <Sparkle class="w-3 sm:w-4 h-3 sm:h-4" />
-              </p>
-              <p class="text-lg sm:text-2xl font-bold text-white">
-                {formatFileSize(10737418240 - userData.value.user.storageUsed)}
+              </p>              <p class="text-lg sm:text-2xl font-bold text-white">
+                {formatFileSize(userData.value.effectiveStorageLimit - userData.value.user.storageUsed)}
               </p>
             </div>
           </div>

@@ -1,5 +1,5 @@
 import { component$, $ } from "@builder.io/qwik";
-import { routeLoader$ } from "@builder.io/qwik-city";
+import { routeLoader$, server$ } from "@builder.io/qwik-city";
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { db } from "~/lib/db";
 import { Camera, Key, Sparkle, Shield } from "lucide-icons-qwik";
@@ -24,12 +24,58 @@ export const useUserApiKeys = routeLoader$(async (requestEvent) => {
 
   // Get the base URL from the request
   const baseUrl = requestEvent.url.origin;
-
   return { user, baseUrl };
+});
+
+export const createApiKey = server$(async function (name: string) {
+  const session = this.sharedMap.get("session");
+
+  if (!session?.user?.email) {
+    throw new Error("Not authenticated");
+  }
+  // Find user
+  const user = await db.user.findUnique({
+    where: { email: session.user.email }
+  });
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  // Check if user is approved
+  if (!user.isApproved) {
+    throw new Error("Account pending approval. Please wait for admin approval before creating API keys.");
+  }
+
+  // Create new API key
+  const apiKey = await db.apiKey.create({
+    data: {
+      name,
+      userId: user.id
+    }
+  });
+
+  return {
+    id: apiKey.id,
+    key: apiKey.key,
+    name: apiKey.name,
+    createdAt: apiKey.createdAt
+  };
 });
 
 export default component$(() => {
   const userData = useUserApiKeys();
+
+  const handleCreateApiKey = $(async () => {
+    try {
+      await createApiKey("ShareX API Key");
+      window.location.reload();
+    } catch (error) {
+      console.error("Failed to create API key:", error);
+      alert("Failed to create API key");
+    }
+  });
+
   const generateShareXConfig = $((apiKey: string) => {
     const baseUrl = userData.value.baseUrl;
 
@@ -57,25 +103,9 @@ export default component$(() => {
     a.click();
     URL.revokeObjectURL(url);
   });
-
-  const createApiKey = $(async () => {
-    if (!userData.value.user) return;
-
-    const response = await fetch("/api/user/api-keys", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        userId: userData.value.user.id,
-        name: "ShareX API Key"
-      })
-    });
-
-    if (response.ok) {
-      window.location.reload();
-    }
-  });
   return (
-    <>      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
+    <>
+      <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-12">
         <div class="text-center mb-8 sm:mb-12">
           <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gradient-cute mb-4 flex items-center justify-center gap-2">
             ShareX Setup~
@@ -123,11 +153,13 @@ export default component$(() => {
                     <div class="text-2xl sm:text-3xl">🔑</div>
                   </div>
                   <p class="text-pink-200 mb-3 sm:mb-4 text-sm sm:text-base px-2">You need an API key to use ShareX with twink.forsale~ ✨</p>
+
+                  {/* Create API Key Form */}
                   <button
-                    onClick$={createApiKey}
-                    class="btn-cute text-white px-4 sm:px-6 py-2 sm:py-3 rounded-full font-medium text-sm sm:text-base"
+                    onClick$={handleCreateApiKey}
+                    class="btn-cute disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 sm:px-6 py-3 rounded-full font-medium text-sm sm:text-base w-full sm:w-auto"
                   >
-                    Create API Key~ 🚀
+                    Create API Key 🚀
                   </button>
                 </div>
               )}

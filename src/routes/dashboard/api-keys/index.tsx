@@ -145,7 +145,8 @@ export default component$(() => {
       alert("Failed to copy API key");
     }
   }); return (
-    <>      {/* Page Header */}
+    <>
+      {/* Page Header */}
       <div class="mb-6 sm:mb-8 text-center">
         <h1 class="text-3xl sm:text-4xl font-bold text-gradient-cute mb-3 flex items-center justify-center gap-2 flex-wrap">
           API Keys Manager
@@ -285,7 +286,8 @@ export default component$(() => {
                 </div>
               </div>
             ))}
-          </div>)}
+          </div>
+        )}
       </div>
 
       {/* ShareX Integration Info */}
@@ -300,7 +302,8 @@ export default component$(() => {
               Setup page
             </a>{" "}
             to download ShareX configuration files! (◕‿◕)♡
-          </p>          <div class="glass rounded-2xl p-3 sm:p-4 border border-cyan-400/20">
+          </p>
+          <div class="glass rounded-2xl p-3 sm:p-4 border border-cyan-400/20">
             <p class="text-xs sm:text-sm text-pink-200 mb-2">API Endpoint:</p>
             <code class="text-cyan-300 font-mono text-xs sm:text-sm break-all">{apiKeysData.value.origin}/api/upload</code>
           </div>

@@ -33,6 +33,8 @@
     "@builder.io/qwik": "^1.14.1",
     "@builder.io/qwik-city": "^1.14.1",
     "@eslint/js": "latest",
+    "@luminescent/ui": "^3.0.4",
+    "@luminescent/ui-qwik": "^3.0.4",
     "@tailwindcss/vite": "^4.1.8",
     "@types/node": "20.14.11",
     "eslint": "9.25.1",

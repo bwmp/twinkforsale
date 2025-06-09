@@ -2,6 +2,7 @@ import { component$, $, useContext } from "@builder.io/qwik";
 import { routeLoader$, Link } from "@builder.io/qwik-city";
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { db } from "~/lib/db";
+import { getServerEnvConfig } from "~/lib/env";
 import { Folder, Eye, HardDrive, Key, Settings, Share, File } from "lucide-icons-qwik";
 import { ImagePreviewContext } from "~/lib/image-preview-store";
 
@@ -11,6 +12,9 @@ export const useUserData = routeLoader$(async (requestEvent) => {
   if (!session?.user?.email) {
     throw requestEvent.redirect(302, "/");
   }
+
+  // Get environment configuration for storage limits
+  const config = getServerEnvConfig();
 
   // Find or create user
   let user = await db.user.findUnique({
@@ -50,13 +54,17 @@ export const useUserData = routeLoader$(async (requestEvent) => {
     where: { userId: user.id },
     _sum: { views: true }
   });
+
+  // Calculate the effective storage limit (user's custom limit or default from env)
+  const effectiveStorageLimit = user.maxStorageLimit || config.BASE_STORAGE_LIMIT;
+
   return {
     user,
     stats: {
       totalUploads,
       totalViews: totalViews._sum.views || 0,
       storageUsed: user.storageUsed,
-      maxStorage: 10737418240 // 10GB
+      maxStorage: effectiveStorageLimit
     },
     origin: requestEvent.url.origin
   };
@@ -84,7 +92,8 @@ export default component$(() => {
   };
 
   return (
-    <>      {/* Page Header */}
+    <>
+      {/* Page Header */}
       <div class="mb-6 sm:mb-8 text-center">
         <h1 class="text-3xl sm:text-4xl font-bold text-gradient-cute mb-3 flex items-center justify-center gap-2 sm:gap-3 flex-wrap">
           Welcome back, {userData.value.user.name || "cutie"}!
@@ -106,7 +115,8 @@ export default component$(() => {
             </div>
           </div>
         </div>
-      )}      {/* Admin Link */}
+      )}
+      {/* Admin Link */}
       {userData.value.user.isAdmin && (
         <div class="mb-6 sm:mb-8 text-center">
           <Link
@@ -117,7 +127,8 @@ export default component$(() => {
             Admin Dashboard
           </Link>
         </div>
-      )}{/* Stats Cards */}
+      )}
+      {/* Stats Cards */}
       <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
         <div class="card-cute p-4 sm:p-6 rounded-3xl">
           <div class="flex items-center">
@@ -164,7 +175,8 @@ export default component$(() => {
             </div>
           </div>
         </div>
-      </div>      {/* Quick Actions */}
+      </div>
+      {/* Quick Actions */}
       <div class="mb-6 sm:mb-8">
         <h2 class="text-xl sm:text-2xl font-bold text-gradient-cute mb-4 sm:mb-6 text-center flex items-center justify-center gap-2">
           Quick Actions
@@ -238,73 +250,79 @@ export default component$(() => {
             </p>
           </Link>
         </div>
-      </div>      {/* Recent Uploads */}
+      </div>
+      {/* Recent Uploads */}
       <div class="card-cute rounded-3xl p-4 sm:p-6">
         <h2 class="text-lg sm:text-xl font-bold text-gradient-cute mb-4 flex items-center gap-2">
           Recent Uploads
         </h2>
         {userData.value.user.uploads.length > 0 ? (
-          <div class="space-y-3">            {userData.value.user.uploads.map((upload) => (
-            <div key={upload.id} class="flex items-center justify-between p-4 glass rounded-2xl">
-              <div class="flex items-center space-x-3">                  <div class="flex-shrink-0">                {upload.mimeType.startsWith('image/') ? (<div
-                  class="w-12 h-12 rounded-xl overflow-hidden border border-pink-300/30 hover:border-pink-300/60 transition-all duration-300 cursor-pointer"                  onClick$={() => handleImageClick(upload.shortCode, upload.originalName)}
-                >
-                  <img
-                    src={`/f/${upload.shortCode}`}
-                    alt={upload.originalName}
-                    class="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
-                    width="48"
-                    height="48"
-                  />
+          <div class="space-y-3">
+            {userData.value.user.uploads.map((upload) => (
+              <div key={upload.id} class="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 glass rounded-2xl space-y-3 sm:space-y-0">
+                <div class="flex items-center space-x-3">
+                  <div class="flex-shrink-0">
+                    {upload.mimeType.startsWith('image/') ? (
+                      <div
+                        class="w-12 h-12 rounded-xl overflow-hidden border border-pink-300/30 hover:border-pink-300/60 transition-all duration-300 cursor-pointer" onClick$={() => handleImageClick(upload.shortCode, upload.originalName)}
+                      >
+                        <img
+                          src={`/f/${upload.shortCode}`}
+                          alt={upload.originalName}
+                          class="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
+                          width="48"
+                          height="48"
+                        />
+                      </div>
+                    ) : upload.mimeType.startsWith('video/') ? (
+                      <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-pink-500 rounded-xl flex items-center justify-center pulse-soft">
+                        <div class="text-lg">🎬</div>
+                      </div>
+                    ) : upload.mimeType.startsWith('audio/') ? (
+                      <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center pulse-soft">
+                        <div class="text-lg">🎵</div>
+                      </div>
+                    ) : upload.mimeType.includes('pdf') ? (
+                      <div class="w-12 h-12 bg-gradient-to-br from-red-600 to-red-500 rounded-xl flex items-center justify-center pulse-soft">
+                        <div class="text-lg">📄</div>
+                      </div>
+                    ) : upload.mimeType.includes('zip') || upload.mimeType.includes('rar') || upload.mimeType.includes('archive') ? (
+                      <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-yellow-500 rounded-xl flex items-center justify-center pulse-soft">
+                        <div class="text-lg">📦</div>
+                      </div>
+                    ) : upload.mimeType.includes('text') ? (
+                      <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center pulse-soft">
+                        <div class="text-lg">📝</div>
+                      </div>
+                    ) : (
+                      <div class="w-12 h-12 bg-gradient-to-br from-pink-500 to-purple-500 rounded-xl flex items-center justify-center pulse-soft">
+                        <div class="text-lg">📄</div>
+                      </div>
+                    )}
+                  </div>
+                  <div>
+                    <p class="text-white font-medium">{upload.originalName}</p>
+                    <p class="text-pink-200 text-sm">
+                      {upload.views} views • {new Date(upload.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
                 </div>
-                ) : upload.mimeType.startsWith('video/') ? (
-                  <div class="w-12 h-12 bg-gradient-to-br from-red-500 to-pink-500 rounded-xl flex items-center justify-center pulse-soft">
-                    <div class="text-lg">🎬</div>
-                  </div>
-                ) : upload.mimeType.startsWith('audio/') ? (
-                  <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center pulse-soft">
-                    <div class="text-lg">🎵</div>
-                  </div>
-                ) : upload.mimeType.includes('pdf') ? (
-                  <div class="w-12 h-12 bg-gradient-to-br from-red-600 to-red-500 rounded-xl flex items-center justify-center pulse-soft">
-                    <div class="text-lg">📄</div>
-                  </div>
-                ) : upload.mimeType.includes('zip') || upload.mimeType.includes('rar') || upload.mimeType.includes('archive') ? (
-                  <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-yellow-500 rounded-xl flex items-center justify-center pulse-soft">
-                    <div class="text-lg">📦</div>
-                  </div>
-                ) : upload.mimeType.includes('text') ? (
-                  <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center pulse-soft">
-                    <div class="text-lg">📝</div>
-                  </div>
-                ) : (
-                  <div class="w-12 h-12 bg-gradient-to-br from-pink-500 to-purple-500 rounded-xl flex items-center justify-center pulse-soft">
-                    <div class="text-lg">📄</div>
-                  </div>
-                )}
-              </div>
-                <div>
-                  <p class="text-white font-medium">{upload.originalName}</p>
-                  <p class="text-pink-200 text-sm">
-                    {upload.views} views • {new Date(upload.createdAt).toLocaleDateString()}
-                  </p>
+                <div class="flex space-x-2">
+                  <a
+                    href={`/f/${upload.shortCode}`}
+                    target="_blank"
+                    class="text-pink-400 hover:text-pink-300 text-sm px-3 py-1 rounded-full hover:bg-white/10 transition-all duration-300 text-center"
+                  >
+                    View <Eye class="inline w-4 h-4" />
+                  </a>                  <button
+                    onClick$={() => copyToClipboard(upload.shortCode)}
+                    class="text-pink-200 hover:text-white text-sm px-3 py-1 rounded-full hover:bg-white/10 transition-all duration-300"
+                  >
+                    Copy URL <File class="inline w-4 h-4" />
+                  </button>
                 </div>
-              </div>                <div class="flex space-x-2">
-                <a
-                  href={`/f/${upload.shortCode}`}
-                  target="_blank"
-                  class="text-pink-400 hover:text-pink-300 text-sm px-3 py-1 rounded-full hover:bg-white/10 transition-all duration-300"
-                >
-                  View <Eye class="inline w-4 h-4" />
-                </a>                  <button
-                  onClick$={() => copyToClipboard(upload.shortCode)}
-                  class="text-pink-200 hover:text-white text-sm px-3 py-1 rounded-full hover:bg-white/10 transition-all duration-300"
-                >
-                  Copy URL <File class="inline w-4 h-4" />
-                </button>
               </div>
-            </div>
-          ))}
+            ))}
           </div>
         ) : (
           <div class="text-center py-12">
@@ -314,7 +332,9 @@ export default component$(() => {
               href="/setup/sharex"
               class="btn-cute text-white px-6 py-3 rounded-full font-medium inline-block"
             >
-              Setup ShareX to get started 🚀            </a>          </div>
+              Setup ShareX to get started 🚀
+            </a>
+          </div>
         )}
       </div>
     </>

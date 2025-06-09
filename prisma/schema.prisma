@@ -70,6 +70,7 @@ model User {
   // Upload settings
   maxUploads    Int     @default(100)
   maxFileSize   Int     @default(10485760) // 10MB
+  maxStorageLimit Int?  // Custom storage limit, null means use default from env
   storageUsed   Int     @default(0)
   
   // Discord embed settings

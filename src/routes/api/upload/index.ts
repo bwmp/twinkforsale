@@ -44,8 +44,7 @@ export const onPost: RequestHandler = async ({ request, json }) => {
   if (!validation.isValid) {
     throw json(400, { error: validation.error });
   }
-  
-  // Check user limits if authenticated
+    // Check user limits if authenticated
   if (userId) {
     const user = await db.user.findUnique({
       where: { id: userId },
@@ -62,10 +61,11 @@ export const onPost: RequestHandler = async ({ request, json }) => {
       if (file.size > user.maxFileSize) {
         throw json(413, { error: "File too large" });
       }
-      
-      // Check storage limit (10GB default)
+        // Check storage limit (user's custom limit or env default)
+      const config = getEnvConfig();
+      const userStorageLimit = user.maxStorageLimit || config.BASE_STORAGE_LIMIT;
       const totalStorage = user.storageUsed + file.size;
-      if (totalStorage > 10737418240) { // 10GB
+      if (totalStorage > userStorageLimit) {
         throw json(413, { error: "Storage quota exceeded" });
       }
     }
