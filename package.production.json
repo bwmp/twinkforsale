@@ -1,0 +1,22 @@
+# Production deployment package.json
+# This file should be used on your VPS after copying the built server/ and dist/ folders
+{
+  "name": "twink-for-sale-production",
+  "version": "1.0.0",
+  "type": "module",
+  "engines": {
+    "node": "^18.17.0 || ^20.3.0 || >=21.0.0"
+  },
+  "scripts": {
+    "start": "NODE_ENV=production node server/entry.node-server.js",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate deploy"
+  },
+  "dependencies": {
+    "@auth/prisma-adapter": "^2.9.1",
+    "@auth/qwik": "0.5.4",
+    "@prisma/client": "^6.9.0",
+    "prisma": "^6.9.0",
+    "nanoid": "^5.1.5"
+  }
+}
