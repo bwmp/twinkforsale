@@ -5,7 +5,7 @@ import fs from "fs";
 import path from "path";
 
 // Generate Discord embed HTML
-function generateDiscordEmbed(upload: any, user: any, baseUrl: string) {
+function generateDiscordEmbed(upload: any, user: any, baseUrl: string, userStats?: { totalFiles: number, totalStorage: number, totalViews: number }) {
   const embedTitle = user?.embedTitle || "File Upload";
   const embedDescription = user?.embedDescription || "Uploaded via twink.forsale";
   const embedColor = user?.embedColor || "#8B5CF6";
@@ -13,7 +13,7 @@ function generateDiscordEmbed(upload: any, user: any, baseUrl: string) {
   const embedFooter = user?.embedFooter || "twink.forsale";
   const showFileInfo = user?.showFileInfo !== false;
   const showUploadDate = user?.showUploadDate !== false;
-    // Build description with optional file info
+  const showUserStats = user?.showUserStats === true;  // Build description with optional file info
   let description = embedDescription;
   if (showFileInfo) {
     const fileSize = (upload.size / 1024 / 1024).toFixed(2);
@@ -23,10 +23,25 @@ function generateDiscordEmbed(upload: any, user: any, baseUrl: string) {
     const uploadDate = new Date(upload.createdAt).toLocaleDateString();
     description += `<br>📅 Uploaded ${uploadDate}`;
   }
-    const domain = user?.customDomain || baseUrl.replace(/^https?:\/\//, '');
-  
-  // Create plain text version for meta tags (Discord doesn't support HTML in meta descriptions)
-  const plainDescription = description.replace(/<br>/g, '\n').replace(/<\/?strong>/g, '**');
+  if (showUserStats && userStats) {
+    const storageUsedMB = (userStats.totalStorage / 1024 / 1024).toFixed(2);
+    description += `<br><br>👤 <strong>User Stats</strong><br>📊 ${userStats.totalFiles} files uploaded • ${storageUsedMB} MB used<br>👀 ${userStats.totalViews.toLocaleString()} total views`;
+  }
+  const domain = user?.customDomain || baseUrl.replace(/^https?:\/\//, '');
+    // Create plain text version for meta tags (Discord doesn't support HTML or markdown)
+  let plainDescription = embedDescription;
+  if (showFileInfo) {
+    const fileSize = (upload.size / 1024 / 1024).toFixed(2);
+    plainDescription += ` • ${upload.originalName} • ${fileSize} MB • ${upload.mimeType}<br`;
+  }
+  if (showUploadDate) {
+    const uploadDate = new Date(upload.createdAt).toLocaleDateString();
+    plainDescription += ` • Uploaded ${uploadDate}<br`;
+  }
+  if (showUserStats && userStats) {
+    const storageUsedMB = (userStats.totalStorage / 1024 / 1024).toFixed(2);
+    plainDescription += ` • ${userStats.totalFiles} files • ${storageUsedMB} MB used • ${userStats.totalViews.toLocaleString()} views`;
+  }
   
   return `<!DOCTYPE html>
 <html>
@@ -195,12 +210,34 @@ export const onRequest: RequestHandler = async ({ params, send, status, url, req
       });
       
       send(response);
-      return;
-    } else {
+      return;    } else {
       // Generate and serve Discord embed HTML
       const config = getServerEnvConfig();
       const baseUrl = config.BASE_URL;
-      const embedHtml = generateDiscordEmbed(upload, upload.user, baseUrl);
+      
+      // Fetch user statistics if the user wants to show them
+      let userStats = undefined;
+      if (upload.user?.showUserStats) {
+        const [totalFiles, totalStorageResult, totalViewsResult] = await Promise.all([
+          db.upload.count({ where: { userId: upload.userId } }),
+          db.upload.aggregate({
+            where: { userId: upload.userId },
+            _sum: { size: true }
+          }),
+          db.upload.aggregate({
+            where: { userId: upload.userId },
+            _sum: { views: true }
+          })
+        ]);
+        
+        userStats = {
+          totalFiles,
+          totalStorage: totalStorageResult._sum.size || 0,
+          totalViews: totalViewsResult._sum.views || 0
+        };
+      }
+      
+      const embedHtml = generateDiscordEmbed(upload, upload.user, baseUrl, userStats);
         const response = new Response(embedHtml, {
         headers: {
           "Content-Type": "text/html",

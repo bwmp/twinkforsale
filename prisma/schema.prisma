@@ -80,6 +80,7 @@ model User {
   embedFooter   String?   @default("twink.forsale")
   showFileInfo  Boolean   @default(true) // Show file size, type etc
   showUploadDate Boolean  @default(true)
+  showUserStats Boolean   @default(false) // Show user stats (files uploaded, storage used, total views)
   customDomain  String?   // Custom domain for embeds
   
   // Custom domain settings

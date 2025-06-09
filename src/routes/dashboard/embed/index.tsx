@@ -26,9 +26,9 @@ export const useUserLoader = routeLoader$(async (requestEvent) => {
       embedTitle: user.embedTitle,
       embedDescription: user.embedDescription,
       embedColor: user.embedColor,      embedAuthor: user.embedAuthor,
-      embedFooter: user.embedFooter,
-      showFileInfo: Boolean(user.showFileInfo),
+      embedFooter: user.embedFooter,      showFileInfo: Boolean(user.showFileInfo),
       showUploadDate: Boolean(user.showUploadDate),
+      showUserStats: Boolean(user.showUserStats),
       customDomain: user.customDomain,
       customUploadDomain: user.customUploadDomain,
       useCustomWords: Boolean(user.useCustomWords)
@@ -57,10 +57,10 @@ export const useUpdateEmbedSettings = routeAction$(
       data: {
         embedTitle: values.embedTitle || null,
         embedDescription: values.embedDescription || null,
-        embedColor: values.embedColor || null,        embedAuthor: values.embedAuthor || null,
-        embedFooter: values.embedFooter || null,
+        embedColor: values.embedColor || null,        embedAuthor: values.embedAuthor || null,        embedFooter: values.embedFooter || null,
         showFileInfo: Boolean(values.showFileInfo),
         showUploadDate: Boolean(values.showUploadDate),
+        showUserStats: Boolean(values.showUserStats),
         customDomain: values.customDomain || null,
         customUploadDomain: values.customUploadDomain || null,
         useCustomWords: Boolean(values.useCustomWords)
@@ -73,9 +73,9 @@ export const useUpdateEmbedSettings = routeAction$(
     embedTitle: z.string().optional(),
     embedDescription: z.string().optional(),
     embedColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
-    embedAuthor: z.string().optional(),    embedFooter: z.string().optional(),
-    showFileInfo: z.preprocess((val) => val === "on" || val === true, z.boolean().default(false)),
+    embedAuthor: z.string().optional(),    embedFooter: z.string().optional(),    showFileInfo: z.preprocess((val) => val === "on" || val === true, z.boolean().default(false)),
     showUploadDate: z.preprocess((val) => val === "on" || val === true, z.boolean().default(false)),
+    showUserStats: z.preprocess((val) => val === "on" || val === true, z.boolean().default(false)),
     customDomain: z.string().optional(),
     customUploadDomain: z.string().optional(),
     useCustomWords: z.preprocess((val) => val === "on" || val === true, z.boolean().default(false))
@@ -86,10 +86,10 @@ export default component$(() => {
   const userData = useUserLoader();
   const updateAction = useUpdateEmbedSettings();
   const previewCode = useSignal("");
-  
-  // Reactive form state
+    // Reactive form state
   const showFileInfo = useSignal(userData.value.user.showFileInfo);
   const showUploadDate = useSignal(userData.value.user.showUploadDate);
+  const showUserStats = useSignal(userData.value.user.showUserStats);
   const useCustomWords = useSignal(userData.value.user.useCustomWords);
 
   // Initialize preview code with user data (non-reactive)
@@ -103,9 +103,11 @@ export default component$(() => {
   let initialDesc = description;
   if (user.showFileInfo) {
     initialDesc += "\\n\\n📁 **example-image.png**\\n📏 2.34 MB • image/png";
-  }
-  if (user.showUploadDate) {
+  }  if (user.showUploadDate) {
     initialDesc += "\\n📅 Uploaded " + new Date().toLocaleDateString();
+  }
+  if (user.showUserStats) {
+    initialDesc += "\\n\\n👤 **User Stats**\\n📊 127 files uploaded • 2.1 GB used\\n👀 5,432 total views";
   }
 
   previewCode.value = `{
@@ -136,9 +138,11 @@ export default component$(() => {
     let desc = description;
     if (showFileInfo.value) {
       desc += "\\n\\n📁 **example-image.png**\\n📏 2.34 MB • image/png";
-    }
-    if (showUploadDate.value) {
+    }    if (showUploadDate.value) {
       desc += "\\n📅 Uploaded " + new Date().toLocaleDateString();
+    }
+    if (showUserStats.value) {
+      desc += "\\n\\n👤 **User Stats**\\n📊 127 files uploaded • 2.1 GB used\\n👀 5,432 total views";
     }
 
     previewCode.value = `{
@@ -285,9 +289,7 @@ export default component$(() => {
                     }}
                   />
                   <span class="text-xs sm:text-sm text-pink-200">Show file information (name, size, type)~ 📊</span>
-                </label>
-
-                <label class="flex items-center p-3 glass rounded-full hover:bg-pink-500/10 transition-all duration-300 cursor-pointer">
+                </label>                <label class="flex items-center p-3 glass rounded-full hover:bg-pink-500/10 transition-all duration-300 cursor-pointer">
                   <input
                     type="checkbox"
                     name="showUploadDate"
@@ -299,7 +301,21 @@ export default component$(() => {
                     }}
                   />
                   <span class="text-xs sm:text-sm text-pink-200">Show upload date~ 📅</span>
-                </label>                <label class="flex items-center p-3 glass rounded-full hover:bg-pink-500/10 transition-all duration-300 cursor-pointer">
+                </label>
+
+                <label class="flex items-center p-3 glass rounded-full hover:bg-pink-500/10 transition-all duration-300 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="showUserStats"
+                    checked={showUserStats.value}
+                    class="mr-2 sm:mr-3 w-4 sm:w-5 h-4 sm:h-5 text-pink-500 bg-transparent border-2 border-pink-300/50 rounded-lg focus:ring-pink-500/50 accent-pink-500"
+                    onChange$={(event) => {
+                      showUserStats.value = (event.target as HTMLInputElement).checked;
+                      generatePreview();
+                    }}
+                  />
+                  <span class="text-xs sm:text-sm text-pink-200">Show user statistics (files uploaded, storage used, total views)~ 📊</span>
+                </label><label class="flex items-center p-3 glass rounded-full hover:bg-pink-500/10 transition-all duration-300 cursor-pointer">
                   <input
                     type="checkbox"
                     name="useCustomWords"
