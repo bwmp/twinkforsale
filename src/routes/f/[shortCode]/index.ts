@@ -13,19 +13,20 @@ function generateDiscordEmbed(upload: any, user: any, baseUrl: string) {
   const embedFooter = user?.embedFooter || "twink.forsale";
   const showFileInfo = user?.showFileInfo !== false;
   const showUploadDate = user?.showUploadDate !== false;
-  
-  // Build description with optional file info
+    // Build description with optional file info
   let description = embedDescription;
   if (showFileInfo) {
     const fileSize = (upload.size / 1024 / 1024).toFixed(2);
-    description += `\n\n📁 **${upload.originalName}**\n📏 ${fileSize} MB • ${upload.mimeType}`;
+    description += `<br><br>📁 <strong>${upload.originalName}</strong><br>📏 ${fileSize} MB • ${upload.mimeType}`;
   }
   if (showUploadDate) {
     const uploadDate = new Date(upload.createdAt).toLocaleDateString();
-    description += `\n📅 Uploaded ${uploadDate}`;
+    description += `<br>📅 Uploaded ${uploadDate}`;
   }
+    const domain = user?.customDomain || baseUrl.replace(/^https?:\/\//, '');
   
-  const domain = user?.customDomain || baseUrl.replace(/^https?:\/\//, '');
+  // Create plain text version for meta tags (Discord doesn't support HTML in meta descriptions)
+  const plainDescription = description.replace(/<br>/g, '\n').replace(/<\/?strong>/g, '**');
   
   return `<!DOCTYPE html>
 <html>
@@ -37,14 +38,14 @@ function generateDiscordEmbed(upload: any, user: any, baseUrl: string) {
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="${domain}">
   <meta property="og:title" content="${embedTitle}">
-  <meta property="og:description" content="${description.replace(/\n/g, ' ')}">
+  <meta property="og:description" content="${plainDescription.replace(/\n/g, ' ')}">
   <meta property="og:url" content="${upload.url}">
   <meta name="theme-color" content="${embedColor}">
   
   <!-- Twitter Card Meta Tags -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${embedTitle}">
-  <meta name="twitter:description" content="${description.replace(/\n/g, ' ')}">
+  <meta name="twitter:description" content="${plainDescription.replace(/\n/g, ' ')}">
     ${upload.mimeType.startsWith('image/') ? `
   <meta property="og:image" content="${upload.url}?direct=true">
   <meta property="og:image:type" content="${upload.mimeType}">
@@ -114,9 +115,9 @@ function generateDiscordEmbed(upload: any, user: any, baseUrl: string) {
     }
   </style>
 </head>
-<body>
-  <div class="container">
+<body>  <div class="container">
     <h1>${embedTitle}</h1>
+    ${description !== embedTitle ? `<p style="color: #ccc; margin-bottom: 20px;">${description}</p>` : ''}
     <div class="file-preview">
       ${upload.mimeType.startsWith('image/') ? 
         `<img src="${upload.url}?direct=true" alt="${upload.originalName}" />` :
