@@ -20,6 +20,7 @@
     "lint": "eslint \"src/**/*.ts*\"",
     "postinstall": "prisma generate",
     "preview": "qwik build preview && vite preview --open",
+    "preview:server": "qwik build preview && vite preview --host 0.0.0.0",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:migrate:prod": "prisma migrate deploy",
