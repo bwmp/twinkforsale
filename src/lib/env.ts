@@ -3,7 +3,7 @@ export const getEnvConfig = () => {
   return {
     UPLOAD_DIR: process.env.UPLOAD_DIR || './uploads',
     MAX_FILE_SIZE: parseInt(process.env.MAX_FILE_SIZE || '10485760'), // 10MB
-    BASE_URL: process.env.BASE_URL || 'http://localhost:5173',
+    BASE_URL: process.env.BASE_URL || 'https://twink.forsale',
     ALLOWED_MIME_TYPES: (process.env.ALLOWED_MIME_TYPES || 
       'image/png,image/jpeg,image/gif,image/webp,text/plain,application/pdf'
     ).split(','),
@@ -16,7 +16,7 @@ export const getServerEnvConfig = () => {
   return {
     UPLOAD_DIR: process.env.UPLOAD_DIR || './uploads',
     MAX_FILE_SIZE: parseInt(process.env.MAX_FILE_SIZE || '10485760'),
-    BASE_URL: process.env.BASE_URL || 'http://localhost:5173',
+    BASE_URL: process.env.BASE_URL || 'https://twink.forsale',
     ALLOWED_MIME_TYPES: (process.env.ALLOWED_MIME_TYPES || 
       'image/png,image/jpeg,image/gif,image/webp,text/plain,application/pdf'
     ).split(','),
