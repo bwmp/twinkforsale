@@ -3,21 +3,23 @@ import { db } from "~/lib/db";
 import { getServerEnvConfig } from "~/lib/env";
 
 export const onGet: RequestHandler = async ({ url, json }) => {
+  const requestUrl = url.searchParams.get('url');
+
+  if (!requestUrl) {
+    throw json(400, { error: "URL parameter is required" });
+  }
+
+  // Extract shortCode from the URL
+  const urlPattern = /\/f\/([^/?]+)/;
+  const match = requestUrl.match(urlPattern);
+
+  if (!match) {
+    throw json(400, { error: "Invalid URL format" });
+  }
+
+  const shortCode = match[1];
+
   try {
-    const requestUrl = url.searchParams.get('url');    if (!requestUrl) {
-      throw json(400, { error: "URL parameter is required" });
-    }
-
-    // Extract shortCode from the URL
-    const urlPattern = /\/f\/([^/?]+)/;
-    const match = requestUrl.match(urlPattern);
-    
-    if (!match) {
-      throw json(400, { error: "Invalid URL format" });
-    }
-
-    const shortCode = match[1];
-
     // Find upload in database with user info
     const upload = await db.upload.findUnique({
       where: { shortCode },
@@ -25,7 +27,7 @@ export const onGet: RequestHandler = async ({ url, json }) => {
     });
 
     if (!upload) {
-      throw json(400, { error: "Upload not found" });
+      throw json(404, { error: "Upload not found" });
     }
 
     const config = getServerEnvConfig();
@@ -34,11 +36,11 @@ export const onGet: RequestHandler = async ({ url, json }) => {
     // Helper function to replace placeholders
     const replacePlaceholders = (text?: string | null, userStats?: { totalFiles: number, totalStorage: number, totalViews: number }) => {
       if (!text) return text;
-      
+
       const fileSize = (upload.size / 1024 / 1024).toFixed(2);
       const uploadDate = new Date(upload.createdAt).toLocaleDateString();
       const storageUsedMB = userStats ? (userStats.totalStorage / 1024 / 1024).toFixed(2) : '0';
-      
+
       return text
         .replace(/\{filename\}/g, upload.originalName)
         .replace(/\{filesize\}/g, `${fileSize} MB`)
@@ -65,7 +67,7 @@ export const onGet: RequestHandler = async ({ url, json }) => {
           _sum: { views: true }
         })
       ]);
-      
+
       userStats = {
         totalFiles,
         totalStorage: totalStorageResult._sum.size || 0,
@@ -75,7 +77,7 @@ export const onGet: RequestHandler = async ({ url, json }) => {
 
     const embedTitle = replacePlaceholders(upload.user?.embedTitle, userStats) || "File Upload";
     const embedAuthor = upload.user?.embedAuthor || upload.user?.name;
-    
+
     // Build provider name with user stats if enabled
     let providerName = upload.user?.embedFooter || "twink.forsale";
     if (upload.user?.showUserStats && userStats) {
@@ -92,9 +94,7 @@ export const onGet: RequestHandler = async ({ url, json }) => {
       provider_url: baseUrl,
       width: 400,
       height: 300
-    };
-
-    // Add author info if available
+    };    // Add author info if available
     if (embedAuthor) {
       oembedResponse.author_name = embedAuthor;
       oembedResponse.author_url = requestUrl;
@@ -108,11 +108,12 @@ export const onGet: RequestHandler = async ({ url, json }) => {
     }
 
     throw json(200, oembedResponse);
-      } catch (error) {
-    if (error && typeof error === 'object' && 'status' in error) {
-      // This is already a JSON response error from above
+  } catch (error) {
+    // Check if this is an AbortMessage (successful json response) - just re-throw it
+    if (error && typeof error === 'object' && error.constructor.name === 'AbortMessage') {
       throw error;
     }
+    
     console.error("oEmbed error:", error);
     throw json(500, { error: "Internal server error" });
   }
