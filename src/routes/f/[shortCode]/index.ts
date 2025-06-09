@@ -32,11 +32,11 @@ function generateDiscordEmbed(upload: any, user: any, baseUrl: string, userStats
   let plainDescription = embedDescription;
   if (showFileInfo) {
     const fileSize = (upload.size / 1024 / 1024).toFixed(2);
-    plainDescription += ` • ${upload.originalName} • ${fileSize} MB • ${upload.mimeType}<br`;
+    plainDescription += ` • ${upload.originalName} • ${fileSize} MB • ${upload.mimeType}<br>`;
   }
   if (showUploadDate) {
     const uploadDate = new Date(upload.createdAt).toLocaleDateString();
-    plainDescription += ` • Uploaded ${uploadDate}<br`;
+    plainDescription += ` • Uploaded ${uploadDate}<br>`;
   }
   if (showUserStats && userStats) {
     const storageUsedMB = (userStats.totalStorage / 1024 / 1024).toFixed(2);
