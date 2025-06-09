@@ -1,4 +1,4 @@
-import { component$, useSignal, $ } from "@builder.io/qwik";
+import { component$, useSignal, $, useTask$ } from "@builder.io/qwik";
 import { routeLoader$, Form, routeAction$, z, zod$ } from "@builder.io/qwik-city";
 import { db } from "~/lib/db";
 import { Palette } from "lucide-icons-qwik";
@@ -25,8 +25,8 @@ export const useUserLoader = routeLoader$(async (requestEvent) => {
       email: user.email,
       embedTitle: user.embedTitle,
       embedDescription: user.embedDescription,
-      embedColor: user.embedColor,      embedAuthor: user.embedAuthor,
-      embedFooter: user.embedFooter,      showFileInfo: Boolean(user.showFileInfo),
+      embedColor: user.embedColor, embedAuthor: user.embedAuthor,
+      embedFooter: user.embedFooter, showFileInfo: Boolean(user.showFileInfo),
       showUploadDate: Boolean(user.showUploadDate),
       showUserStats: Boolean(user.showUserStats),
       customDomain: user.customDomain,
@@ -57,7 +57,7 @@ export const useUpdateEmbedSettings = routeAction$(
       data: {
         embedTitle: values.embedTitle || null,
         embedDescription: values.embedDescription || null,
-        embedColor: values.embedColor || null,        embedAuthor: values.embedAuthor || null,        embedFooter: values.embedFooter || null,
+        embedColor: values.embedColor || null, embedAuthor: values.embedAuthor || null, embedFooter: values.embedFooter || null,
         showFileInfo: Boolean(values.showFileInfo),
         showUploadDate: Boolean(values.showUploadDate),
         showUserStats: Boolean(values.showUserStats),
@@ -73,7 +73,7 @@ export const useUpdateEmbedSettings = routeAction$(
     embedTitle: z.string().optional(),
     embedDescription: z.string().optional(),
     embedColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
-    embedAuthor: z.string().optional(),    embedFooter: z.string().optional(),    showFileInfo: z.preprocess((val) => val === "on" || val === true, z.boolean().default(false)),
+    embedAuthor: z.string().optional(), embedFooter: z.string().optional(), showFileInfo: z.preprocess((val) => val === "on" || val === true, z.boolean().default(false)),
     showUploadDate: z.preprocess((val) => val === "on" || val === true, z.boolean().default(false)),
     showUserStats: z.preprocess((val) => val === "on" || val === true, z.boolean().default(false)),
     customDomain: z.string().optional(),
@@ -85,50 +85,68 @@ export const useUpdateEmbedSettings = routeAction$(
 export default component$(() => {
   const userData = useUserLoader();
   const updateAction = useUpdateEmbedSettings();
-  const previewCode = useSignal("");
-    // Reactive form state
+  const previewCode = useSignal("");  // Reactive form state
   const showFileInfo = useSignal(userData.value.user.showFileInfo);
   const showUploadDate = useSignal(userData.value.user.showUploadDate);
   const showUserStats = useSignal(userData.value.user.showUserStats);
   const useCustomWords = useSignal(userData.value.user.useCustomWords);
-  // Initialize preview code with user data (non-reactive)
+  
+  // Form field signals to track current values
+  const titleValue = useSignal(userData.value.user.embedTitle || "");
+  const descriptionValue = useSignal(userData.value.user.embedDescription || "");
+  const colorValue = useSignal(userData.value.user.embedColor || "#8B5CF6");
+  const authorValue = useSignal(userData.value.user.embedAuthor || "");
+  const footerValue = useSignal(userData.value.user.embedFooter || "");  // Initialize preview code with user data (non-reactive)
   const user = userData.value.user;
-  const title = user.embedTitle || "File Upload";
-  const description = user.embedDescription || "Uploaded via twink.forsale";
-  const color = user.embedColor || "#8B5CF6";
-  const author = user.embedAuthor || user.name || "User";
-  const footer = user.embedFooter || "twink.forsale";
 
-  // Replace placeholders with example values for initial preview
-  const replacedTitle = title
-    .replace(/\{filename\}/g, "example-image.png")
-    .replace(/\{filesize\}/g, "2.34 MB")
-    .replace(/\{filetype\}/g, "image/png")
-    .replace(/\{uploaddate\}/g, new Date().toLocaleDateString())
-    .replace(/\{views\}/g, "42")
-    .replace(/\{username\}/g, user.name || "User")
-    .replace(/\{totalfiles\}/g, "127")
-    .replace(/\{totalstorage\}/g, "2.1 GB")
-    .replace(/\{totalviews\}/g, "5,432");
+  // Use useTask$ to set initial preview without violating Qwik's reactivity rules
+  useTask$(() => {
+    const title = user.embedTitle || "File Upload";
+    const description = user.embedDescription || "Uploaded via twink.forsale";
+    const color = user.embedColor || "#8B5CF6";
+    const author = user.embedAuthor || user.name || "User";
+    const footer = user.embedFooter || "twink.forsale";
 
-  let initialDesc = description
-    .replace(/\{filename\}/g, "example-image.png")
-    .replace(/\{filesize\}/g, "2.34 MB")
-    .replace(/\{filetype\}/g, "image/png")
-    .replace(/\{uploaddate\}/g, new Date().toLocaleDateString())
-    .replace(/\{views\}/g, "42")
-    .replace(/\{username\}/g, user.name || "User")
-    .replace(/\{totalfiles\}/g, "127")
-    .replace(/\{totalstorage\}/g, "2.1 GB")
-    .replace(/\{totalviews\}/g, "5,432");
+    // Replace placeholders with example values for initial preview
+    const replacedTitle = title
+      .replace(/\{filename\}/g, "example-image.png")
+      .replace(/\{filesize\}/g, "2.34 MB")
+      .replace(/\{filetype\}/g, "image/png")
+      .replace(/\{uploaddate\}/g, new Date().toLocaleDateString())
+      .replace(/\{views\}/g, "42")
+      .replace(/\{username\}/g, user.name || "User")
+      .replace(/\{totalfiles\}/g, "127")
+      .replace(/\{totalstorage\}/g, "2.1 GB")
+      .replace(/\{totalviews\}/g, "5,432");
 
-  if (user.showFileInfo) {
-    initialDesc += "\\n\\n📁 **example-image.png**\\n📏 2.34 MB • image/png";
-  }  if (user.showUploadDate) {
-    initialDesc += "\\n📅 Uploaded " + new Date().toLocaleDateString();
-  }
+    let initialDesc = description
+      .replace(/\{filename\}/g, "example-image.png")
+      .replace(/\{filesize\}/g, "2.34 MB")
+      .replace(/\{filetype\}/g, "image/png")
+      .replace(/\{uploaddate\}/g, new Date().toLocaleDateString())
+      .replace(/\{views\}/g, "42")
+      .replace(/\{username\}/g, user.name || "User")
+      .replace(/\{totalfiles\}/g, "127")
+      .replace(/\{totalstorage\}/g, "2.1 GB")
+      .replace(/\{totalviews\}/g, "5,432");
 
-  previewCode.value = `{
+    if (user.showFileInfo) {
+      initialDesc += "\\n\\n📁 **example-image.png**\\n📏 2.34 MB • image/png";
+    }
+    if (user.showUploadDate) {
+      initialDesc += "\\n📅 Uploaded " + new Date().toLocaleDateString();
+    }
+    if (user.showUserStats) {
+      initialDesc += "\\n\\n📊 127 files uploaded • 2.1 GB used • 5,432 total views";
+    }
+
+    // Set initial footer based on user stats setting
+    let initialFooter = footer;
+    if (user.showUserStats) {
+      initialFooter = "📁 127 files   💾 2.1 GB   👁️ 5,432 views";
+    }
+
+    previewCode.value = `{
   "type": "rich",
   "title": "${replacedTitle}",
   "description": "${initialDesc}",
@@ -137,20 +155,19 @@ export default component$(() => {
     "name": "${author}"
   },
   "footer": {
-    "text": "${footer}"
+    "text": "${initialFooter}"
   },
   "image": {
     "url": "https://twink.forsale/f/abc123"
   }
 }`;
-  // Function to generate preview from form data (for live updates)
+  });
   const generatePreview = $(() => {
-    const formData = new FormData(document.querySelector('form') as HTMLFormElement);
-    const title = (formData.get('embedTitle') as string) || "File Upload";
-    const description = (formData.get('embedDescription') as string) || "Uploaded via twink.forsale";
-    const color = (formData.get('embedColor') as string) || "#8B5CF6";
-    const author = (formData.get('embedAuthor') as string) || userData.value.user.name;
-    const footer = (formData.get('embedFooter') as string) || "twink.forsale";
+    const title = titleValue.value || "File Upload";
+    const description = descriptionValue.value || "Uploaded via twink.forsale";
+    const color = colorValue.value || "#8B5CF6";
+    const author = authorValue.value || userData.value.user.name || "User";
+    const footer = footerValue.value || "twink.forsale";
 
     // Replace placeholders with example values
     const replacedTitle = title
@@ -173,15 +190,20 @@ export default component$(() => {
       .replace(/\{username\}/g, userData.value.user.name || "User")
       .replace(/\{totalfiles\}/g, "127")
       .replace(/\{totalstorage\}/g, "2.1 GB")
-      .replace(/\{totalviews\}/g, "5,432");
-
-    if (showFileInfo.value) {
+      .replace(/\{totalviews\}/g, "5,432");    if (showFileInfo.value) {
       desc += "\\n\\n📁 **example-image.png**\\n📏 2.34 MB • image/png";
-    }    if (showUploadDate.value) {
+    }
+    if (showUploadDate.value) {
       desc += "\\n📅 Uploaded " + new Date().toLocaleDateString();
     }
     if (showUserStats.value) {
-      desc += "\\n\\n👤 **User Stats**\\n📊 127 files uploaded • 2.1 GB used\\n👀 5,432 total views";
+      desc += "\\n\\n📊 127 files uploaded • 2.1 GB used • 5,432 total views";
+    }
+
+    // Update footer based on user stats setting
+    let finalFooter = footer;
+    if (showUserStats.value) {
+      finalFooter = "📁 127 files   💾 2.1 GB   👁️ 5,432 views";
     }
 
     previewCode.value = `{
@@ -193,13 +215,13 @@ export default component$(() => {
     "name": "${author}"
   },
   "footer": {
-    "text": "${footer}"
+    "text": "${finalFooter}"
   },
   "image": {
     "url": "https://twink.forsale/f/abc123"
   }
 }`;
-  });return (
+  }); return (
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div class="mb-6 sm:mb-8 text-center">
         <h1 class="text-3xl sm:text-4xl font-bold text-gradient-cute mb-3 flex items-center justify-center gap-2 flex-wrap">
@@ -219,30 +241,35 @@ export default component$(() => {
           </h2>
           <Form action={updateAction} onSubmit$={generatePreview}>
             <div class="space-y-4 sm:space-y-6">              <div>
-                <label class="block text-xs sm:text-sm font-medium text-pink-200 mb-2">
-                  Embed Title~ 💝
-                </label>
-                <input
-                  type="text"
-                  name="embedTitle"
-                  value={userData.value.user.embedTitle || ""}
-                  placeholder="File Upload~ ✨"
-                  class="w-full px-3 sm:px-4 py-2 sm:py-3 glass rounded-full text-white placeholder-pink-300/60 focus:outline-none focus:ring-2 focus:ring-pink-500/50 transition-all duration-300 text-sm sm:text-base"
-                  onInput$={generatePreview}
-                />
-                <p class="text-xs text-pink-300/70 mt-2 pl-3 sm:pl-4">
-                  Use placeholders: {'{filename}'}, {'{filesize}'}, {'{filetype}'}, {'{uploaddate}'}, {'{views}'}, {'{username}'}, {'{totalfiles}'}, {'{totalstorage}'}, {'{totalviews}'}~ ✨
-                </p>
-              </div>              <div>
+              <label class="block text-xs sm:text-sm font-medium text-pink-200 mb-2">
+                Embed Title~ 💝
+              </label>              <input
+                type="text"
+                name="embedTitle"
+                value={titleValue.value}
+                placeholder="File Upload~ ✨"
+                class="w-full px-3 sm:px-4 py-2 sm:py-3 glass rounded-full text-white placeholder-pink-300/60 focus:outline-none focus:ring-2 focus:ring-pink-500/50 transition-all duration-300 text-sm sm:text-base"
+                onInput$={(event) => {
+                  titleValue.value = (event.target as HTMLInputElement).value;
+                  generatePreview();
+                }}
+              />
+              <p class="text-xs text-pink-300/70 mt-2 pl-3 sm:pl-4">
+                Use placeholders: {'{filename}'}, {'{filesize}'}, {'{filetype}'}, {'{uploaddate}'}, {'{views}'}, {'{username}'}, {'{totalfiles}'}, {'{totalstorage}'}, {'{totalviews}'}~ ✨
+              </p>
+            </div>              <div>
                 <label class="block text-xs sm:text-sm font-medium text-pink-200 mb-2">
                   Description~ 📝
                 </label>                <textarea
                   name="embedDescription"
-                  value={userData.value.user.embedDescription || ""}
+                  value={descriptionValue.value}
                   placeholder="Uploaded via twink.forsale~ (◕‿◕)♡"
                   rows={3}
                   class="w-full px-3 sm:px-4 py-2 sm:py-3 glass rounded-2xl text-white placeholder-pink-300/60 focus:outline-none focus:ring-2 focus:ring-pink-500/50 transition-all duration-300 resize-none text-sm sm:text-base"
-                  onInput$={generatePreview}
+                  onInput$={(event) => {
+                    descriptionValue.value = (event.target as HTMLTextAreaElement).value;
+                    generatePreview();
+                  }}
                 />
                 <p class="text-xs text-pink-300/70 mt-2 pl-3 sm:pl-4">
                   Use placeholders: {'{filename}'}, {'{filesize}'}, {'{filetype}'}, {'{uploaddate}'}, {'{views}'}, {'{username}'}, {'{totalfiles}'}, {'{totalstorage}'}, {'{totalviews}'}~ ✨
@@ -252,41 +279,47 @@ export default component$(() => {
               <div>
                 <label class="block text-xs sm:text-sm font-medium text-pink-200 mb-2">
                   Embed Color~ 🎨
-                </label>
-                <input
+                </label>                <input
                   type="color"
                   name="embedColor"
-                  value={userData.value.user.embedColor || "#8B5CF6"}
+                  value={colorValue.value}
                   class="w-full h-10 sm:h-12 glass rounded-full cursor-pointer border-2 border-pink-300/20 hover:border-pink-300/40 transition-all duration-300"
-                  onChange$={generatePreview}
+                  onChange$={(event) => {
+                    colorValue.value = (event.target as HTMLInputElement).value;
+                    generatePreview();
+                  }}
                 />
               </div>
 
               <div>
                 <label class="block text-xs sm:text-sm font-medium text-pink-200 mb-2">
                   Author Name~ ✏️
-                </label>
-                <input
+                </label>                <input
                   type="text"
                   name="embedAuthor"
-                  value={userData.value.user.embedAuthor || ""}
+                  value={authorValue.value}
                   placeholder={userData.value.user.name || "Cute User~ 💕"}
                   class="w-full px-3 sm:px-4 py-2 sm:py-3 glass rounded-full text-white placeholder-pink-300/60 focus:outline-none focus:ring-2 focus:ring-pink-500/50 transition-all duration-300 text-sm sm:text-base"
-                  onInput$={generatePreview}
+                  onInput$={(event) => {
+                    authorValue.value = (event.target as HTMLInputElement).value;
+                    generatePreview();
+                  }}
                 />
               </div>
 
               <div>
                 <label class="block text-xs sm:text-sm font-medium text-pink-200 mb-2">
                   Footer Text~ 📄
-                </label>
-                <input
+                </label>                <input
                   type="text"
                   name="embedFooter"
-                  value={userData.value.user.embedFooter || ""}
+                  value={footerValue.value}
                   placeholder="twink.forsale~ ✨"
                   class="w-full px-3 sm:px-4 py-2 sm:py-3 glass rounded-full text-white placeholder-pink-300/60 focus:outline-none focus:ring-2 focus:ring-pink-500/50 transition-all duration-300 text-sm sm:text-base"
-                  onInput$={generatePreview}
+                  onInput$={(event) => {
+                    footerValue.value = (event.target as HTMLInputElement).value;
+                    generatePreview();
+                  }}
                 />
               </div>              <div>
                 <label class="block text-xs sm:text-sm font-medium text-pink-200 mb-2">
@@ -362,7 +395,7 @@ export default component$(() => {
                     type="checkbox"
                     name="useCustomWords"
                     checked={useCustomWords.value}
-                    class="mr-2 sm:mr-3 w-4 sm:w-5 h-4 sm:h-5 text-pink-500 bg-transparent border-2 border-pink-300/50 rounded-lg focus:ring-pink-500/50 accent-pink-500"                    onChange$={(event) => {
+                    class="mr-2 sm:mr-3 w-4 sm:w-5 h-4 sm:h-5 text-pink-500 bg-transparent border-2 border-pink-300/50 rounded-lg focus:ring-pink-500/50 accent-pink-500" onChange$={(event) => {
                       useCustomWords.value = (event.target as HTMLInputElement).checked;
                     }}
                   />
