@@ -56,7 +56,6 @@
     "vite-tsconfig-paths": "^4.3.2"
   },
   "dependencies": {
-    "@prisma/client": "^6.9.0",
-    "@builder.io/qwik-city": "^1.14.1"
+    "@prisma/client": "^6.9.0"
   }
 }
