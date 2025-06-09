@@ -44,6 +44,8 @@ const { router, notFound, staticFile } = createQwikCity({
   origin: process.env.NODE_ENV === 'production' ? 
     'https://twink.forsale' : 
     `http://localhost:${PORT}`,
+  // Disable CSRF protection to allow ShareX uploads with null origin
+  checkOrigin: false,
 });
 
 const server = createServer();
