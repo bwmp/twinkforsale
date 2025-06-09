@@ -22,14 +22,16 @@ export const useUserApiKeys = routeLoader$(async (requestEvent) => {
     }
   });
 
-  return { user };
+  // Get the base URL from the request
+  const baseUrl = requestEvent.url.origin;
+
+  return { user, baseUrl };
 });
 
 export default component$(() => {
   const userData = useUserApiKeys();
-
   const generateShareXConfig = $((apiKey: string) => {
-    const baseUrl = "http://localhost:5173";
+    const baseUrl = userData.value.baseUrl;
 
     const config = {
       "Version": "13.4.0",
