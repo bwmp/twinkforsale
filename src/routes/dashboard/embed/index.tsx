@@ -127,9 +127,6 @@ export default component$(() => {
   }  if (user.showUploadDate) {
     initialDesc += "\\n📅 Uploaded " + new Date().toLocaleDateString();
   }
-  if (user.showUserStats) {
-    initialDesc += "\\n\\n👤 **User Stats**\\n📊 127 files uploaded • 2.1 GB used\\n👀 5,432 total views";
-  }
 
   previewCode.value = `{
   "type": "rich",
