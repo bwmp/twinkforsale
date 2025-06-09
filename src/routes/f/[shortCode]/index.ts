@@ -45,13 +45,12 @@ function generateDiscordEmbed(upload: any, user: any, baseUrl: string) {
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${embedTitle}">
   <meta name="twitter:description" content="${description.replace(/\n/g, ' ')}">
-  
-  ${upload.mimeType.startsWith('image/') ? `
-  <meta property="og:image" content="${upload.url}">
+    ${upload.mimeType.startsWith('image/') ? `
+  <meta property="og:image" content="${upload.url}?direct=true">
   <meta property="og:image:type" content="${upload.mimeType}">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
-  <meta name="twitter:image" content="${upload.url}">
+  <meta name="twitter:image" content="${upload.url}?direct=true">
   ` : ''}
   
   ${embedAuthor ? `<meta name="author" content="${embedAuthor}">` : ''}
@@ -177,12 +176,12 @@ export const onRequest: RequestHandler = async ({ params, send, status, url, req
       status(404);
       return;
     }
-    
-    // If this is a direct file request or bot/crawler, serve the file directly
+      // If this is a direct file request, always serve the file directly
+    // For non-direct requests, serve embed HTML for bots/crawlers, direct file for browsers
     const userAgent = request.headers.get('user-agent')?.toLowerCase() || '';
     const isBotOrCrawler = /bot|crawler|spider|crawling|discord|telegram|whatsapp|facebook|twitter|slack/i.test(userAgent);
     
-    if (isDirect || (!isBotOrCrawler && upload.mimeType.startsWith('image/'))) {
+    if (isDirect || (!isBotOrCrawler)) {
       // Read and serve file directly
       const fileBuffer = fs.readFileSync(filePath);
         const response = new Response(fileBuffer, {
