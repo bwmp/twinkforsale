@@ -58,10 +58,6 @@ function generateDiscordEmbed(upload: any, user: any, baseUrl: string, userStats
     const uploadDate = new Date(upload.createdAt).toLocaleDateString();
     plainDescription += `\nUploaded ${uploadDate}`;
   }
-  if (showUserStats && userStats) {
-    const storageUsedMB = (userStats.totalStorage / 1024 / 1024).toFixed(2);
-    plainDescription += `\n${userStats.totalFiles} files uploaded • ${storageUsedMB} MB used • ${userStats.totalViews.toLocaleString()} total views`;
-  }
   
   return `<!DOCTYPE html>
 <html>
