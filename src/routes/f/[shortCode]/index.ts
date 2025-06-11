@@ -1,6 +1,7 @@
 import type { RequestHandler } from "@builder.io/qwik-city";
 import { db } from "~/lib/db";
 import { getServerEnvConfig } from "~/lib/env";
+import { updateDailyAnalytics } from "~/lib/analytics";
 import fs from "fs";
 import path from "path";
 
@@ -203,13 +204,31 @@ export const onRequest: RequestHandler = async ({ params, send, status, url, req
     // 2. Not a direct file request (which is usually for downloads)
     // This ensures we only count "real" external views and embeds
     if (!isInternalDashboardView && !isDirect) {
-      await db.upload.update({
+      // Get visitor info for analytics
+      const ipAddress = request.headers.get('x-forwarded-for') || 
+                       request.headers.get('x-real-ip') || 
+                       request.headers.get('cf-connecting-ip') ||
+                       'unknown';
+      const userAgent = request.headers.get('user-agent') || 'unknown';
+
+      // Create view log entry
+      await db.viewLog.create({
+        data: {
+          uploadId: upload.id,
+          ipAddress: ipAddress.split(',')[0].trim(), // Take first IP if multiple
+          userAgent,
+          referer: referrer || null,
+        }
+      });      await db.upload.update({
         where: { id: upload.id },
         data: {
           views: { increment: 1 },
           lastViewed: new Date()
         }
       });
+
+      // Update daily analytics (async, don't wait for it)
+      updateDailyAnalytics().catch(console.error);
     }// Get file path
     const config = getServerEnvConfig();
     const baseUploadDir = config.UPLOAD_DIR;

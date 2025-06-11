@@ -121,6 +121,7 @@ model Upload {
   // Analytics
   views       Int      @default(0)
   lastViewed  DateTime?
+  viewLogs    ViewLog[]
   
   @@map("uploads")
 }
@@ -137,4 +138,35 @@ model ApiKey {
   isActive  Boolean  @default(true)
   
   @@map("api_keys")
+}
+
+model DailyAnalytics {
+  id           String   @id @default(cuid())
+  date         DateTime @unique
+  totalViews   Int      @default(0)
+  uniqueViews  Int      @default(0)
+  uploadsCount Int      @default(0)
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  @@map("daily_analytics")
+}
+
+model ViewLog {
+  id        String   @id @default(cuid())
+  uploadId  String
+  upload    Upload   @relation(fields: [uploadId], references: [id], onDelete: Cascade)
+  
+  // Analytics data
+  ipAddress String?
+  userAgent String?
+  referer   String?
+  
+  viewedAt  DateTime @default(now())
+  
+  @@index([uploadId])
+  @@index([viewedAt])
+  @@index([ipAddress, uploadId, viewedAt])
+  @@map("view_logs")
 }

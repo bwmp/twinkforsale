@@ -3,8 +3,10 @@ import { routeLoader$, Link } from "@builder.io/qwik-city";
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { db } from "~/lib/db";
 import { getServerEnvConfig } from "~/lib/env";
-import { Folder, Eye, HardDrive, Key, Settings, Share, File } from "lucide-icons-qwik";
+import { getUserAnalytics } from "~/lib/analytics";
+import { Folder, Eye, HardDrive, Key, Settings, Share, File, TrendingUp } from "lucide-icons-qwik";
 import { ImagePreviewContext } from "~/lib/image-preview-store";
+import { AnalyticsChart } from "~/components/analytics-chart/analytics-chart";
 
 export const useUserData = routeLoader$(async (requestEvent) => {
   const session = requestEvent.sharedMap.get("session");
@@ -54,9 +56,11 @@ export const useUserData = routeLoader$(async (requestEvent) => {
     where: { userId: user.id },
     _sum: { views: true }
   });
-
   // Calculate the effective storage limit (user's custom limit or default from env)
   const effectiveStorageLimit = user.maxStorageLimit || config.BASE_STORAGE_LIMIT;
+
+  // Get user analytics for the last 7 days
+  const analyticsData = await getUserAnalytics(user.id, 7);
 
   return {
     user,
@@ -66,6 +70,7 @@ export const useUserData = routeLoader$(async (requestEvent) => {
       storageUsed: user.storageUsed,
       maxStorage: effectiveStorageLimit
     },
+    analyticsData,
     origin: requestEvent.url.origin
   };
 });
@@ -173,9 +178,37 @@ export default component$(() => {
               <p class="text-xs sm:text-sm font-medium text-pink-200">API Keys</p>
               <p class="text-lg sm:text-2xl font-bold text-white">{userData.value.user.apiKeys.length}</p>
             </div>
-          </div>
+          </div>        </div>
+      </div>
+
+      {/* Analytics Section */}
+      <div class="mb-6 sm:mb-8">
+        <h2 class="text-xl sm:text-2xl font-bold text-gradient-cute mb-4 sm:mb-6 text-center flex items-center justify-center gap-2">
+          <TrendingUp class="w-5 h-5" />
+          Your Analytics - Last 7 Days
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+          <AnalyticsChart
+            data={userData.value.analyticsData || []}
+            metric="totalViews"
+            title="Total Views"
+            color="#ec4899"
+          />
+          <AnalyticsChart
+            data={userData.value.analyticsData || []}
+            metric="uniqueViews"
+            title="Unique Visitors"
+            color="#8b5cf6"
+          />
+          <AnalyticsChart
+            data={userData.value.analyticsData || []}
+            metric="uploadsCount"
+            title="New Uploads"
+            color="#06b6d4"
+          />
         </div>
       </div>
+
       {/* Quick Actions */}
       <div class="mb-6 sm:mb-8">
         <h2 class="text-xl sm:text-2xl font-bold text-gradient-cute mb-4 sm:mb-6 text-center flex items-center justify-center gap-2">

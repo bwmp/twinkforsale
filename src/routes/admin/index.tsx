@@ -2,7 +2,10 @@ import { component$, useSignal, useComputed$ } from "@builder.io/qwik";
 import { routeLoader$, routeAction$ } from "@builder.io/qwik-city";
 import { db } from "~/lib/db";
 import { getEnvConfig } from "~/lib/env";
-import { Users, CheckCircle, Ban, Search } from "lucide-icons-qwik";
+import { getAnalyticsData } from "~/lib/analytics";
+import { Users, CheckCircle, Ban, Search, Filter, ArrowUpDown, TrendingUp } from "lucide-icons-qwik";
+import { AnalyticsChart } from "~/components/analytics-chart/analytics-chart";
+import { UserAnalytics } from "~/components/user-analytics/user-analytics";
 
 export const useUserData = routeLoader$(async ({ sharedMap, redirect }) => {
   const session = sharedMap.get("session");
@@ -58,10 +61,12 @@ export const useUserData = routeLoader$(async ({ sharedMap, redirect }) => {
     },
     orderBy: { createdAt: "desc" }
   });
-
   const config = getEnvConfig();
 
-  return { users, currentUser: user, config };
+  // Get analytics data for the last week
+  const analyticsData = await getAnalyticsData(7);
+
+  return { users, currentUser: user, config, analyticsData };
 });
 
 export const useUpdateUser = routeAction$(async (data, { sharedMap }) => {
@@ -146,6 +151,10 @@ export default component$(() => {
   const userData = useUserData();
   const updateUser = useUpdateUser();
   const searchQuery = useSignal("");
+  const approvalFilter = useSignal("all"); // all, approved, pending
+  const adminFilter = useSignal("all"); // all, admin, user
+  const sortBy = useSignal("createdAt"); // createdAt, name, uploads, storageUsed, email
+  const sortOrder = useSignal("desc"); // asc, desc
 
   const formatBytes = (bytes: number): string => {
     if (bytes === 0) return '0 Bytes';
@@ -159,31 +168,84 @@ export default component$(() => {
 
   const getEffectiveStorageLimit = (user: any): number => {
     return user.maxStorageLimit || userData.value?.config.BASE_STORAGE_LIMIT || 10737418240;
-  };
-  // Filter users based on search query
+  };  // Filter and sort users based on all criteria
   const filteredUsers = useComputed$(() => {
-    if (!searchQuery.value.trim()) {
-      return userData.value?.users || [];
+    let users = userData.value?.users || [];
+
+    // Apply search filter
+    if (searchQuery.value.trim()) {
+      const query = searchQuery.value.toLowerCase().trim();
+      users = users.filter((user: any) => {
+        // Search by name (Discord display name/username)
+        if (user.name?.toLowerCase().includes(query)) return true;
+
+        // Search by email
+        if (user.email?.toLowerCase().includes(query)) return true;
+
+        // Search by Discord ID (providerAccountId)
+        if (user.accounts?.some((account: any) =>
+          account.provider === "discord" && account.providerAccountId?.includes(query)
+        )) return true;
+
+        // Search by user ID
+        if (user.id?.toLowerCase().includes(query)) return true;
+
+        return false;
+      });
     }
 
-    const query = searchQuery.value.toLowerCase().trim();
-    return userData.value?.users.filter((user: any) => {
-      // Search by name (Discord display name/username)
-      if (user.name?.toLowerCase().includes(query)) return true;
+    // Apply approval status filter
+    if (approvalFilter.value !== "all") {
+      users = users.filter((user: any) => {
+        if (approvalFilter.value === "approved") return user.isApproved;
+        if (approvalFilter.value === "pending") return !user.isApproved;
+        return true;
+      });
+    }
 
-      // Search by email
-      if (user.email?.toLowerCase().includes(query)) return true;
+    // Apply admin status filter
+    if (adminFilter.value !== "all") {
+      users = users.filter((user: any) => {
+        if (adminFilter.value === "admin") return user.isAdmin;
+        if (adminFilter.value === "user") return !user.isAdmin;
+        return true;
+      });
+    }
 
-      // Search by Discord ID (providerAccountId)
-      if (user.accounts?.some((account: any) =>
-        account.provider === "discord" && account.providerAccountId?.includes(query)
-      )) return true;
+    // Apply sorting
+    users = [...users].sort((a: any, b: any) => {
+      let aVal, bVal;
 
-      // Search by user ID
-      if (user.id?.toLowerCase().includes(query)) return true;
+      switch (sortBy.value) {
+        case "name":
+          aVal = (a.name || "").toLowerCase();
+          bVal = (b.name || "").toLowerCase();
+          break;
+        case "email":
+          aVal = (a.email || "").toLowerCase();
+          bVal = (b.email || "").toLowerCase();
+          break;
+        case "uploads":
+          aVal = a._count?.uploads || 0;
+          bVal = b._count?.uploads || 0;
+          break;
+        case "storageUsed":
+          aVal = a.storageUsed || 0;
+          bVal = b.storageUsed || 0;
+          break;
+        case "createdAt":
+        default:
+          aVal = new Date(a.createdAt).getTime();
+          bVal = new Date(b.createdAt).getTime();
+          break;
+      }
 
-      return false;
-    }) || [];
+      if (aVal < bVal) return sortOrder.value === "asc" ? -1 : 1;
+      if (aVal > bVal) return sortOrder.value === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    return users;
   });
 
   return (
@@ -256,35 +318,190 @@ export default component$(() => {
                 {userData.value?.users.filter(u => !u.isApproved).length || 0}
               </p>
             </div>
-          </div>
+          </div>        </div>
+      </div>
+
+      {/* Analytics Section */}
+      <div class="mb-6 sm:mb-8">
+        <h2 class="text-xl sm:text-2xl font-bold text-gradient-cute mb-4 sm:mb-6 flex items-center gap-2">
+          <TrendingUp class="w-5 h-5" />
+          Analytics Overview - Last 7 Days
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+          <AnalyticsChart
+            data={userData.value?.analyticsData || []}
+            metric="totalViews"
+            title="Total Views"
+            color="#ec4899"
+          />
+          <AnalyticsChart
+            data={userData.value?.analyticsData || []}
+            metric="uniqueViews"
+            title="Unique Visitors"
+            color="#8b5cf6"
+          />
+          <AnalyticsChart
+            data={userData.value?.analyticsData || []}
+            metric="uploadsCount"
+            title="New Uploads"
+            color="#06b6d4"
+          />
         </div>
       </div>
+
       {/* User Management */}
       <div class="card-cute rounded-3xl p-4 sm:p-6 mb-6 sm:mb-8">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-          <h2 class="text-lg sm:text-xl font-bold text-gradient-cute flex items-center gap-2">
-            User Management
-            {searchQuery.value.trim() && (
-              <span class="text-sm font-normal text-pink-300">
-                ({filteredUsers.value.length} of {userData.value?.users.length || 0} users)
-              </span>
-            )}
-          </h2>
-          {/* Search Input */}
-          <div class="relative max-w-md w-full sm:w-auto">
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
-              <Search class="h-4 w-4 text-pink-300 drop-shadow-sm" />
+        <div class="flex flex-col gap-4 mb-4">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <h2 class="text-lg sm:text-xl font-bold text-gradient-cute flex items-center gap-2">
+              User Management
+              {(searchQuery.value.trim() || approvalFilter.value !== "all" || adminFilter.value !== "all") && (
+                <span class="text-sm font-normal text-pink-300">
+                  ({filteredUsers.value.length} of {userData.value?.users.length || 0} users)
+                </span>
+              )}
+            </h2>
+            {/* Search Input */}
+            <div class="relative max-w-md w-full sm:w-auto">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+                <Search class="h-4 w-4 text-pink-300 drop-shadow-sm" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search by name, email, Discord ID..."
+                value={searchQuery.value}
+                onInput$={(e) => {
+                  searchQuery.value = (e.target as HTMLInputElement).value;
+                }}
+                class="w-full pl-10 pr-4 py-2 text-sm rounded-full border text-white bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-cyan-500/10 backdrop-blur-sm border-pink-300/30 placeholder-pink-300/70 focus:border-pink-400/60 focus:bg-gradient-to-r focus:from-pink-500/20 focus:via-purple-500/20 focus:to-cyan-500/20 focus:outline-none focus:ring-2 focus:ring-pink-400/30 focus:shadow-lg focus:shadow-pink-400/20 transition-all duration-500 hover:border-pink-400/50 hover:shadow-md hover:shadow-pink-400/10"
+              />
+              <div class="absolute inset-0 rounded-full bg-gradient-to-r from-pink-400/5 via-purple-400/5 to-cyan-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
             </div>
-            <input
-              type="text"
-              placeholder="Search by name, email, Discord ID..."
-              value={searchQuery.value}
-              onInput$={(e) => {
-                searchQuery.value = (e.target as HTMLInputElement).value;
+          </div>
+
+          {/* Filters and Sorting */}
+          <div class="flex flex-wrap gap-3 sm:gap-4 items-center">
+            {/* Approval Status Filter */}
+            <div class="flex items-center gap-2">
+              <Filter class="h-4 w-4 text-pink-300" />
+              <select
+                value={approvalFilter.value}
+                onChange$={(e) => {
+                  approvalFilter.value = (e.target as HTMLSelectElement).value;
+                }}
+                class="px-3 py-1 text-sm glass rounded-full border border-pink-300/30 text-white bg-transparent focus:border-pink-300/60 focus:outline-none"
+              >
+                <option value="all" class="bg-gray-800">All Users</option>
+                <option value="approved" class="bg-gray-800">✅ Approved</option>
+                <option value="pending" class="bg-gray-800">⏳ Pending</option>
+              </select>
+            </div>
+
+            {/* Admin Status Filter */}
+            <div class="flex items-center gap-2">
+              <select
+                value={adminFilter.value}
+                onChange$={(e) => {
+                  adminFilter.value = (e.target as HTMLSelectElement).value;
+                }}
+                class="px-3 py-1 text-sm glass rounded-full border border-pink-300/30 text-white bg-transparent focus:border-pink-300/60 focus:outline-none"
+              >
+                <option value="all" class="bg-gray-800">All Roles</option>
+                <option value="admin" class="bg-gray-800">👑 Admins</option>
+                <option value="user" class="bg-gray-800">🌸 Users</option>
+              </select>
+            </div>
+
+            {/* Sort By */}
+            <div class="flex items-center gap-2">
+              <ArrowUpDown class="h-4 w-4 text-pink-300" />
+              <select
+                value={sortBy.value}
+                onChange$={(e) => {
+                  sortBy.value = (e.target as HTMLSelectElement).value;
+                }}
+                class="px-3 py-1 text-sm glass rounded-full border border-pink-300/30 text-white bg-transparent focus:border-pink-300/60 focus:outline-none"
+              >
+                <option value="createdAt" class="bg-gray-800">Join Date</option>
+                <option value="name" class="bg-gray-800">Name</option>
+                <option value="email" class="bg-gray-800">Email</option>
+                <option value="uploads" class="bg-gray-800">Upload Count</option>
+                <option value="storageUsed" class="bg-gray-800">Storage Used</option>
+              </select>
+            </div>
+
+            {/* Sort Order */}
+            <button
+              onClick$={() => {
+                sortOrder.value = sortOrder.value === "asc" ? "desc" : "asc";
               }}
-              class="w-full pl-10 pr-4 py-2 text-sm rounded-full border text-white bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-cyan-500/10 backdrop-blur-sm border-pink-300/30 placeholder-pink-300/70 focus:border-pink-400/60 focus:bg-gradient-to-r focus:from-pink-500/20 focus:via-purple-500/20 focus:to-cyan-500/20 focus:outline-none focus:ring-2 focus:ring-pink-400/30 focus:shadow-lg focus:shadow-pink-400/20 transition-all duration-500 hover:border-pink-400/50 hover:shadow-md hover:shadow-pink-400/10"
-            />
-            <div class="absolute inset-0 rounded-full bg-gradient-to-r from-pink-400/5 via-purple-400/5 to-cyan-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+              class="px-3 py-1 text-sm glass rounded-full border border-pink-300/30 text-white bg-transparent hover:border-pink-300/60 focus:outline-none transition-all duration-300"
+            >
+              {sortOrder.value === "asc" ? "↑ Ascending" : "↓ Descending"}
+            </button>            {/* Clear Filters */}
+            {(searchQuery.value.trim() || approvalFilter.value !== "all" || adminFilter.value !== "all" || sortBy.value !== "createdAt" || sortOrder.value !== "desc") && (
+              <button
+                onClick$={() => {
+                  searchQuery.value = "";
+                  approvalFilter.value = "all";
+                  adminFilter.value = "all";
+                  sortBy.value = "createdAt";
+                  sortOrder.value = "desc";
+                }}
+                class="px-3 py-1 text-sm bg-red-500/20 hover:bg-red-500/30 text-red-300 border border-red-500/30 rounded-full font-medium transition-all duration-300"
+              >
+                🗑️ Clear Filters
+              </button>
+            )}
+          </div>
+
+          {/* Quick Filter Buttons */}
+          <div class="flex flex-wrap gap-2 text-xs">
+            <span class="text-pink-300 font-medium">Quick filters:</span>
+            <button
+              onClick$={() => {
+                approvalFilter.value = "pending";
+                adminFilter.value = "all";
+                sortBy.value = "createdAt";
+                sortOrder.value = "asc";
+              }}
+              class="px-2 py-1 text-xs glass rounded-full border border-yellow-400/30 text-yellow-300 hover:border-yellow-400/60 transition-all duration-300"
+            >
+              ⏳ Pending Approval
+            </button>
+            <button
+              onClick$={() => {
+                approvalFilter.value = "all";
+                adminFilter.value = "all";
+                sortBy.value = "uploads";
+                sortOrder.value = "desc";
+              }}
+              class="px-2 py-1 text-xs glass rounded-full border border-blue-400/30 text-blue-300 hover:border-blue-400/60 transition-all duration-300"
+            >
+              📈 Most Active
+            </button>
+            <button
+              onClick$={() => {
+                approvalFilter.value = "all";
+                adminFilter.value = "all";
+                sortBy.value = "storageUsed";
+                sortOrder.value = "desc";
+              }}
+              class="px-2 py-1 text-xs glass rounded-full border border-purple-400/30 text-purple-300 hover:border-purple-400/60 transition-all duration-300"
+            >
+              💾 Storage Usage
+            </button>
+            <button
+              onClick$={() => {
+                approvalFilter.value = "all";
+                adminFilter.value = "admin";
+                sortBy.value = "createdAt";
+                sortOrder.value = "desc";
+              }}
+              class="px-2 py-1 text-xs glass rounded-full border border-pink-400/30 text-pink-300 hover:border-pink-400/60 transition-all duration-300"
+            >
+              👑 Admins Only
+            </button>
           </div>
         </div>
         <div class="overflow-x-auto">
@@ -303,10 +520,9 @@ export default component$(() => {
               <div class="text-center py-8 sm:py-12">
                 <div class="w-12 sm:w-16 h-12 sm:h-16 glass rounded-full flex items-center justify-center mx-auto mb-4">
                   <Search class="h-6 w-6 text-pink-300" />
-                </div>
-                <h3 class="text-base sm:text-lg font-medium text-white mb-2">No Results Found! 🔍</h3>
+                </div>                <h3 class="text-base sm:text-lg font-medium text-white mb-2">No Results Found! 🔍</h3>
                 <p class="text-pink-200 text-sm sm:text-base px-4">
-                  Try searching with a different term~ (◕‿◕)♡
+                  Try adjusting your filters or search terms~ (◕‿◕)♡
                 </p>
               </div>
             ) : (
@@ -514,10 +730,10 @@ export default component$(() => {
                             >
                               🔄 Reset to Default
                             </button>
-                          </div>
-                        </form>
+                          </div>                        </form>
                       </div>
-                    </details>
+                    </details>                    {/* User Analytics */}
+                    <UserAnalytics userId={user.id} userName={user.name || "Anonymous Cutie"} />
                   </div>
                 ))}
               </div>
