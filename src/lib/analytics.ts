@@ -200,7 +200,6 @@ export async function getUserAnalytics(userId: string, days: number = 7) {
   });
 
   const uploadIds = userUploads.map(u => u.id);
-
   if (uploadIds.length === 0) {
     // Return empty data if user has no uploads
     const result = [];
@@ -212,7 +211,8 @@ export async function getUserAnalytics(userId: string, days: number = 7) {
         date: dateStr,
         totalViews: 0,
         uniqueViews: 0,
-        uploadsCount: 0
+        uploadsCount: 0,
+        usersRegistered: 0
       });
       currentDate.setDate(currentDate.getDate() + 1);
     }
@@ -279,12 +279,12 @@ export async function getUserAnalytics(userId: string, days: number = 7) {
   while (currentDate <= endDate) {
     const dateStr = currentDate.toISOString().split('T')[0];
     const data = groupedByDate[dateStr];
-    
-    result.push({
+      result.push({
       date: dateStr,
       totalViews: data?.totalViews || 0,
       uniqueViews: data?.uniqueViews.size || 0,
-      uploadsCount: data?.uploadsCount || 0
+      uploadsCount: data?.uploadsCount || 0,
+      usersRegistered: 0
     });
     
     currentDate.setDate(currentDate.getDate() + 1);
