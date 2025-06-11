@@ -1,9 +1,6 @@
 import { component$, $, useContext, useSignal, useComputed$, useVisibleTask$ } from "@builder.io/qwik";
 import { routeLoader$, routeAction$, Link } from "@builder.io/qwik-city";
 import type { DocumentHead } from "@builder.io/qwik-city";
-import { db } from "~/lib/db";
-import { getServerEnvConfig } from "~/lib/env";
-import { getUploadAnalytics } from "~/lib/analytics";
 import { getUploadsViewMode, setUploadsViewMode } from "~/lib/cookie-utils";
 import fs from "fs";
 import path from "path";
@@ -11,6 +8,10 @@ import { Folder, Eye, HardDrive, Clock, Copy, Trash2, Sparkle, FileText, Ruler, 
 import { ImagePreviewContext } from "~/lib/image-preview-store";
 
 export const useDeleteUpload = routeAction$(async (data, requestEvent) => {
+  // Import server-side dependencies inside the action
+  const { db } = await import("~/lib/db");
+  const { getEnvConfig } = await import("~/lib/env");
+  
   const session = requestEvent.sharedMap.get("session");
 
   if (!session?.user?.email) {
@@ -39,7 +40,7 @@ export const useDeleteUpload = routeAction$(async (data, requestEvent) => {
     }
     
     // Delete file from storage
-    const config = getServerEnvConfig();
+    const config = getEnvConfig();
     const baseUploadDir = config.UPLOAD_DIR;
     
     // Determine the correct directory based on whether the upload has a user
@@ -79,6 +80,11 @@ export const useDeleteUpload = routeAction$(async (data, requestEvent) => {
 });
 
 export const useUserUploads = routeLoader$(async (requestEvent) => {
+  // Import server-side dependencies inside the loader
+  const { db } = await import("~/lib/db");
+  const { getEnvConfig } = await import("~/lib/env");
+  const { getUploadAnalytics } = await import("~/lib/analytics");
+  
   const session = requestEvent.sharedMap.get("session");
 
   if (!session?.user?.email) {
@@ -86,7 +92,7 @@ export const useUserUploads = routeLoader$(async (requestEvent) => {
   }
 
   // Get environment configuration for storage limits
-  const config = getServerEnvConfig();
+  const config = getEnvConfig();
 
   // Find user and their uploads
   const user = await db.user.findUnique({

@@ -1,6 +1,6 @@
 import type { RequestHandler } from "@builder.io/qwik-city";
 import { db } from "~/lib/db";
-import { getServerEnvConfig } from "~/lib/env";
+import { getEnvConfig } from "~/lib/env";
 import { updateDailyAnalytics } from "~/lib/analytics";
 import fs from "fs";
 import path from "path";
@@ -230,7 +230,7 @@ export const onRequest: RequestHandler = async ({ params, send, status, url, req
       // Update daily analytics (async, don't wait for it)
       updateDailyAnalytics().catch(console.error);
     }// Get file path
-    const config = getServerEnvConfig();
+    const config = getEnvConfig();
     const baseUploadDir = config.UPLOAD_DIR;
 
     // Determine the correct directory based on whether the upload has a user
@@ -267,7 +267,7 @@ export const onRequest: RequestHandler = async ({ params, send, status, url, req
       return;
     } else {
       // Generate and serve Discord embed HTML
-      const config = getServerEnvConfig();
+      const config = getEnvConfig();
       const baseUrl = config.BASE_URL;
 
       // Fetch user statistics if the user wants to show them

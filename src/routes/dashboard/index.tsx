@@ -1,14 +1,16 @@
 import { component$, $, useContext } from "@builder.io/qwik";
 import { routeLoader$, Link } from "@builder.io/qwik-city";
 import type { DocumentHead } from "@builder.io/qwik-city";
-import { db } from "~/lib/db";
-import { getServerEnvConfig } from "~/lib/env";
-import { getUserAnalytics } from "~/lib/analytics";
 import { Folder, Eye, HardDrive, Key, Settings, Share, File, TrendingUp } from "lucide-icons-qwik";
 import { ImagePreviewContext } from "~/lib/image-preview-store";
 import { AnalyticsChart } from "~/components/analytics-chart/analytics-chart";
 
 export const useUserData = routeLoader$(async (requestEvent) => {
+  // Import server-side dependencies inside the loader
+  const { db } = await import("~/lib/db");
+  const { getEnvConfig } = await import("~/lib/env");
+  const { getUserAnalytics } = await import("~/lib/analytics");
+  
   const session = requestEvent.sharedMap.get("session");
 
   if (!session?.user?.email) {
@@ -16,7 +18,7 @@ export const useUserData = routeLoader$(async (requestEvent) => {
   }
 
   // Get environment configuration for storage limits
-  const config = getServerEnvConfig();
+  const config = getEnvConfig();
 
   // Find or create user
   let user = await db.user.findUnique({

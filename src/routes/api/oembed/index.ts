@@ -1,6 +1,6 @@
 import type { RequestHandler } from "@builder.io/qwik-city";
 import { db } from "~/lib/db";
-import { getServerEnvConfig } from "~/lib/env";
+import { getEnvConfig } from "~/lib/env";
 
 export const onGet: RequestHandler = async ({ url, json }) => {
   const requestUrl = url.searchParams.get('url');
@@ -30,7 +30,7 @@ export const onGet: RequestHandler = async ({ url, json }) => {
       throw json(404, { error: "Upload not found" });
     }
 
-    const config = getServerEnvConfig();
+    const config = getEnvConfig();
     const baseUrl = config.BASE_URL;
 
     // Helper function to replace placeholders

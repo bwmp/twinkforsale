@@ -1,13 +1,15 @@
 import { component$, useSignal, useComputed$ } from "@builder.io/qwik";
 import { routeLoader$, routeAction$ } from "@builder.io/qwik-city";
-import { db } from "~/lib/db";
-import { getEnvConfig } from "~/lib/env";
-import { getAnalyticsData } from "~/lib/analytics";
 import { Users, CheckCircle, Ban, Search, Filter, ArrowUpDown, TrendingUp } from "lucide-icons-qwik";
 import { AnalyticsChart } from "~/components/analytics-chart/analytics-chart";
 import { UserAnalytics } from "~/components/user-analytics/user-analytics";
 
 export const useUserData = routeLoader$(async ({ sharedMap, redirect }) => {
+  // Import server-side dependencies inside the loader
+  const { db } = await import("~/lib/db");
+  const { getEnvConfig } = await import("~/lib/env");
+  const { getAnalyticsData } = await import("~/lib/analytics");
+  
   const session = sharedMap.get("session");
 
   if (!session?.user?.email) {
@@ -70,6 +72,9 @@ export const useUserData = routeLoader$(async ({ sharedMap, redirect }) => {
 });
 
 export const useUpdateUser = routeAction$(async (data, { sharedMap }) => {
+  // Import server-side dependencies inside the action
+  const { db } = await import("~/lib/db");
+  
   const session = sharedMap.get("session");
 
   if (!session?.user?.email) {

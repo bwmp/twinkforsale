@@ -1,10 +1,20 @@
 import { component$, useSignal, useTask$ } from "@builder.io/qwik";
+import { server$ } from "@builder.io/qwik-city";
 import { getUserAnalytics } from "~/lib/analytics";
 
 interface UserAnalyticsProps {
   userId: string;
   userName: string;
 }
+
+const fetchUserAnalytics = server$(async function(userId: string, days: number = 7) {
+  try {
+    return await getUserAnalytics(userId, days);
+  } catch (error) {
+    console.error('Error fetching user analytics:', error);
+    return [];
+  }
+});
 
 export const UserAnalytics = component$<UserAnalyticsProps>(({ userId, userName }) => {
   const analyticsData = useSignal<any[]>([]);
@@ -16,7 +26,7 @@ export const UserAnalytics = component$<UserAnalyticsProps>(({ userId, userName 
     
     if (isExpanded.value && analyticsData.value.length === 0) {
       try {
-        const data = await getUserAnalytics(userId, 7);
+        const data = await fetchUserAnalytics(userId, 7);
         analyticsData.value = data;
       } catch (error) {
         console.error('Error fetching user analytics:', error);

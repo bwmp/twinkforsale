@@ -1,9 +1,11 @@
 import { component$, useSignal, $, useTask$ } from "@builder.io/qwik";
 import { routeLoader$, Form, routeAction$, z, zod$ } from "@builder.io/qwik-city";
 import { ColorPicker, Toggle } from "@luminescent/ui-qwik";
-import { db } from "~/lib/db";
 
 export const useUserLoader = routeLoader$(async (requestEvent) => {
+  // Import server-side dependencies inside the loader
+  const { db } = await import("~/lib/db");
+  
   const session = requestEvent.sharedMap.get("session");
 
   if (!session?.user?.email) {
@@ -38,6 +40,9 @@ export const useUserLoader = routeLoader$(async (requestEvent) => {
 
 export const useUpdateEmbedSettings = routeAction$(
   async (values, requestEvent) => {
+    // Import server-side dependencies inside the action
+    const { db } = await import("~/lib/db");
+    
     const session = requestEvent.sharedMap.get("session");
 
     if (!session?.user?.email) {
