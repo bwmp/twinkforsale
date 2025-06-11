@@ -1,6 +1,6 @@
 import { component$, useSignal, useComputed$ } from "@builder.io/qwik";
 import { routeLoader$, routeAction$ } from "@builder.io/qwik-city";
-import { Users, CheckCircle, Ban, Search, Filter, ArrowUpDown, TrendingUp } from "lucide-icons-qwik";
+import { Users, CheckCircle, Ban, Search, Filter, ArrowUpDown } from "lucide-icons-qwik";
 import { AnalyticsChart } from "~/components/analytics-chart/analytics-chart";
 import { UserAnalytics } from "~/components/user-analytics/user-analytics";
 
@@ -261,7 +261,7 @@ export default component$(() => {
           Admin Dashboard
         </h1>
         <p class="text-pink-200 text-base sm:text-lg px-4">
-          Manage your kawaii community~ Approve users and keep everything safe! (◕‿◕)♡
+          Manage your twink community~ Approve users and keep everything safe! (◕‿◕)♡
         </p>
       </div>
 
@@ -282,10 +282,8 @@ export default component$(() => {
             <span class="text-red-300 font-medium">Error: {updateUser.value.error}</span>
           </div>
         </div>
-      )}
-
-      {/* Stats Cards */}
-      <div class="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-6 mb-6 sm:mb-8">
+      )}      {/* Stats Cards */}
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
         <div class="card-cute p-4 sm:p-6 rounded-3xl">
           <div class="flex items-center">
             <div class="p-2 sm:p-3 bg-gradient-to-br from-pink-500 to-purple-500 rounded-full">
@@ -323,16 +321,29 @@ export default component$(() => {
                 {userData.value?.users.filter(u => !u.isApproved).length || 0}
               </p>
             </div>
-          </div>        </div>
+          </div>
+        </div>
+
+        <div class="card-cute p-4 sm:p-6 rounded-3xl">
+          <div class="flex items-center">
+            <div class="p-2 sm:p-3 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full">
+              <Users class="w-4 sm:w-6 h-4 sm:h-6 text-white" />
+            </div>
+            <div class="ml-3 sm:ml-4">
+              <p class="text-xs sm:text-sm font-medium text-pink-200">New Users (7d)</p>
+              <p class="text-lg sm:text-2xl font-bold text-white">
+                {userData.value?.analyticsData?.reduce((sum, day) => sum + (day.usersRegistered || 0), 0) || 0}
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Analytics Section */}
       <div class="mb-6 sm:mb-8">
         <h2 class="text-xl sm:text-2xl font-bold text-gradient-cute mb-4 sm:mb-6 flex items-center gap-2">
-          <TrendingUp class="w-5 h-5" />
           Analytics Overview - Last 7 Days
-        </h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+        </h2>        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6">
           <AnalyticsChart
             data={userData.value?.analyticsData || []}
             metric="totalViews"
@@ -350,6 +361,12 @@ export default component$(() => {
             metric="uploadsCount"
             title="New Uploads"
             color="#06b6d4"
+          />
+          <AnalyticsChart
+            data={userData.value?.analyticsData || []}
+            metric="usersRegistered"
+            title="New Users"
+            color="#10b981"
           />
         </div>
       </div>
@@ -518,7 +535,7 @@ export default component$(() => {
                 </div>
                 <h3 class="text-base sm:text-lg font-medium text-white mb-2">No Users Yet! ✨</h3>
                 <p class="text-pink-200 text-sm sm:text-base px-4">
-                  Waiting for the first kawaii users to join~ (◕‿◕)♡
+                  Waiting for the first twinks to join~ (◕‿◕)♡
                 </p>
               </div>
             ) : filteredUsers.value.length === 0 ? (

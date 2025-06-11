@@ -106,7 +106,7 @@ export default component$(() => {
           Welcome back, {userData.value.user.name || "cutie"}!
         </h1>
         <p class="text-pink-200 text-base sm:text-lg px-4">
-          Your kawaii dashboard is ready~ Manage uploads, API keys, and more! (◕‿◕)♡
+          Your cute dashboard is ready~ Manage uploads, API keys, and more! (◕‿◕)♡
         </p>
       </div>
 
@@ -381,7 +381,7 @@ export const head: DocumentHead = {
   meta: [
     {
       name: "description",
-      content: "Your kawaii dashboard! Manage uploads, API keys, and all your cute files~ uwu",
+      content: "Your cute dashboard! Manage uploads, API keys, and all your cute files~ uwu",
     },
   ],
 };

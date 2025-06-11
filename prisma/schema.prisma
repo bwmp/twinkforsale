@@ -141,14 +141,15 @@ model ApiKey {
 }
 
 model DailyAnalytics {
-  id           String   @id @default(cuid())
-  date         DateTime @unique
-  totalViews   Int      @default(0)
-  uniqueViews  Int      @default(0)
-  uploadsCount Int      @default(0)
+  id              String   @id @default(cuid())
+  date            DateTime @unique
+  totalViews      Int      @default(0)
+  uniqueViews     Int      @default(0)
+  uploadsCount    Int      @default(0)
+  usersRegistered Int      @default(0)
   
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
   
   @@map("daily_analytics")
 }

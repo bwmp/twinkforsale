@@ -39,10 +39,18 @@ export async function updateDailyAnalytics(): Promise<void> {
       }
     });
     
-    const uniqueViews = uniqueViewsResult.length;
-
-    // Count uploads for today
+    const uniqueViews = uniqueViewsResult.length;    // Count uploads for today
     const uploadsCount = await db.upload.count({
+      where: {
+        createdAt: {
+          gte: today,
+          lt: tomorrow
+        }
+      }
+    });
+
+    // Count users registered today
+    const usersRegistered = await db.user.count({
       where: {
         createdAt: {
           gte: today,
@@ -60,13 +68,15 @@ export async function updateDailyAnalytics(): Promise<void> {
         totalViews,
         uniqueViews,
         uploadsCount,
+        usersRegistered,
         updatedAt: new Date()
       },
       create: {
         date: today,
         totalViews,
         uniqueViews,
-        uploadsCount
+        uploadsCount,
+        usersRegistered
       }
     });
 
@@ -107,12 +117,12 @@ export async function getAnalyticsData(days: number = 7) {
     const existing = analytics.find(a => 
       a.date.toISOString().split('T')[0] === dateStr
     );
-    
-    result.push({
+      result.push({
       date: dateStr,
       totalViews: existing?.totalViews || 0,
       uniqueViews: existing?.uniqueViews || 0,
-      uploadsCount: existing?.uploadsCount || 0
+      uploadsCount: existing?.uploadsCount || 0,
+      usersRegistered: existing?.usersRegistered || 0
     });
     
     currentDate.setDate(currentDate.getDate() + 1);

@@ -5,11 +5,12 @@ interface AnalyticsData {
   totalViews: number;
   uniqueViews: number;
   uploadsCount: number;
+  usersRegistered: number;
 }
 
 interface AnalyticsChartProps {
   data: AnalyticsData[];
-  metric: 'totalViews' | 'uniqueViews' | 'uploadsCount';
+  metric: 'totalViews' | 'uniqueViews' | 'uploadsCount' | 'usersRegistered';
   title: string;
   color: string;
 }
