@@ -1,59 +1,134 @@
-import { component$, Slot, useStore, useContextProvider, $ } from "@builder.io/qwik";
+import {
+  component$,
+  Slot,
+  useStore,
+  useContextProvider,
+  $,
+  useVisibleTask$,
+} from "@builder.io/qwik";
+import { routeLoader$ } from "@builder.io/qwik-city";
 import { ImagePreview } from "~/components/image-preview/image-preview";
-import { ImagePreviewContext, type ImagePreviewStore } from "~/lib/image-preview-store";
+import {
+  ImagePreviewContext,
+  type ImagePreviewStore,
+} from "~/lib/image-preview-store";
 import Navigation from "~/components/navigation/navigation";
 import { HeartParticles } from "~/components/heart-particles/heart-particles";
 
+export const useServerTheme = routeLoader$(async (requestEvent) => {
+  const { getServerThemePreference } = await import("~/lib/cookie-utils");
+  const { generateThemeCSS } = await import("~/lib/theme-store");
+
+  const cookieHeader = requestEvent.request.headers.get("cookie");
+  const serverTheme = getServerThemePreference(cookieHeader || "") || "auto";
+  const themeCSS = generateThemeCSS(serverTheme);
+
+  return {
+    theme: serverTheme,
+    css: themeCSS,
+  };
+});
+
 export default component$(() => {
+  // Get server-side theme data
+  const serverThemeData = useServerTheme();
+
+  // Apply server-side theme immediately to prevent flash
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(({ track }) => {
+    track(() => serverThemeData.value);
+
+    if (typeof document !== "undefined" && serverThemeData.value) {
+      const { theme, css } = serverThemeData.value;
+      const root = document.documentElement;
+
+      // Apply CSS variables immediately
+      const cssVars = css.split("\n    ").filter((line) => line.trim());
+      cssVars.forEach((cssVar) => {
+        if (cssVar.includes(":")) {
+          const [property, value] = cssVar.split(":").map((s) => s.trim());
+          if (property && value) {
+            root.style.setProperty(property, value.replace(";", ""));
+          }
+        }
+      });
+
+      // Set data attributes immediately
+      const effectiveTheme = theme === "auto" ? "dark" : theme;
+      root.setAttribute("data-theme", effectiveTheme);
+      root.setAttribute("data-theme-variant", theme);
+    }
+  });
+
   // Global image preview store
   const imagePreviewStore = useStore({
     state: {
       isOpen: false,
-      imageUrl: '',
-      imageName: ''
-    }
+      imageUrl: "",
+      imageName: "",
+    },
   });
 
   const openPreview = $((url: string, name?: string) => {
     imagePreviewStore.state.imageUrl = url;
-    imagePreviewStore.state.imageName = name || '';
+    imagePreviewStore.state.imageName = name || "";
     imagePreviewStore.state.isOpen = true;
     // Prevent body scroll when modal is open
-    if (typeof document !== 'undefined') {
-      document.body.style.overflow = 'hidden';
+    if (typeof document !== "undefined") {
+      document.body.style.overflow = "hidden";
     }
   });
 
   const closePreview = $(() => {
     imagePreviewStore.state.isOpen = false;
-    imagePreviewStore.state.imageUrl = '';
-    imagePreviewStore.state.imageName = '';
+    imagePreviewStore.state.imageUrl = "";
+    imagePreviewStore.state.imageName = "";
     // Restore body scroll
-    if (typeof document !== 'undefined') {
-      document.body.style.overflow = 'unset';
+    if (typeof document !== "undefined") {
+      document.body.style.overflow = "unset";
     }
   });
 
   const contextStore: ImagePreviewStore = {
     state: imagePreviewStore.state,
     openPreview,
-    closePreview
+    closePreview,
   };
+
   // Provide the context
-  useContextProvider(ImagePreviewContext, contextStore);  return (
-    <div class="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-pink-950 relative overflow-hidden">
-      {/* Heart particles background - rendered behind everything */}
-      <HeartParticles />
-      <Navigation />
-      <div class="relative z-10 max-w-7xl mx-auto px-4 mt-18 sm:px-6 lg:px-8 py-8">
-        <Slot />
-      </div>{/* Global Image Preview Modal */}
-      <ImagePreview
-        isOpen={contextStore.state.isOpen}
-        imageUrl={contextStore.state.imageUrl}
-        imageName={contextStore.state.imageName}
-        onClose={closePreview}
-      />
-    </div>
+  useContextProvider(ImagePreviewContext, contextStore);
+  return (
+    <>
+      {/* Inject server-side theme CSS to prevent flashing */}
+      {serverThemeData.value?.css && (
+        <style
+          dangerouslySetInnerHTML={`
+          :root {
+            ${serverThemeData.value.css}
+          }
+        `}
+        />
+      )}
+
+      <div
+        class="relative min-h-screen overflow-hidden"
+        style="background: linear-gradient(135deg, var(--theme-bg-gradient-from), var(--theme-bg-gradient-via), var(--theme-bg-gradient-to))"
+      >
+        {/* Heart particles background - rendered behind everything */}
+        <HeartParticles />
+        <Navigation />
+        <div class="relative z-10 mx-auto mt-18 max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+          <Slot />
+        </div>
+
+        {/* Global Image Preview Modal */}
+        <ImagePreview
+          isOpen={contextStore.state.isOpen}
+          imageUrl={contextStore.state.imageUrl}
+          imageName={contextStore.state.imageName}
+          onClose={closePreview}
+        />
+      </div>
+    </>
   );
 });

@@ -7,7 +7,7 @@ import { db } from "~/lib/db";
 export async function updateDailyAnalytics(): Promise<void> {
   const today = new Date();
   today.setHours(0, 0, 0, 0); // Start of today
-  
+
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1); // Start of tomorrow
 
@@ -38,7 +38,7 @@ export async function updateDailyAnalytics(): Promise<void> {
         ipAddress: true
       }
     });
-    
+
     const uniqueViews = uniqueViewsResult.length;    // Count uploads for today
     const uploadsCount = await db.upload.count({
       where: {
@@ -91,7 +91,7 @@ export async function updateDailyAnalytics(): Promise<void> {
 export async function getTodayAnalytics() {
   const today = new Date();
   today.setHours(0, 0, 0, 0); // Start of today
-  
+
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1); // Start of tomorrow
 
@@ -121,7 +121,7 @@ export async function getTodayAnalytics() {
       ipAddress: true
     }
   });
-  
+
   const uniqueViews = uniqueViewsResult.length;
 
   // Count uploads for today
@@ -159,7 +159,7 @@ export async function getTodayAnalytics() {
 export async function getAnalyticsData(days: number = 7) {
   const endDate = new Date();
   endDate.setHours(23, 59, 59, 999); // End of today
-  
+
   const startDate = new Date(endDate);
   startDate.setDate(startDate.getDate() - (days - 1));
   startDate.setHours(0, 0, 0, 0); // Start of N days ago
@@ -187,16 +187,16 @@ export async function getAnalyticsData(days: number = 7) {
   // Fill in missing days with zero data
   const result = [];
   const currentDate = new Date(startDate);
-  
+
   while (currentDate <= endDate) {
     const dateStr = currentDate.toISOString().split('T')[0];
-    
+
     if (dateStr === todayStr) {
       // Use real-time data for today
       result.push(todayAnalytics);
     } else {
       // Use stored data for previous days
-      const existing = analytics.find(a => 
+      const existing = analytics.find(a =>
         a.date.toISOString().split('T')[0] === dateStr
       );
       result.push({
@@ -207,7 +207,7 @@ export async function getAnalyticsData(days: number = 7) {
         usersRegistered: existing?.usersRegistered || 0
       });
     }
-    
+
     currentDate.setDate(currentDate.getDate() + 1);
   }
 
@@ -220,7 +220,7 @@ export async function getAnalyticsData(days: number = 7) {
 export async function getUploadTodayAnalytics(uploadId: string) {
   const today = new Date();
   today.setHours(0, 0, 0, 0); // Start of today
-  
+
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1); // Start of tomorrow
 
@@ -275,7 +275,7 @@ export async function getUploadAnalytics(uploadId: string, days: number = 7) {
 
   // Group by date
   const groupedByDate: { [key: string]: { total: number; unique: Set<string> } } = {};
-  
+
   viewLogs.forEach(log => {
     const dateStr = log.viewedAt.toISOString().split('T')[0];
     if (!groupedByDate[dateStr]) {
@@ -290,10 +290,10 @@ export async function getUploadAnalytics(uploadId: string, days: number = 7) {
   // Fill in missing days and convert to array
   const result = [];
   const currentDate = new Date(startDate);
-  
+
   while (currentDate <= endDate) {
     const dateStr = currentDate.toISOString().split('T')[0];
-    
+
     if (dateStr === todayStr) {
       // Use real-time data for today
       result.push(todayAnalytics);
@@ -306,7 +306,7 @@ export async function getUploadAnalytics(uploadId: string, days: number = 7) {
         uniqueViews: data?.unique.size || 0
       });
     }
-    
+
     currentDate.setDate(currentDate.getDate() + 1);
   }
   return result;
@@ -318,7 +318,7 @@ export async function getUploadAnalytics(uploadId: string, days: number = 7) {
 export async function getUserTodayAnalytics(userId: string) {
   const today = new Date();
   today.setHours(0, 0, 0, 0); // Start of today
-  
+
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1); // Start of tomorrow
 
@@ -368,7 +368,7 @@ export async function getUserTodayAnalytics(userId: string) {
       ipAddress: true
     }
   });
-  
+
   const uniqueViews = uniqueViewsResult.length;
 
   // Count uploads created by this user today
@@ -414,7 +414,7 @@ export async function getUserAnalytics(userId: string, days: number = 7) {
     // Return empty data if user has no uploads
     const result = [];
     const currentDate = new Date(startDate);
-    
+
     while (currentDate <= endDate) {
       const dateStr = currentDate.toISOString().split('T')[0];
       result.push({
@@ -426,7 +426,7 @@ export async function getUserAnalytics(userId: string, days: number = 7) {
       });
       currentDate.setDate(currentDate.getDate() + 1);
     }
-    
+
     return result;
   }
 
@@ -463,7 +463,7 @@ export async function getUserAnalytics(userId: string, days: number = 7) {
 
   // Group by date
   const groupedByDate: { [key: string]: { totalViews: number; uniqueViews: Set<string>; uploadsCount: number } } = {};
-  
+
   // Process view logs
   viewLogs.forEach(log => {
     const dateStr = log.viewedAt.toISOString().split('T')[0];
@@ -488,10 +488,10 @@ export async function getUserAnalytics(userId: string, days: number = 7) {
   // Fill in missing days and convert to array
   const result = [];
   const currentDate = new Date(startDate);
-  
+
   while (currentDate <= endDate) {
     const dateStr = currentDate.toISOString().split('T')[0];
-    
+
     if (dateStr === todayStr) {
       // Use real-time data for today
       result.push(todayAnalytics);
@@ -506,7 +506,7 @@ export async function getUserAnalytics(userId: string, days: number = 7) {
         usersRegistered: 0
       });
     }
-    
+
     currentDate.setDate(currentDate.getDate() + 1);
   }
 

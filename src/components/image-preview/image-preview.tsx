@@ -1,4 +1,10 @@
-import { component$, $, useSignal, useOnDocument, type QRL } from "@builder.io/qwik";
+import {
+  component$,
+  $,
+  useSignal,
+  useOnDocument,
+  type QRL,
+} from "@builder.io/qwik";
 import { X, Download, ExternalLink } from "lucide-icons-qwik";
 
 export interface ImagePreviewProps {
@@ -8,125 +14,138 @@ export interface ImagePreviewProps {
   onClose: QRL<() => void>;
 }
 
-export const ImagePreview = component$<ImagePreviewProps>(({ isOpen, imageUrl, imageName, onClose }) => {
-  const imageLoaded = useSignal(false);
+export const ImagePreview = component$<ImagePreviewProps>(
+  ({ isOpen, imageUrl, imageName, onClose }) => {
+    const imageLoaded = useSignal(false);
 
-  // ESC key handler using useOnDocument
-  useOnDocument("keydown", $((event: KeyboardEvent) => {
-    if (isOpen && event.key === 'Escape') {
-      onClose();
-    }
-  }));
+    // ESC key handler using useOnDocument
+    useOnDocument(
+      "keydown",
+      $((event: KeyboardEvent) => {
+        if (isOpen && event.key === "Escape") {
+          onClose();
+        }
+      }),
+    );
 
-  const handleBackdropClick = $((event: MouseEvent) => {
-    // Only close if clicking the backdrop itself, not the modal content
-    const target = event.target as HTMLElement;
-    if (target.classList.contains('modal-backdrop')) {
-      onClose();
-    }
-  });
+    const handleBackdropClick = $((event: MouseEvent) => {
+      // Only close if clicking the backdrop itself, not the modal content
+      const target = event.target as HTMLElement;
+      if (target.classList.contains("modal-backdrop")) {
+        onClose();
+      }
+    });
 
-  const handleDownload = $(() => {
-    const link = document.createElement('a');
-    link.href = imageUrl;
-    link.download = imageName || 'image';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  });
+    const handleDownload = $(() => {
+      const link = document.createElement("a");
+      link.href = imageUrl;
+      link.download = imageName || "image";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
 
-  const handleExternalView = $(() => {
-    window.open(imageUrl, '_blank');
-  });
+    const handleExternalView = $(() => {
+      window.open(imageUrl, "_blank");
+    });
 
-  if (!isOpen) return null;
+    if (!isOpen) return null;
 
-  return (
-    <div
-      class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm transition-opacity duration-300"
-      onClick$={handleBackdropClick}
-    >      {/* Modal Content */}
+    return (
       <div
-        class="relative max-w-[95vw] max-h-[95vh] glass rounded-3xl border border-pink-300/30 overflow-hidden"
-        onClick$={(event) => event.stopPropagation()}
+        class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm transition-opacity duration-300"
+        onClick$={handleBackdropClick}
       >
-        {/* Header */}
-        <div class="flex items-center justify-between p-4 border-b border-pink-300/20 bg-slate-900/50">
-          <div class="flex items-center space-x-3">
-            <div class="w-8 h-8 bg-gradient-to-br from-pink-500 to-purple-500 rounded-full flex items-center justify-center">
-              <div class="text-sm">🖼️</div>
-            </div>
-            <div>
-              <h3 class="text-white font-medium text-sm sm:text-base truncate max-w-[200px] sm:max-w-[300px]">
-                {imageName || "Image Preview"}
-              </h3>
-              <p class="text-pink-200 text-xs">Click outside to close</p>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div class="flex items-center space-x-2">
-            <button
-              onClick$={handleDownload}
-              class="p-2 text-pink-300 hover:text-white hover:bg-pink-500/20 rounded-full transition-all duration-300"
-              title="Download image"
-            >
-              <Download class="w-4 h-4" />
-            </button>
-            <button
-              onClick$={handleExternalView}
-              class="p-2 text-pink-300 hover:text-white hover:bg-pink-500/20 rounded-full transition-all duration-300"
-              title="Open in new tab"
-            >
-              <ExternalLink class="w-4 h-4" />
-            </button>
-            <button
-              onClick$={onClose}
-              class="p-2 text-pink-300 hover:text-white hover:bg-red-500/20 rounded-full transition-all duration-300"
-              title="Close preview"
-            >
-              <X class="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-
-        {/* Image Container */}
-        <div class="relative bg-black/20 flex items-center justify-center min-h-[300px]">
-          {/* Loading State */}
-          {!imageLoaded.value && (
-            <div class="absolute inset-0 flex items-center justify-center">
-              <div class="flex flex-col items-center space-y-3">
-                <div class="w-8 h-8 border-2 border-pink-500 border-t-transparent rounded-full animate-spin"></div>
-                <p class="text-pink-200 text-sm">Loading image...</p>
+        {" "}
+        {/* Modal Content */}{" "}
+        <div
+          class="glass border-theme-card-border relative max-h-[95vh] max-w-[95vw] overflow-hidden rounded-3xl border"
+          onClick$={(event) => event.stopPropagation()}
+        >
+          {/* Header */}
+          <div class="border-theme-card-border flex items-center justify-between border-b bg-slate-900/50 p-4">
+            <div class="flex items-center space-x-3">
+              <div class="bg-gradient-theme-primary-secondary flex h-8 w-8 items-center justify-center rounded-full">
+                <div class="text-sm">🖼️</div>
+              </div>
+              <div>
+                <h3 class="text-theme-primary max-w-[200px] truncate text-sm font-medium sm:max-w-[300px] sm:text-base">
+                  {imageName || "Image Preview"}
+                </h3>
+                <p class="text-theme-secondary text-xs">
+                  Click outside to close
+                </p>
               </div>
             </div>
-          )}
 
-          {/* Image */}
-          {/* eslint-disable-next-line qwik/jsx-img */}
-          <img
-            src={imageUrl}
-            alt={imageName || "Preview"}
-            class={`max-w-full max-h-[70vh] object-contain transition-opacity duration-300 ${imageLoaded.value ? 'opacity-100' : 'opacity-0'
+            {/* Action Buttons */}
+            <div class="flex items-center space-x-2">
+              <button
+                onClick$={handleDownload}
+                class="text-theme-accent hover:text-theme-primary hover:bg-theme-accent/20 rounded-full p-2 transition-all duration-300"
+                title="Download image"
+              >
+                <Download class="h-4 w-4" />
+              </button>
+              <button
+                onClick$={handleExternalView}
+                class="text-theme-accent hover:text-theme-primary hover:bg-theme-accent/20 rounded-full p-2 transition-all duration-300"
+                title="Open in new tab"
+              >
+                <ExternalLink class="h-4 w-4" />
+              </button>
+              <button
+                onClick$={onClose}
+                class="rounded-full p-2 text-pink-300 transition-all duration-300 hover:bg-red-500/20 hover:text-white"
+                title="Close preview"
+              >
+                <X class="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+          {/* Image Container */}
+          <div class="relative flex min-h-[300px] items-center justify-center bg-black/20">
+            {/* Loading State */}
+            {!imageLoaded.value && (
+              <div class="absolute inset-0 flex items-center justify-center">
+                {" "}
+                <div class="flex flex-col items-center space-y-3">
+                  <div class="border-theme-accent h-8 w-8 animate-spin rounded-full border-2 border-t-transparent"></div>
+                  <p class="text-theme-secondary text-sm">Loading image...</p>
+                </div>
+              </div>
+            )}            {/* Image */}
+            {/* eslint-disable-next-line qwik/jsx-img */}
+            <img
+              src={imageUrl}
+              alt={imageName || "Preview"}
+              class={`max-h-[70vh] max-w-full object-contain transition-opacity duration-300 ${
+                imageLoaded.value ? "opacity-100" : "opacity-0"
               }`}
-            onLoad$={() => {
-              imageLoaded.value = true;
-            }}
-            onError$={() => {
-              imageLoaded.value = true;
-            }}
-          />
-        </div>
-
-        {/* Footer */}
-        <div class="p-3 border-t border-pink-300/20 bg-slate-900/50">
-          <div class="flex items-center justify-center text-center">
-            <p class="text-pink-200 text-xs">
-              Press <kbd class="px-1 py-0.5 bg-pink-500/20 rounded text-pink-300">ESC</kbd> to close
-            </p>
+              onLoad$={() => {
+                imageLoaded.value = true;
+              }}
+              onError$={() => {
+                imageLoaded.value = true;
+              }}
+              // Ensure GIFs play automatically
+              style="image-rendering: auto;"
+            />
+          </div>{" "}
+          {/* Footer */}
+          <div class="border-theme-card-border border-t bg-slate-900/50 p-3">
+            <div class="flex items-center justify-center text-center">
+              <p class="text-theme-secondary text-xs">
+                Press{" "}
+                <kbd class="bg-theme-accent/20 text-theme-accent rounded px-1 py-0.5">
+                  ESC
+                </kbd>{" "}
+                to close
+              </p>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  );
-});
+    );
+  },
+);

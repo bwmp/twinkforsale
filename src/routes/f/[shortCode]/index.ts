@@ -72,18 +72,27 @@ function generateDiscordEmbed(upload: any, user: any, baseUrl: string, userStats
   <meta property="og:title" content="${embedTitle}">  <meta property="og:description" content="${plainDescription}">
   <meta property="og:url" content="${upload.url}">
   <meta name="theme-color" content="${embedColor}">
-  
-  <!-- Twitter Card Meta Tags -->
-  <meta name="twitter:card" content="summary_large_image">
+    <!-- Twitter Card Meta Tags -->
+  <meta name="twitter:card" content="${upload.mimeType === 'image/gif' ? 'player' : 'summary_large_image'}">
   <meta name="twitter:title" content="${embedTitle}">
-  <meta name="twitter:description" content="${plainDescription}">
-    ${upload.mimeType.startsWith('image/') ? `
+  <meta name="twitter:description" content="${plainDescription}">${upload.mimeType.startsWith('image/') ? `
   <meta property="og:image" content="${upload.url}?direct=true">
   <meta property="og:image:type" content="${upload.mimeType}">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta name="twitter:image" content="${upload.url}?direct=true">
-  ` : ''}  
+  ${upload.mimeType === 'image/gif' ? `
+  <!-- Additional GIF/Animation support -->
+  <meta property="og:video" content="${upload.url}?direct=true">
+  <meta property="og:video:type" content="image/gif">
+  <meta property="og:video:width" content="1200">
+  <meta property="og:video:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:player" content="${upload.url}?direct=true">
+  <meta name="twitter:player:width" content="1200">
+  <meta name="twitter:player:height" content="630">
+  ` : ''}
+  ` : ''}
   ${embedAuthor ? `<meta name="author" content="${embedAuthor}">` : ''}
   
   <!-- oEmbed alternate link for better platform support -->
@@ -205,10 +214,10 @@ export const onRequest: RequestHandler = async ({ params, send, status, url, req
     // This ensures we only count "real" external views and embeds
     if (!isInternalDashboardView && !isDirect) {
       // Get visitor info for analytics
-      const ipAddress = request.headers.get('x-forwarded-for') || 
-                       request.headers.get('x-real-ip') || 
-                       request.headers.get('cf-connecting-ip') ||
-                       'unknown';
+      const ipAddress = request.headers.get('x-forwarded-for') ||
+        request.headers.get('x-real-ip') ||
+        request.headers.get('cf-connecting-ip') ||
+        'unknown';
       const userAgent = request.headers.get('user-agent') || 'unknown';
 
       // Create view log entry
@@ -219,7 +228,7 @@ export const onRequest: RequestHandler = async ({ params, send, status, url, req
           userAgent,
           referer: referrer || null,
         }
-      });      await db.upload.update({
+      }); await db.upload.update({
         where: { id: upload.id },
         data: {
           views: { increment: 1 },
@@ -249,19 +258,25 @@ export const onRequest: RequestHandler = async ({ params, send, status, url, req
     // If this is a direct file request, always serve the file directly
     // For non-direct requests, serve embed HTML for bots/crawlers, direct file for browsers
     const userAgent = request.headers.get('user-agent')?.toLowerCase() || '';
-    const isBotOrCrawler = /bot|crawler|spider|crawling|discord|telegram|whatsapp|facebook|twitter|slack/i.test(userAgent);
-
-    if (isDirect || (!isBotOrCrawler)) {
+    const isBotOrCrawler = /bot|crawler|spider|crawling|discord|telegram|whatsapp|facebook|twitter|slack/i.test(userAgent);    if (isDirect || (!isBotOrCrawler)) {
       // Read and serve file directly
       const fileBuffer = fs.readFileSync(filePath);
-      const response = new Response(fileBuffer, {
-        headers: {
-          "Content-Type": upload.mimeType,
-          "Content-Length": upload.size.toString(),
-          "Content-Disposition": `inline; filename="${upload.originalName}"`,
-          "Cache-Control": "public, max-age=31536000"
-        }
-      });
+      
+      // Special headers for GIFs to ensure proper animation support
+      const headers: Record<string, string> = {
+        "Content-Type": upload.mimeType,
+        "Content-Length": upload.size.toString(),
+        "Content-Disposition": `inline; filename="${upload.originalName}"`,
+        "Cache-Control": "public, max-age=31536000"
+      };
+
+      // Additional headers for GIFs to ensure proper playback
+      if (upload.mimeType === 'image/gif') {
+        headers["X-Content-Type-Options"] = "nosniff";
+        headers["Accept-Ranges"] = "bytes";
+      }
+
+      const response = new Response(fileBuffer, { headers });
 
       send(response);
       return;

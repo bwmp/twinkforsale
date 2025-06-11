@@ -1,6 +1,7 @@
 import { component$, isDev } from "@builder.io/qwik";
 import { QwikCityProvider, RouterOutlet } from "@builder.io/qwik-city";
 import { RouterHead } from "./components/router-head/router-head";
+import { useThemeProvider } from "./lib/theme-store";
 
 import "./global.css";
 
@@ -11,6 +12,9 @@ export default component$(() => {
    *
    * Don't remove the `<head>` and `<body>` elements.
    */
+
+  // Initialize theme provider
+  useThemeProvider();
 
   return (
     <QwikCityProvider>
@@ -24,7 +28,7 @@ export default component$(() => {
         )}
         <RouterHead />
       </head>
-      <body lang="en">
+      <body lang="en" style="background-color: var(--theme-bg-primary); color: var(--theme-text-primary);">
         <RouterOutlet />
       </body>
     </QwikCityProvider>

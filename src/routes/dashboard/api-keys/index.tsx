@@ -5,7 +5,7 @@ import type { DocumentHead } from "@builder.io/qwik-city";
 export const useApiKeys = routeLoader$(async (requestEvent) => {
   // Import server-side dependencies inside the loader
   const { db } = await import("~/lib/db");
-  
+
   const session = requestEvent.sharedMap.get("session");
 
   if (!session?.user?.email) {
@@ -18,9 +18,9 @@ export const useApiKeys = routeLoader$(async (requestEvent) => {
     include: {
       apiKeys: {
         where: { isActive: true },
-        orderBy: { createdAt: "desc" }
-      }
-    }
+        orderBy: { createdAt: "desc" },
+      },
+    },
   });
 
   if (!user) {
@@ -33,14 +33,14 @@ export const useApiKeys = routeLoader$(async (requestEvent) => {
   return {
     user,
     apiKeys: user.apiKeys,
-    origin
+    origin,
   };
 });
 
 export const createApiKey = server$(async function (name: string) {
   // Import server-side dependencies inside the server action
   const { db } = await import("~/lib/db");
-  
+
   const session = this.sharedMap.get("session");
 
   if (!session?.user?.email) {
@@ -48,7 +48,7 @@ export const createApiKey = server$(async function (name: string) {
   }
   // Find user
   const user = await db.user.findUnique({
-    where: { email: session.user.email }
+    where: { email: session.user.email },
   });
 
   if (!user) {
@@ -57,29 +57,31 @@ export const createApiKey = server$(async function (name: string) {
 
   // Check if user is approved
   if (!user.isApproved) {
-    throw new Error("Account pending approval. Please wait for admin approval before creating API keys.");
+    throw new Error(
+      "Account pending approval. Please wait for admin approval before creating API keys.",
+    );
   }
 
   // Create new API key
   const apiKey = await db.apiKey.create({
     data: {
       name,
-      userId: user.id
-    }
+      userId: user.id,
+    },
   });
 
   return {
     id: apiKey.id,
     key: apiKey.key,
     name: apiKey.name,
-    createdAt: apiKey.createdAt
+    createdAt: apiKey.createdAt,
   };
 });
 
 export const deleteApiKey = server$(async function (keyId: string) {
   // Import server-side dependencies inside the server action
   const { db } = await import("~/lib/db");
-  
+
   const session = this.sharedMap.get("session");
 
   if (!session?.user?.email) {
@@ -89,7 +91,7 @@ export const deleteApiKey = server$(async function (keyId: string) {
   // Find the API key and verify ownership
   const apiKey = await db.apiKey.findUnique({
     where: { id: keyId },
-    include: { user: true }
+    include: { user: true },
   });
 
   if (!apiKey || apiKey.user.email !== session.user.email) {
@@ -99,7 +101,7 @@ export const deleteApiKey = server$(async function (keyId: string) {
   // Soft delete by setting isActive to false
   await db.apiKey.update({
     where: { id: keyId },
-    data: { isActive: false }
+    data: { isActive: false },
   });
 
   return { success: true };
@@ -152,42 +154,43 @@ export default component$(() => {
       console.error("Failed to copy:", error);
       alert("Failed to copy API key");
     }
-  }); return (
+  });
+  return (
     <>
       {/* Page Header */}
-      <div class="mb-6 sm:mb-8 text-center">
-        <h1 class="text-3xl sm:text-4xl font-bold text-gradient-cute mb-3 flex items-center justify-center gap-2 flex-wrap">
+      <div class="mb-6 text-center sm:mb-8">
+        <h1 class="text-gradient-cute mb-3 flex flex-wrap items-center justify-center gap-2 text-3xl font-bold sm:text-4xl">
           API Keys Manager
         </h1>
-        <p class="text-pink-200 text-base sm:text-lg px-4">
-          Create and manage API keys for ShareX integration~ Keep them safe and secure! (◕‿◕)♡
+        <p class="text-theme-secondary px-4 text-base sm:text-lg">
+          Create and manage API keys for ShareX integration~ Keep them safe and
+          secure! (◕‿◕)♡
         </p>
       </div>
-
       {/* Account Status Check */}
       {!apiKeysData.value.user.isApproved && (
-        <div class="mb-6 sm:mb-8 p-4 sm:p-6 bg-yellow-100 border border-yellow-400 text-yellow-800 rounded-xl">
+        <div class="bg-theme-secondary/10 border-theme-accent-secondary text-theme-primary mb-6 rounded-xl border p-4 sm:mb-8 sm:p-6">
           <div class="text-center">
-            <h3 class="font-semibold text-lg mb-2">Account Pending Approval</h3>
-            <p class="text-sm">
-              You cannot create API keys until your account is approved by an administrator.
-              Please wait for approval before proceeding.
+            <h3 class="mb-2 text-lg font-semibold">Account Pending Approval</h3>
+            <p class="text-theme-secondary text-sm">
+              You cannot create API keys until your account is approved by an
+              administrator. Please wait for approval before proceeding.
             </p>
           </div>
         </div>
       )}
-
       {/* Create New API Key */}
       {apiKeysData.value.user.isApproved && (
-        <div class="card-cute rounded-3xl p-4 sm:p-6 mb-6 sm:mb-8">
-          <h2 class="text-lg sm:text-xl font-bold text-gradient-cute mb-4 flex items-center gap-2">
+        <div class="card-cute mb-6 rounded-3xl p-4 sm:mb-8 sm:p-6">
+          <h2 class="text-gradient-cute mb-4 flex items-center gap-2 text-lg font-bold sm:text-xl">
             Create New API Key
           </h2>
-          <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
+          <div class="flex flex-col gap-3 sm:flex-row sm:gap-4">
+            {" "}
             <input
               type="text"
               placeholder="API Key Name (e.g., ShareX, Development) uwu"
-              class="flex-1 glass rounded-full px-4 sm:px-6 py-3 text-white placeholder-pink-300/60 focus:outline-none focus:ring-2 focus:ring-pink-500/50 transition-all duration-300 text-sm sm:text-base"
+              class="glass text-theme-primary placeholder-theme-muted focus:ring-theme-accent-primary/50 flex-1 rounded-full px-4 py-3 text-sm transition-all duration-300 focus:ring-2 focus:outline-none sm:px-6 sm:text-base"
               value={newKeyName.value}
               onInput$={(e) => {
                 newKeyName.value = (e.target as HTMLInputElement).value;
@@ -201,84 +204,105 @@ export default component$(() => {
             <button
               onClick$={handleCreateApiKey}
               disabled={!newKeyName.value.trim() || isCreating.value}
-              class="btn-cute disabled:opacity-50 disabled:cursor-not-allowed text-white px-4 sm:px-6 py-3 rounded-full font-medium text-sm sm:text-base w-full sm:w-auto"
+              class="btn-cute text-theme-primary w-full rounded-full px-4 py-3 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:px-6 sm:text-base"
             >
               {isCreating.value ? "Creating... ⏳" : "Create API Key 🚀"}
             </button>
           </div>
         </div>
       )}
-
       {/* New Key Display */}
       {showNewKey.value && (
-        <div class="bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-400/30 rounded-3xl p-4 sm:p-6 mb-6 sm:mb-8 glass">
-          <h3 class="text-base sm:text-lg font-bold text-green-400 mb-2 flex items-center flex-wrap">
-            API Key Created! 🎉 <span class="ml-2 sparkle">✨</span>
+        <div class="bg-gradient-theme-secondary-tertiary/20 border-theme-accent-secondary/30 glass mb-6 rounded-3xl border p-4 sm:mb-8 sm:p-6">
+          <h3 class="text-theme-accent-secondary mb-2 flex flex-wrap items-center text-base font-bold sm:text-lg">
+            API Key Created! 🎉 <span class="sparkle ml-2">✨</span>
           </h3>
-          <p class="text-pink-200 mb-4 text-sm sm:text-base">
-            Save this API key now~ For security reasons, it won't be shown again! (◕‿◕)♡
+          <p class="text-theme-secondary mb-4 text-sm sm:text-base">
+            Save this API key now~ For security reasons, it won't be shown
+            again! (◕‿◕)♡
           </p>
           <div class="glass rounded-2xl p-3 sm:p-4">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <div class="flex-1 min-w-0">
-                <p class="text-xs sm:text-sm text-pink-200 mb-1">Name: {showNewKey.value.name}</p>
-                <p class="font-mono text-white break-all text-xs sm:text-sm bg-black/20 p-2 rounded-lg">{showNewKey.value.key}</p>
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div class="min-w-0 flex-1">
+                <p class="text-theme-secondary mb-1 text-xs sm:text-sm">
+                  Name: {showNewKey.value.name}
+                </p>
+                <p class="text-theme-primary bg-theme-tertiary/20 rounded-lg p-2 font-mono text-xs break-all sm:text-sm">
+                  {showNewKey.value.key}
+                </p>
               </div>
               <button
                 onClick$={() => copyToClipboard(showNewKey.value!.key)}
-                class="btn-cute text-white px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm w-full sm:w-auto"
-              >                Copy 📋
+                class="btn-cute text-theme-primary w-full rounded-full px-3 py-2 text-xs sm:w-auto sm:px-4 sm:text-sm"
+              >
+                {" "}
+                Copy 📋
               </button>
             </div>
           </div>
           <button
-            onClick$={() => showNewKey.value = null}
-            class="mt-4 text-pink-300 hover:text-white text-sm underline"
+            onClick$={() => (showNewKey.value = null)}
+            class="text-theme-accent-tertiary hover:text-theme-primary mt-4 text-sm underline"
           >
             I've saved it safely ✓
           </button>
         </div>
       )}
-
       {/* API Keys List */}
       <div class="card-cute rounded-3xl p-4 sm:p-6">
-        <h2 class="text-lg sm:text-xl font-bold text-gradient-cute mb-4 flex items-center flex-wrap">
+        <h2 class="text-gradient-cute mb-4 flex flex-wrap items-center text-lg font-bold sm:text-xl">
           Your API Keys
         </h2>
 
         {apiKeysData.value.apiKeys.length === 0 ? (
-          <div class="text-center py-8 sm:py-12">
-            <div class="w-12 sm:w-16 h-12 sm:h-16 glass rounded-full flex items-center justify-center mx-auto mb-4">
+          <div class="py-8 text-center sm:py-12">
+            <div class="glass mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full sm:h-16 sm:w-16">
               <div class="text-xl sm:text-2xl">🔑</div>
-            </div>
-            <h3 class="text-base sm:text-lg font-medium text-white mb-2">No API Keys Yet! ✨</h3>
-            <p class="text-pink-200 text-sm sm:text-base px-4">
-              Create your first API key to start using the API or configure ShareX~ (◕‿◕)♡
+            </div>{" "}
+            <h3 class="text-theme-primary mb-2 text-base font-medium sm:text-lg">
+              No API Keys Yet! ✨
+            </h3>
+            <p class="text-theme-secondary px-4 text-sm sm:text-base">
+              Create your first API key to start using the API or configure
+              ShareX~ (◕‿◕)♡
             </p>
           </div>
         ) : (
           <div class="space-y-3 sm:space-y-4">
+            {" "}
             {apiKeysData.value.apiKeys.map((apiKey) => (
-              <div key={apiKey.id} class="glass rounded-2xl p-3 sm:p-4 border border-pink-300/20 hover:border-pink-300/40 transition-all duration-300">
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-                  <div class="flex-1 min-w-0">
-                    <h3 class="text-base sm:text-lg font-medium text-white mb-1 flex items-center">
-                      🔐 <span class="truncate ml-1">{apiKey.name}</span>
+              <div
+                key={apiKey.id}
+                class="glass border-theme-card-border hover:border-theme-accent-primary rounded-2xl border p-3 transition-all duration-300 sm:p-4"
+              >
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                  <div class="min-w-0 flex-1">
+                    <h3 class="text-theme-primary mb-1 flex items-center text-base font-medium sm:text-lg">
+                      🔐 <span class="ml-1 truncate">{apiKey.name}</span>
                     </h3>
-                    <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-pink-200">
-                      <span>Created: {new Date(apiKey.createdAt).toLocaleDateString()}</span>
+                    <div class="text-theme-secondary flex flex-col gap-2 text-xs sm:flex-row sm:items-center sm:gap-4 sm:text-sm">
+                      <span>
+                        Created:{" "}
+                        {new Date(apiKey.createdAt).toLocaleDateString()}
+                      </span>
                       {apiKey.lastUsed && (
-                        <span>Last used: {new Date(apiKey.lastUsed).toLocaleDateString()}</span>
+                        <span>
+                          Last used:{" "}
+                          {new Date(apiKey.lastUsed).toLocaleDateString()}
+                        </span>
                       )}
                     </div>
-                    <div class="mt-2 flex flex-col sm:flex-row sm:items-center gap-2">
-                      <span class="text-xs sm:text-sm text-pink-200">Key:</span>
-                      <code class="bg-black/30 px-2 sm:px-3 py-1 rounded-full text-pink-300 font-mono text-xs sm:text-sm break-all">
-                        {apiKey.key.substring(0, 8)}...{apiKey.key.substring(apiKey.key.length - 4)}
+                    <div class="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
+                      <span class="text-theme-secondary text-xs sm:text-sm">
+                        Key:
+                      </span>
+                      <code class="bg-theme-tertiary/30 text-theme-accent-tertiary rounded-full px-2 py-1 font-mono text-xs break-all sm:px-3 sm:text-sm">
+                        {apiKey.key.substring(0, 8)}...
+                        {apiKey.key.substring(apiKey.key.length - 4)}
                       </code>
                       <button
                         onClick$={() => copyToClipboard(apiKey.key)}
-                        class="text-pink-400 hover:text-pink-300 text-xs sm:text-sm px-2 sm:px-3 py-1 rounded-full hover:bg-pink-500/20 transition-all duration-300 w-full sm:w-auto text-center"
+                        class="text-theme-action-copy hover:text-theme-accent-tertiary hover:bg-theme-accent-primary/20 w-full rounded-full px-2 py-1 text-center text-xs transition-all duration-300 sm:w-auto sm:px-3 sm:text-sm"
                       >
                         Copy Full Key 📋
                       </button>
@@ -286,7 +310,7 @@ export default component$(() => {
                   </div>
                   <button
                     onClick$={() => handleDeleteApiKey(apiKey.id, apiKey.name)}
-                    class="text-red-400 hover:text-red-300 p-2 sm:p-3 rounded-full hover:bg-red-500/20 transition-all duration-300 self-end sm:self-auto"
+                    class="text-theme-action-delete hover:text-theme-accent-primary hover:bg-theme-accent-primary/20 self-end rounded-full p-2 transition-all duration-300 sm:self-auto sm:p-3"
                     title="Delete API Key"
                   >
                     🗑️
@@ -296,24 +320,31 @@ export default component$(() => {
             ))}
           </div>
         )}
-      </div>
-
+      </div>{" "}
       {/* ShareX Integration Info */}
       {apiKeysData.value.user.isApproved && (
-        <div class="bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border border-blue-400/30 rounded-3xl p-4 sm:p-6 mt-6 sm:mt-8 glass">
-          <h3 class="text-base sm:text-lg font-bold text-blue-400 mb-2 flex items-center flex-wrap">
+        <div class="bg-gradient-theme-tertiary-quaternary/20 border-theme-accent-tertiary/30 glass mt-6 rounded-3xl border p-4 sm:mt-8 sm:p-6">
+          <h3 class="text-theme-accent-tertiary mb-2 flex flex-wrap items-center text-base font-bold sm:text-lg">
             ShareX Integration
           </h3>
-          <p class="text-pink-200 mb-4 text-sm sm:text-base">
-            Use your API key to configure ShareX for automatic uploads~ Visit the{" "}
-            <a href="/dashboard/embed" class="text-pink-400 hover:text-pink-300 underline font-medium">
+          <p class="text-theme-secondary mb-4 text-sm sm:text-base">
+            Use your API key to configure ShareX for automatic uploads~ Visit
+            the{" "}
+            <a
+              href="/dashboard/embed"
+              class="text-theme-accent-secondary hover:text-theme-accent-tertiary font-medium underline"
+            >
               Setup page
             </a>{" "}
             to download ShareX configuration files! (◕‿◕)♡
           </p>
-          <div class="glass rounded-2xl p-3 sm:p-4 border border-cyan-400/20">
-            <p class="text-xs sm:text-sm text-pink-200 mb-2">API Endpoint:</p>
-            <code class="text-cyan-300 font-mono text-xs sm:text-sm break-all">{apiKeysData.value.origin}/api/upload</code>
+          <div class="glass border-theme-accent-quaternary/20 rounded-2xl border p-3 sm:p-4">
+            <p class="text-theme-secondary mb-2 text-xs sm:text-sm">
+              API Endpoint:
+            </p>
+            <code class="text-theme-accent-quaternary font-mono text-xs break-all sm:text-sm">
+              {apiKeysData.value.origin}/api/upload
+            </code>
           </div>
         </div>
       )}
@@ -326,7 +357,8 @@ export const head: DocumentHead = {
   meta: [
     {
       name: "description",
-      content: "Create and manage API keys for ShareX integration and programmatic access.",
+      content:
+        "Create and manage API keys for ShareX integration and programmatic access.",
     },
   ],
 };

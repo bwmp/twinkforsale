@@ -8,21 +8,21 @@ export const onPost: RequestHandler = async ({ request, json }) => {
   // Check for API key authentication
   const authHeader = request.headers.get("Authorization");
   const apiKey = authHeader?.replace("Bearer ", "");
-  
+
   let userId: string | undefined;
-    if (apiKey) {
+  if (apiKey) {
     // Validate API key and get user
     const keyRecord = await db.apiKey.findUnique({
       where: { key: apiKey, isActive: true },
       include: { user: true }
     });
-    
+
     if (keyRecord) {
       // Check if user is approved
       if (!keyRecord.user.isApproved) {
         throw json(403, { error: "Account pending approval. Please wait for admin approval before uploading files." });
       }
-      
+
       userId = keyRecord.userId;
       // Update last used timestamp
       await db.apiKey.update({
@@ -31,37 +31,37 @@ export const onPost: RequestHandler = async ({ request, json }) => {
       });
     }
   }
-  
+
   // Parse multipart form data
   const formData = await request.formData();
   const file = formData.get("file") as File;
-  
+
   if (!file) {
     throw json(400, { error: "No file provided" });
   }
-    // Validate file
+  // Validate file
   const validation = validateFile(file);
   if (!validation.isValid) {
     throw json(400, { error: validation.error });
   }
-    // Check user limits if authenticated
+  // Check user limits if authenticated
   if (userId) {
     const user = await db.user.findUnique({
       where: { id: userId },
       include: { uploads: true }
     });
-    
+
     if (user) {
       // Check upload count limit
       if (user.uploads.length >= user.maxUploads) {
         throw json(429, { error: "Upload limit exceeded" });
       }
-      
+
       // Check file size limit
       if (file.size > user.maxFileSize) {
         throw json(413, { error: "File too large" });
       }
-        // Check storage limit (user's custom limit or env default)
+      // Check storage limit (user's custom limit or env default)
       const config = getEnvConfig();
       const userStorageLimit = user.maxStorageLimit || config.BASE_STORAGE_LIMIT;
       const totalStorage = user.storageUsed + file.size;
@@ -77,7 +77,7 @@ export const onPost: RequestHandler = async ({ request, json }) => {
   }  // Generate unique identifiers
   let useCuteWords = false;
   let customUploadDomain: string | null = null;
-  
+
   // Get user's preferences if authenticated
   if (userId) {
     const user = await db.user.findUnique({
@@ -90,25 +90,25 @@ export const onPost: RequestHandler = async ({ request, json }) => {
   const shortCode = generateShortCode(useCuteWords);
   const deletionKey = nanoid(32);
   const filename = `${shortCode}_${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
-    // Save file to storage
+  // Save file to storage
   await saveFile(file, filename, userId);
-    // Determine the upload domain based on request or user preference
+  // Determine the upload domain based on request or user preference
   const requestHost = request.headers.get("host");
   const config = getEnvConfig();
   let uploadDomain = config.BASE_URL;
-  
+
   // Check if request came from a custom domain
   if (requestHost && requestHost !== new URL(config.BASE_URL).host) {
     // Validate this is an allowed custom domain (*.twink.forsale or user's custom domain)
-    if (requestHost.endsWith('.twink.forsale') || 
-        (customUploadDomain && requestHost === customUploadDomain)) {
+    if (requestHost.endsWith('.twink.forsale') ||
+      (customUploadDomain && requestHost === customUploadDomain)) {
       uploadDomain = `https://${requestHost}`;
     }
   } else if (customUploadDomain && !requestHost?.endsWith('.twink.forsale')) {
     // Use user's preferred custom domain if no specific subdomain was used
     uploadDomain = `https://${customUploadDomain}`;
   }
-  
+
   // Create database record
   const upload = await db.upload.create({
     data: {
@@ -122,7 +122,7 @@ export const onPost: RequestHandler = async ({ request, json }) => {
       userId
     }
   });
-  
+
   // Update user storage if authenticated
   if (userId) {
     await db.user.update({
@@ -134,14 +134,14 @@ export const onPost: RequestHandler = async ({ request, json }) => {
       }
     });
   }
-    // Return ShareX-compatible response
+  // Return ShareX-compatible response
   const response: any = {
     url: upload.url
   };
-    // Add thumbnail URL for images
+  // Add thumbnail URL for images
   if (file.type.startsWith("image/")) {
     response.thumbnail_url = `${uploadDomain}/f/${shortCode}/thumb`;
   }
-  
+
   throw json(201, response);
 };

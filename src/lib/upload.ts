@@ -26,22 +26,22 @@ export function validateFile(file: File): { isValid: boolean; error?: string } {
   const config = getEnvConfig();
   const maxSize = config.MAX_FILE_SIZE;
   const allowedTypes = config.ALLOWED_MIME_TYPES;
-  
+
   // Check file size
   if (file.size > maxSize) {
     return { isValid: false, error: "File too large" };
   }
-  
+
   // Check file type
   if (!allowedTypes.includes(file.type)) {
     return { isValid: false, error: "File type not allowed" };
   }
-  
+
   // Check filename length
   if (file.name.length > 255) {
     return { isValid: false, error: "Filename too long" };
   }
-  
+
   return { isValid: true };
 }
 
@@ -49,7 +49,7 @@ export function validateFile(file: File): { isValid: boolean; error?: string } {
 export async function saveFile(file: File, filename: string, userId?: string): Promise<string> {
   const config = getEnvConfig();
   const baseUploadDir = config.UPLOAD_DIR;
-  
+
   // Determine the upload directory based on whether user is authenticated
   let uploadDir: string;
   if (userId) {
@@ -59,20 +59,20 @@ export async function saveFile(file: File, filename: string, userId?: string): P
     // Anonymous uploads go to 'anonymous' folder
     uploadDir = path.join(baseUploadDir, 'anonymous');
   }
-  
+
   // Ensure upload directory exists
   if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
   }
-  
+
   const filePath = path.join(uploadDir, filename);
-  
+
   // Convert File to Buffer
   const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
-  
+
   // Write file
   fs.writeFileSync(filePath, buffer);
-  
+
   return filePath;
 }

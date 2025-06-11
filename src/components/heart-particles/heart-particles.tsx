@@ -15,12 +15,12 @@ export const HeartParticles = component$(() => {
   const canvasRef = useSignal<HTMLCanvasElement>();
 
   const heartColors = [
-    'rgba(236, 72, 153, 1)',
-    'rgba(219, 39, 119, 1)',
-    'rgba(190, 24, 93, 1)',
-    'rgba(147, 51, 234, 1)',
-    'rgba(126, 34, 206, 1)',
-    'rgba(168, 85, 247, 1)',
+    "rgba(236, 72, 153, 1)",
+    "rgba(219, 39, 119, 1)",
+    "rgba(190, 24, 93, 1)",
+    "rgba(147, 51, 234, 1)",
+    "rgba(126, 34, 206, 1)",
+    "rgba(168, 85, 247, 1)",
   ];
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(() => {
@@ -38,12 +38,17 @@ export const HeartParticles = component$(() => {
       y: -20, // start slightly above the screen
       size: Math.random() * 10 + 4, // 4-14px
       speedX: (Math.random() - 0.5) * 0.5, // gentle horizontal drift
-      speedY: (Math.random() * 0.8 + 0.3), // downward movement
+      speedY: Math.random() * 0.8 + 0.3, // downward movement
       opacity: Math.random() * 0.8 + 0.2, // 0.2-1.0
-      color: heartColors[Math.floor(Math.random() * heartColors.length)]
+      color: heartColors[Math.floor(Math.random() * heartColors.length)],
     });
 
-    const drawHeart = (ctx: CanvasRenderingContext2D, x: number, y: number, size: number) => {
+    const drawHeart = (
+      ctx: CanvasRenderingContext2D,
+      x: number,
+      y: number,
+      size: number,
+    ) => {
       const scale = size / 10;
       ctx.save();
       ctx.translate(x, y);
@@ -68,14 +73,14 @@ export const HeartParticles = component$(() => {
     };
 
     const animate = (currentTime: number) => {
-      const ctx = canvas.getContext('2d');
+      const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
       // Clear canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       // Update and draw particles
-      particles = particles.filter(particle => {
+      particles = particles.filter((particle) => {
         // Update position
         particle.x += particle.speedX;
         particle.y += particle.speedY;
@@ -89,14 +94,20 @@ export const HeartParticles = component$(() => {
         }
 
         // Draw heart
-        ctx.fillStyle = particle.color.replace(/[\d.]+\)$/, `${particle.opacity})`);
+        ctx.fillStyle = particle.color.replace(
+          /[\d.]+\)$/,
+          `${particle.opacity})`,
+        );
         drawHeart(ctx, particle.x, particle.y, particle.size);
 
         return true;
       });
 
       // Add new particles at consistent intervals
-      if (currentTime - lastParticleTime > particleInterval && particles.length < 100) {
+      if (
+        currentTime - lastParticleTime > particleInterval &&
+        particles.length < 100
+      ) {
         particles.push(createParticle(Date.now(), canvas.width));
         lastParticleTime = currentTime;
       }
@@ -114,12 +125,12 @@ export const HeartParticles = component$(() => {
 
     // Add resize listener
     const handleResize = () => resizeCanvas();
-    window.addEventListener('resize', handleResize);    // Start animation
+    window.addEventListener("resize", handleResize); // Start animation
     animate(performance.now());
 
     // Cleanup
     return () => {
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener("resize", handleResize);
       if (animationId) {
         cancelAnimationFrame(animationId);
       }
@@ -129,10 +140,10 @@ export const HeartParticles = component$(() => {
   return (
     <canvas
       ref={canvasRef}
-      class="fixed inset-0 pointer-events-none z-0"
+      class="pointer-events-none fixed inset-0 z-0"
       style={{
-        filter: 'blur(1px)',
-        opacity: '0.6'
+        filter: "blur(1px)",
+        opacity: "0.6",
       }}
     />
   );

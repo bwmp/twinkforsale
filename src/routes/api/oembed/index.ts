@@ -98,13 +98,19 @@ export const onGet: RequestHandler = async ({ url, json }) => {
     if (embedAuthor) {
       oembedResponse.author_name = embedAuthor;
       oembedResponse.author_url = requestUrl;
-    }
-
-    // Add thumbnail for images
+    }    // Add thumbnail for images
     if (upload.mimeType.startsWith('image/')) {
       oembedResponse.thumbnail_url = `${upload.url}?direct=true`;
       oembedResponse.thumbnail_width = 400;
       oembedResponse.thumbnail_height = 300;
+      
+      // For GIFs, also add video-like properties for better platform support
+      if (upload.mimeType === 'image/gif') {
+        oembedResponse.type = "video"; // Some platforms prefer this for animated content
+        oembedResponse.html = `<img src="${upload.url}?direct=true" alt="${embedTitle}" style="max-width:100%;height:auto;" />`;
+        oembedResponse.width = 400;
+        oembedResponse.height = 300;
+      }
     }
 
     throw json(200, oembedResponse);

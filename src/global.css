@@ -8,6 +8,31 @@
 
 :root {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  
+  /* Default theme colors (dark theme) - will be overridden by theme system */
+  --theme-bg-primary: #0f172a;
+  --theme-bg-secondary: #1e293b;
+  --theme-bg-tertiary: #334155;
+  --theme-bg-gradient-from: #0f172a;
+  --theme-bg-gradient-via: #581c87;
+  --theme-bg-gradient-to: #831843;
+  --theme-text-primary: #ffffff;
+  --theme-text-secondary: #f1f5f9;
+  --theme-text-muted: #94a3b8;
+  --theme-accent-primary: #ec4899;
+  --theme-accent-secondary: #f472b6;
+  --theme-accent-tertiary: #c084fc;
+  --theme-accent-quaternary: #8b5cf6;
+  --theme-card-bg: linear-gradient(135deg, rgba(15, 23, 42, 0.8), rgba(30, 41, 59, 0.6));
+  --theme-card-border: rgba(236, 72, 153, 0.2);
+  --theme-glass-bg: rgba(15, 23, 42, 0.3);
+  --theme-glass-border: rgba(255, 255, 255, 0.1);
+  --theme-scrollbar-track: #1e293b;
+  --theme-scrollbar-thumb: linear-gradient(to bottom, #ec4899, #8b5cf6);
+  --theme-scrollbar-thumb-hover: linear-gradient(to bottom, #f472b6, #a855f7);
+  --theme-button-gradient-start: #ec4899;
+  --theme-button-gradient-end: #8b5cf6;
+  --theme-button-shadow: rgba(236, 72, 153, 0.3);
 }
 
 /* Custom scrollbar */
@@ -16,16 +41,16 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #1e293b;
+  background: var(--theme-scrollbar-track);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(to bottom, #ec4899, #8b5cf6);
+  background: var(--theme-scrollbar-thumb);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(to bottom, #f472b6, #a855f7);
+  background: var(--theme-scrollbar-thumb-hover);
 }
 
 /* Cute animations */
@@ -71,15 +96,15 @@
 
 /* Glassmorphism effect */
 .glass {
-  background: rgba(15, 23, 42, 0.3);
+  background: var(--theme-glass-bg);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--theme-glass-border);
 }
 
 /* Cute button styles */
 .btn-cute {
-  background: linear-gradient(135deg, #ec4899, #8b5cf6);
+  background: linear-gradient(135deg, var(--theme-button-gradient-start), var(--theme-button-gradient-end));
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
@@ -87,7 +112,7 @@
 
 .btn-cute:hover {
   transform: translateY(-2px);
-  box-shadow: 0 20px 40px rgba(236, 72, 153, 0.3);
+  box-shadow: 0 20px 40px var(--theme-button-shadow);
 }
 
 .btn-cute:before {
@@ -108,19 +133,19 @@
 /* Cute card hover effects */
 .card-cute {
   transition: all 0.3s ease;
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.8), rgba(30, 41, 59, 0.6));
-  border: 1px solid rgba(236, 72, 153, 0.2);
+  background: var(--theme-card-bg);
+  border: 1px solid var(--theme-card-border);
 }
 
 .card-cute:hover {
   transform: translateY(-5px);
-  border-color: rgba(236, 72, 153, 0.4);
-  box-shadow: 0 20px 40px rgba(236, 72, 153, 0.1);
+  border-color: var(--theme-accent-primary);
+  box-shadow: 0 20px 40px var(--theme-button-shadow);
 }
 
 /* Cute text gradient */
 .text-gradient-cute {
-  background: linear-gradient(135deg, #ec4899, #f472b6, #c084fc, #8b5cf6);
+  background: linear-gradient(135deg, var(--theme-accent-primary), var(--theme-accent-secondary), var(--theme-accent-tertiary), var(--theme-accent-quaternary));
   background-size: 300% 300%;
   -webkit-background-clip: text;
   background-clip: text;
@@ -130,7 +155,7 @@
 
 /* Gradient for SVG icons - makes them inherit the same animated gradient */
 .icon-gradient-cute {
-  background: linear-gradient(135deg, #ec4899, #f472b6, #c084fc, #8b5cf6);
+  background: linear-gradient(135deg, var(--theme-accent-primary), var(--theme-accent-secondary), var(--theme-accent-tertiary), var(--theme-accent-quaternary));
   background-size: 300% 300%;
   animation: gradient-shift 3s ease infinite;
   -webkit-mask: var(--icon-mask, none);
@@ -148,7 +173,7 @@
   display: inline-block;
   width: 1.25rem;
   height: 1.25rem;
-  background: linear-gradient(135deg, #ec4899, #f472b6, #c084fc, #8b5cf6);
+  background: linear-gradient(135deg, var(--theme-accent-primary), var(--theme-accent-secondary), var(--theme-accent-tertiary), var(--theme-accent-quaternary));
   background-size: 300% 300%;
   animation: gradient-shift 3s ease infinite;
   -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z'/%3E%3C/svg%3E") no-repeat center;
@@ -162,4 +187,392 @@
     width: 1.5rem;
     height: 1.5rem;
   }
+}
+
+/* Theme-aware utility classes */
+.text-theme-primary {
+  color: var(--theme-text-primary);
+}
+
+.text-theme-secondary {
+  color: var(--theme-text-secondary);
+}
+
+.text-theme-muted {
+  color: var(--theme-text-muted);
+}
+
+.text-theme-accent-primary {
+  color: var(--theme-accent-primary);
+}
+
+.text-theme-accent-secondary {
+  color: var(--theme-accent-secondary);
+}
+
+.text-theme-accent-tertiary {
+  color: var(--theme-accent-tertiary);
+}
+
+.text-theme-accent-quaternary {
+  color: var(--theme-accent-quaternary);
+}
+
+.bg-theme-primary {
+  background-color: var(--theme-bg-primary);
+}
+
+.bg-theme-secondary {
+  background-color: var(--theme-bg-secondary);
+}
+
+.bg-theme-tertiary {
+  background-color: var(--theme-bg-tertiary);
+}
+
+.bg-theme-accent-primary {
+  background-color: var(--theme-accent-primary);
+}
+
+.bg-theme-accent-secondary {
+  background-color: var(--theme-accent-secondary);
+}
+
+.bg-theme-accent-tertiary {
+  background-color: var(--theme-accent-tertiary);
+}
+
+.bg-theme-accent-quaternary {
+  background-color: var(--theme-accent-quaternary);
+}
+
+.border-theme-accent {
+  border-color: var(--theme-accent-primary);
+}
+
+.border-theme-card {
+  border-color: var(--theme-card-border);
+}
+
+.bg-theme-tertiary\/20 {
+  background-color: color-mix(in srgb, var(--theme-bg-tertiary) 20%, transparent);
+}
+
+/* Theme gradient backgrounds */
+.bg-gradient-theme-primary-secondary {
+  background: linear-gradient(135deg, var(--theme-accent-primary), var(--theme-accent-secondary));
+}
+
+.bg-gradient-theme-secondary-tertiary {
+  background: linear-gradient(135deg, var(--theme-accent-secondary), var(--theme-accent-tertiary));
+}
+
+.bg-gradient-theme-tertiary-quaternary {
+  background: linear-gradient(135deg, var(--theme-accent-tertiary), var(--theme-accent-quaternary));
+}
+
+.bg-gradient-theme-quaternary-primary {
+  background: linear-gradient(135deg, var(--theme-accent-quaternary), var(--theme-accent-primary));
+}
+
+.bg-gradient-theme-primary-tertiary {
+  background: linear-gradient(135deg, var(--theme-accent-primary), var(--theme-accent-tertiary));
+}
+
+/* Theme gradient backgrounds with opacity */
+.bg-gradient-theme-primary-secondary-20 {
+  background: linear-gradient(135deg, var(--theme-accent-primary)/20%, var(--theme-accent-secondary)/20%);
+}
+
+.bg-gradient-theme-quaternary-primary-5 {
+  background: linear-gradient(135deg, var(--theme-accent-quaternary)/5%, var(--theme-accent-tertiary)/5%, var(--theme-accent-secondary)/5%);
+}
+
+.bg-gradient-theme-search {
+  background: linear-gradient(135deg, var(--theme-accent-tertiary)/10%, var(--theme-accent-primary)/10%, var(--theme-accent-secondary)/10%);
+}
+
+.bg-gradient-theme-toggle {
+  background: linear-gradient(135deg, var(--theme-accent-primary)/20%, var(--theme-accent-secondary)/20%);
+}
+
+/* Icon color utilities */
+.icon-theme-accent-primary {
+  color: var(--theme-accent-primary);
+}
+
+.icon-theme-accent-secondary {
+  color: var(--theme-accent-secondary);
+}
+
+.icon-theme-accent-tertiary {
+  color: var(--theme-accent-tertiary);
+}
+
+.icon-theme-accent-quaternary {
+  color: var(--theme-accent-quaternary);
+}
+
+.icon-theme-accent-primary-glow {
+  color: var(--theme-accent-primary);
+  filter: drop-shadow(0 0 2px var(--theme-accent-primary));
+}
+
+/* Additional utility classes for the uploads page */
+.border-theme-card {
+  border-color: var(--theme-card-border);
+}
+
+.border-theme-card-hover:hover {
+  border-color: var(--theme-accent-primary);
+}
+
+/* Responsive theme text color on hover */
+.hover-theme-primary:hover {
+  color: var(--theme-text-primary) !important;
+}
+
+.hover-theme-secondary:hover {
+  color: var(--theme-text-secondary) !important;
+}
+
+/* Theme transitions */
+* {
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+/* Light theme specific overrides */
+[data-theme="light"] {
+  color-scheme: light;
+}
+
+[data-theme="light"] .glass {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* Dark theme specific overrides */
+[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+/* Neon theme specific effects */
+[data-theme-variant="neon"] .card-cute:hover {
+  box-shadow: 0 0 30px var(--theme-accent-primary), 0 20px 40px var(--theme-button-shadow);
+}
+
+[data-theme-variant="neon"] .btn-cute:hover {
+  box-shadow: 0 0 25px var(--theme-accent-primary), 0 20px 40px var(--theme-button-shadow);
+}
+
+[data-theme-variant="neon"] .text-gradient-cute {
+  filter: drop-shadow(0 0 8px var(--theme-accent-primary));
+}
+
+/* Pastel theme specific effects */
+[data-theme-variant="pastel"] .card-cute,
+[data-theme-variant="valentine"] .card-cute {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme-variant="pastel"] .btn-cute,
+[data-theme-variant="valentine"] .btn-cute {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* File type icon gradients */
+.bg-gradient-video { background: linear-gradient(135deg, var(--theme-accent-primary), var(--theme-accent-secondary)); }
+.bg-gradient-audio { background: linear-gradient(135deg, var(--theme-accent-secondary), var(--theme-accent-tertiary)); }
+.bg-gradient-pdf { background: linear-gradient(135deg, var(--theme-accent-tertiary), var(--theme-accent-quaternary)); }
+.bg-gradient-archive { background: linear-gradient(135deg, var(--theme-accent-quaternary), var(--theme-accent-primary)); }
+.bg-gradient-text { background: linear-gradient(135deg, var(--theme-accent-primary), var(--theme-accent-tertiary)); }
+
+/* Action button colors */
+.text-theme-action-copy { color: var(--theme-accent-tertiary); }
+.text-theme-action-view { color: var(--theme-accent-secondary); }
+.text-theme-action-delete { color: var(--theme-accent-primary); }
+
+/* Icon colors */
+.text-theme-trending { color: var(--theme-accent-primary); }
+
+/* SVG stroke colors */
+.stroke-theme-accent-primary { stroke: var(--theme-accent-primary); }
+  
+/* Grid view background */
+.bg-gradient-grid-item { background: linear-gradient(135deg, var(--theme-accent-primary)/20%, var(--theme-accent-secondary)/20%); }
+
+/* Animation delay utility classes */
+.animation-delay-200 {
+  animation-delay: 0.2s;
+}
+
+.animation-delay-400 {
+  animation-delay: 0.4s;
+}
+
+.animation-delay-600 {
+  animation-delay: 0.6s;
+}
+
+.animation-delay-800 {
+  animation-delay: 0.8s;
+}
+
+.animation-delay-1000 {
+  animation-delay: 1s;
+}
+
+/* SVG fill utility classes for theming */
+.fill-theme-primary {
+  fill: var(--theme-text-primary);
+}
+
+.fill-theme-secondary {
+  fill: var(--theme-text-secondary);
+}
+
+.fill-theme-muted {
+  fill: var(--theme-text-muted);
+}
+
+.fill-theme-accent-primary {
+  fill: var(--theme-accent-primary);
+}
+
+.fill-theme-accent-secondary {
+  fill: var(--theme-accent-secondary);
+}
+
+.fill-theme-accent-tertiary {
+  fill: var(--theme-accent-tertiary);
+}
+
+.fill-theme-accent-quaternary {
+  fill: var(--theme-accent-quaternary);
+}
+
+/* Additional utility classes for admin page and other components */
+
+/* GIF support - ensure animated GIFs play properly */
+img[src$=".gif"], img[src*=".gif"] {
+  image-rendering: auto;
+  image-rendering: -webkit-optimize-contrast;
+}
+
+/* Error state colors */
+.bg-gradient-theme-error {
+  background: linear-gradient(135deg, #ef4444/20%, #dc2626/20%);
+}
+
+.bg-gradient-theme-error-hover {
+  background: linear-gradient(135deg, #ef4444/30%, #dc2626/30%);
+}
+
+.border-theme-error {
+  border-color: #ef4444/30%;
+}
+
+.text-theme-error {
+  color: #fca5a5;
+}
+
+/* Success state colors */
+.bg-gradient-theme-success {
+  background: linear-gradient(135deg, #10b981/20%, #059669/20%);
+}
+
+.border-theme-success {
+  border-color: #10b981/30%;
+}
+
+.text-theme-success {
+  color: #6ee7b7;
+}
+
+/* Warning state colors */
+.bg-gradient-theme-warning {
+  background: linear-gradient(135deg, #f59e0b/20%, #d97706/20%);
+}
+
+.border-theme-warning {
+  border-color: #f59e0b/30%;
+}
+
+.text-theme-warning {
+  color: #fcd34d;
+}
+
+/* Additional gradient backgrounds for admin elements */
+.bg-gradient-theme-accent-secondary {
+  background: linear-gradient(135deg, var(--theme-accent-secondary), var(--theme-accent-tertiary));
+}
+
+.bg-gradient-theme-secondary-accent {
+  background: linear-gradient(135deg, var(--theme-accent-secondary), var(--theme-accent-primary));
+}
+
+.bg-gradient-theme-accent-secondary-hover {
+  background: linear-gradient(135deg, var(--theme-accent-secondary)/30%, var(--theme-accent-tertiary)/30%);
+}
+
+.bg-gradient-theme-accent {
+  background: linear-gradient(135deg, var(--theme-accent-primary)/20%, var(--theme-accent-secondary)/20%);
+}
+
+.bg-gradient-theme-muted {
+  background: linear-gradient(135deg, var(--theme-bg-secondary)/60%, var(--theme-bg-tertiary)/40%);
+}
+
+.bg-gradient-theme-card {
+  background: linear-gradient(135deg, var(--theme-accent-primary)/10%, var(--theme-accent-secondary)/10%, var(--theme-accent-tertiary)/10%);
+}
+
+/* Short-hand theme color aliases for common usage */
+.text-theme-primary {
+  color: var(--theme-text-primary);
+}
+
+.text-theme-secondary {
+  color: var(--theme-text-secondary);
+}
+
+.text-theme-muted {
+  color: var(--theme-text-muted);
+}
+
+.text-theme-accent {
+  color: var(--theme-accent-primary);
+}
+
+.border-theme-border {
+  border-color: var(--theme-accent-primary)/40%;
+}
+
+.border-theme-card-border {
+  border-color: var(--theme-card-border);
+}
+
+.placeholder-theme-muted::placeholder {
+  color: var(--theme-text-muted);
+}
+
+/* Hover states for theme colors */
+.hover\:bg-theme-accent\/20:hover {
+  background-color: color-mix(in srgb, var(--theme-accent-primary) 20%, transparent);
+}
+
+.focus\:border-theme-border:focus {
+  border-color: var(--theme-accent-primary)/60%;
+}
+
+.focus\:ring-theme-accent\/30:focus {
+  --tw-ring-color: color-mix(in srgb, var(--theme-accent-primary) 30%, transparent);
+}
+
+.focus\:shadow-theme-accent\/20:focus {
+  --tw-shadow-color: color-mix(in srgb, var(--theme-accent-primary) 20%, transparent);
+}
+
+.hover\:shadow-theme-accent\/10:hover {
+  --tw-shadow-color: color-mix(in srgb, var(--theme-accent-primary) 10%, transparent);
 }

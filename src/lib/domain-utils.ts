@@ -24,25 +24,25 @@ export function determineUploadDomain(
   userCustomDomain: string | null
 ): string {
   const baseDomain = new URL(baseUrl).host;
-  
+
   // If request came from a custom domain, validate and use it
   if (requestHost && requestHost !== baseDomain) {
     // Allow *.twink.forsale subdomains
     if (isValidTwinkSubdomain(requestHost)) {
       return `https://${requestHost}`;
     }
-    
+
     // Allow user's custom domain
     if (userCustomDomain && requestHost === userCustomDomain) {
       return `https://${requestHost}`;
     }
   }
-  
+
   // Use user's preferred custom domain if no specific subdomain was used
   if (userCustomDomain && (!requestHost || requestHost === baseDomain)) {
     return `https://${userCustomDomain}`;
   }
-  
+
   // Default to base URL
   return baseUrl;
 }

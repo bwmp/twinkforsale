@@ -11,7 +11,7 @@ export const { onRequest, useSession, useSignIn, useSignOut } = QwikAuth$(
       if (!process.env.DISCORD_CLIENT_SECRET) console.warn('Discord Client Secret missing');
       if (!process.env.AUTH_SECRET) console.warn('Auth Secret missing');
     }
-    
+
     return {
       adapter: PrismaAdapter(db),
       providers: [

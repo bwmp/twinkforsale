@@ -1,11 +1,17 @@
 import { component$, useSignal, $, useTask$ } from "@builder.io/qwik";
-import { routeLoader$, Form, routeAction$, z, zod$ } from "@builder.io/qwik-city";
+import {
+  routeLoader$,
+  Form,
+  routeAction$,
+  z,
+  zod$,
+} from "@builder.io/qwik-city";
 import { ColorPicker, Toggle } from "@luminescent/ui-qwik";
 
 export const useUserLoader = routeLoader$(async (requestEvent) => {
   // Import server-side dependencies inside the loader
   const { db } = await import("~/lib/db");
-  
+
   const session = requestEvent.sharedMap.get("session");
 
   if (!session?.user?.email) {
@@ -13,7 +19,7 @@ export const useUserLoader = routeLoader$(async (requestEvent) => {
   }
 
   const user = await db.user.findUnique({
-    where: { email: session.user.email }
+    where: { email: session.user.email },
   });
 
   if (!user) {
@@ -27,14 +33,16 @@ export const useUserLoader = routeLoader$(async (requestEvent) => {
       email: user.email,
       embedTitle: user.embedTitle,
       embedDescription: user.embedDescription,
-      embedColor: user.embedColor, embedAuthor: user.embedAuthor,
-      embedFooter: user.embedFooter, showFileInfo: Boolean(user.showFileInfo),
+      embedColor: user.embedColor,
+      embedAuthor: user.embedAuthor,
+      embedFooter: user.embedFooter,
+      showFileInfo: Boolean(user.showFileInfo),
       showUploadDate: Boolean(user.showUploadDate),
       showUserStats: Boolean(user.showUserStats),
       customDomain: user.customDomain,
       customUploadDomain: user.customUploadDomain,
-      useCustomWords: Boolean(user.useCustomWords)
-    }
+      useCustomWords: Boolean(user.useCustomWords),
+    },
   };
 });
 
@@ -42,7 +50,7 @@ export const useUpdateEmbedSettings = routeAction$(
   async (values, requestEvent) => {
     // Import server-side dependencies inside the action
     const { db } = await import("~/lib/db");
-    
+
     const session = requestEvent.sharedMap.get("session");
 
     if (!session?.user?.email) {
@@ -50,7 +58,7 @@ export const useUpdateEmbedSettings = routeAction$(
     }
 
     const user = await db.user.findUnique({
-      where: { email: session.user.email }
+      where: { email: session.user.email },
     });
 
     if (!user) {
@@ -62,14 +70,16 @@ export const useUpdateEmbedSettings = routeAction$(
       data: {
         embedTitle: values.embedTitle || null,
         embedDescription: values.embedDescription || null,
-        embedColor: values.embedColor || null, embedAuthor: values.embedAuthor || null, embedFooter: values.embedFooter || null,
+        embedColor: values.embedColor || null,
+        embedAuthor: values.embedAuthor || null,
+        embedFooter: values.embedFooter || null,
         showFileInfo: Boolean(values.showFileInfo),
         showUploadDate: Boolean(values.showUploadDate),
         showUserStats: Boolean(values.showUserStats),
         customDomain: values.customDomain || null,
         customUploadDomain: values.customUploadDomain || null,
-        useCustomWords: Boolean(values.useCustomWords)
-      }
+        useCustomWords: Boolean(values.useCustomWords),
+      },
     });
 
     return { success: true, message: "Embed settings updated successfully" };
@@ -77,20 +87,37 @@ export const useUpdateEmbedSettings = routeAction$(
   zod$({
     embedTitle: z.string().optional(),
     embedDescription: z.string().optional(),
-    embedColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
-    embedAuthor: z.string().optional(), embedFooter: z.string().optional(), showFileInfo: z.preprocess((val) => val === "on" || val === true, z.boolean().default(false)),
-    showUploadDate: z.preprocess((val) => val === "on" || val === true, z.boolean().default(false)),
-    showUserStats: z.preprocess((val) => val === "on" || val === true, z.boolean().default(false)),
+    embedColor: z
+      .string()
+      .regex(/^#[0-9A-Fa-f]{6}$/)
+      .optional(),
+    embedAuthor: z.string().optional(),
+    embedFooter: z.string().optional(),
+    showFileInfo: z.preprocess(
+      (val) => val === "on" || val === true,
+      z.boolean().default(false),
+    ),
+    showUploadDate: z.preprocess(
+      (val) => val === "on" || val === true,
+      z.boolean().default(false),
+    ),
+    showUserStats: z.preprocess(
+      (val) => val === "on" || val === true,
+      z.boolean().default(false),
+    ),
     customDomain: z.string().optional(),
     customUploadDomain: z.string().optional(),
-    useCustomWords: z.preprocess((val) => val === "on" || val === true, z.boolean().default(false))
-  })
+    useCustomWords: z.preprocess(
+      (val) => val === "on" || val === true,
+      z.boolean().default(false),
+    ),
+  }),
 );
 
 export default component$(() => {
   const userData = useUserLoader();
   const updateAction = useUpdateEmbedSettings();
-  const previewCode = useSignal("");  // Reactive form state
+  const previewCode = useSignal(""); // Reactive form state
   const showFileInfo = useSignal(userData.value.user.showFileInfo);
   const showUploadDate = useSignal(userData.value.user.showUploadDate);
   const showUserStats = useSignal(userData.value.user.showUserStats);
@@ -98,14 +125,17 @@ export default component$(() => {
 
   // Form field signals to track current values
   const titleValue = useSignal(userData.value.user.embedTitle || "");
-  const descriptionValue = useSignal(userData.value.user.embedDescription || "");
+  const descriptionValue = useSignal(
+    userData.value.user.embedDescription || "",
+  );
   const colorValue = useSignal(userData.value.user.embedColor || "#8B5CF6");
   const authorValue = useSignal(userData.value.user.embedAuthor || "");
-  const footerValue = useSignal(userData.value.user.embedFooter || "");  // Initialize preview code with user data (non-reactive)
+  const footerValue = useSignal(userData.value.user.embedFooter || ""); // Initialize preview code with user data (non-reactive)
   const user = userData.value.user;
-
-  const inputClasses = "w-full px-3 sm:px-4 py-2 sm:py-3 glass rounded-full text-white placeholder-pink-300/60 focus:outline-none focus:ring-2 focus:ring-pink-500/50 transition-all duration-300 text-sm sm:text-base"
-  const toggleClasses = "flex gap-2 items-center p-3 glass rounded-full hover:bg-pink-500/10 transition-all duration-300 cursor-pointer"
+  const inputClasses =
+    "w-full px-3 sm:px-4 py-2 sm:py-3 glass rounded-full placeholder-theme-muted focus:outline-none focus:ring-2 focus:ring-theme-accent-primary/50 transition-all duration-300 text-sm sm:text-base text-theme-primary";
+  const toggleClasses =
+    "flex gap-2 items-center p-3 glass rounded-full hover:bg-theme-accent-primary/10 transition-all duration-300 cursor-pointer";
   // Use useTask$ to set initial preview without violating Qwik's reactivity rules
   useTask$(() => {
     const title = user.embedTitle || "File Upload";
@@ -194,9 +224,10 @@ export default component$(() => {
       .replace(/\{username\}/g, userData.value.user.name || "User")
       .replace(/\{totalfiles\}/g, "127")
       .replace(/\{totalstorage\}/g, "2.1 GB")
-      .replace(/\{totalviews\}/g, "5,432"); if (showFileInfo.value) {
-        desc += "\\n\\n📁 **example-image.png**\\n📏 2.34 MB • image/png";
-      }
+      .replace(/\{totalviews\}/g, "5,432");
+    if (showFileInfo.value) {
+      desc += "\\n\\n📁 **example-image.png**\\n📏 2.34 MB • image/png";
+    }
     if (showUploadDate.value) {
       desc += "\\n📅 Uploaded " + new Date().toLocaleDateString();
     }
@@ -224,26 +255,28 @@ export default component$(() => {
     }`;
   });
   return (
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div class="mb-6 sm:mb-8 text-center">
-        <h1 class="text-3xl sm:text-4xl font-bold text-gradient-cute mb-3 flex items-center justify-center gap-2 flex-wrap">
+    <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      {" "}
+      <div class="mb-6 text-center sm:mb-8">
+        <h1 class="text-gradient-cute mb-3 flex flex-wrap items-center justify-center gap-2 text-3xl font-bold sm:text-4xl">
           Discord Embed Settings~
         </h1>
-        <p class="text-pink-200 text-base sm:text-lg px-4">
-          Customize how your cute uploads appear when shared on Discord and other platforms! (◕‿◕)♡
+        <p class="text-theme-secondary px-4 text-base sm:text-lg">
+          Customize how your cute uploads appear when shared on Discord and
+          other platforms! (◕‿◕)♡
         </p>
       </div>
-
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+      <div class="grid grid-cols-1 gap-6 lg:grid-cols-2 lg:gap-8">
         {/* Settings Form */}
         <div class="card-cute rounded-3xl p-4 sm:p-6">
-          <h2 class="text-lg sm:text-xl font-bold text-gradient-cute mb-4 sm:mb-6 flex items-center">
-            Embed Configuration~ ⚙️ <span class="ml-2 sparkle">✨</span>
+          <h2 class="text-gradient-cute mb-4 flex items-center text-lg font-bold sm:mb-6 sm:text-xl">
+            Embed Configuration~ ⚙️ <span class="sparkle ml-2">✨</span>
           </h2>
           <Form action={updateAction} onSubmit$={generatePreview}>
             <div class="space-y-4 sm:space-y-6">
+              {" "}
               <div>
-                <label class="block text-xs sm:text-sm font-medium text-pink-200 mb-2">
+                <label class="text-theme-secondary mb-2 block text-xs font-medium sm:text-sm">
                   Embed Title~ 💝
                 </label>
                 <input
@@ -257,12 +290,14 @@ export default component$(() => {
                     generatePreview();
                   }}
                 />
-                <p class="text-xs text-pink-300/70 mt-2 pl-3 sm:pl-4">
-                  Use placeholders: {'{filename}'}, {'{filesize}'}, {'{filetype}'}, {'{uploaddate}'}, {'{views}'}, {'{username}'}, {'{totalfiles}'}, {'{totalstorage}'}, {'{totalviews}'}~ ✨
+                <p class="text-theme-muted mt-2 pl-3 text-xs sm:pl-4">
+                  Use placeholders: {"{filename}"}, {"{filesize}"},{" "}
+                  {"{filetype}"}, {"{uploaddate}"}, {"{views}"}, {"{username}"},{" "}
+                  {"{totalfiles}"}, {"{totalstorage}"}, {"{totalviews}"}~ ✨
                 </p>
-              </div>
+              </div>{" "}
               <div>
-                <label class="block text-xs sm:text-sm font-medium text-pink-200 mb-2">
+                <label class="text-theme-secondary mb-2 block text-xs font-medium sm:text-sm">
                   Description~ 📝
                 </label>
                 <textarea
@@ -270,32 +305,36 @@ export default component$(() => {
                   value={descriptionValue.value}
                   placeholder="Uploaded via twink.forsale~ (◕‿◕)♡"
                   rows={3}
-                  class="w-full px-3 sm:px-4 py-2 sm:py-3 glass rounded-2xl text-white placeholder-pink-300/60 focus:outline-none focus:ring-2 focus:ring-pink-500/50 transition-all duration-300 resize-none text-sm sm:text-base"
+                  class="glass placeholder-theme-muted focus:ring-theme-accent-primary/50 text-theme-primary w-full resize-none rounded-2xl px-3 py-2 text-sm transition-all duration-300 focus:ring-2 focus:outline-none sm:px-4 sm:py-3 sm:text-base"
                   onInput$={(event) => {
-                    descriptionValue.value = (event.target as HTMLTextAreaElement).value;
+                    descriptionValue.value = (
+                      event.target as HTMLTextAreaElement
+                    ).value;
                     generatePreview();
                   }}
                 />
-                <p class="text-xs text-pink-300/70 mt-2 pl-3 sm:pl-4">
-                  Use placeholders: {'{filename}'}, {'{filesize}'}, {'{filetype}'}, {'{uploaddate}'}, {'{views}'}, {'{username}'}, {'{totalfiles}'}, {'{totalstorage}'}, {'{totalviews}'}~ ✨
+                <p class="text-theme-muted mt-2 pl-3 text-xs sm:pl-4">
+                  Use placeholders: {"{filename}"}, {"{filesize}"},{" "}
+                  {"{filetype}"}, {"{uploaddate}"}, {"{views}"}, {"{username}"},{" "}
+                  {"{totalfiles}"}, {"{totalstorage}"}, {"{totalviews}"}~ ✨
                 </p>
-              </div>
-
+              </div>{" "}
               <div>
-                <label class="block text-xs sm:text-sm font-medium text-pink-200 mb-2">
+                <label class="text-theme-secondary mb-2 block text-xs font-medium sm:text-sm">
                   Embed Color~ 🎨
                 </label>
                 <ColorPicker
                   id="color-picker"
                   horizontal
-                  value={colorValue.value} onInput$={newColor => {
+                  value={colorValue.value}
+                  onInput$={(newColor) => {
                     colorValue.value = newColor;
                     generatePreview();
-                  }} />
+                  }}
+                />
               </div>
-
               <div>
-                <label class="block text-xs sm:text-sm font-medium text-pink-200 mb-2">
+                <label class="text-theme-secondary mb-2 block text-xs font-medium sm:text-sm">
                   Author Name~ ✏️
                 </label>
                 <input
@@ -305,14 +344,15 @@ export default component$(() => {
                   placeholder={userData.value.user.name || "Cute User~ 💕"}
                   class={inputClasses}
                   onInput$={(event) => {
-                    authorValue.value = (event.target as HTMLInputElement).value;
+                    authorValue.value = (
+                      event.target as HTMLInputElement
+                    ).value;
                     generatePreview();
                   }}
                 />
-              </div>
-
+              </div>{" "}
               <div>
-                <label class="block text-xs sm:text-sm font-medium text-pink-200 mb-2">
+                <label class="text-theme-secondary mb-2 block text-xs font-medium sm:text-sm">
                   Footer Text~ 📄
                 </label>
                 <input
@@ -322,13 +362,15 @@ export default component$(() => {
                   placeholder="twink.forsale~ ✨"
                   class={inputClasses}
                   onInput$={(event) => {
-                    footerValue.value = (event.target as HTMLInputElement).value;
+                    footerValue.value = (
+                      event.target as HTMLInputElement
+                    ).value;
                     generatePreview();
                   }}
                 />
               </div>
               <div>
-                <label class="block text-xs sm:text-sm font-medium text-pink-200 mb-2">
+                <label class="text-theme-secondary mb-2 block text-xs font-medium sm:text-sm">
                   Custom Domain (Optional)~ 🌐
                 </label>
                 <input
@@ -338,15 +380,14 @@ export default component$(() => {
                   placeholder="your-domain.com"
                   class={inputClasses}
                 />
-                <p class="text-xs text-pink-300/70 mt-2 pl-3 sm:pl-4">
+                <p class="text-theme-muted mt-2 pl-3 text-xs sm:pl-4">
                   Override the domain shown in embeds (for custom domains)~ ✨
                 </p>
               </div>
-
               <div>
-                <label class="block text-xs sm:text-sm font-medium text-pink-200 mb-2">
+                <label class="text-theme-secondary mb-2 block text-xs font-medium sm:text-sm">
                   Upload Domain (Optional)~ 🔗
-                </label>
+                </label>{" "}
                 <input
                   type="text"
                   name="customUploadDomain"
@@ -354,8 +395,9 @@ export default component$(() => {
                   placeholder="files.your-domain.com"
                   class={inputClasses}
                 />
-                <p class="text-xs text-pink-300/70 mt-2 pl-3 sm:pl-4">
-                  Custom domain for file URLs (e.g., subdomain.twink.forsale)~ 🌟
+                <p class="text-theme-muted mt-2 pl-3 text-xs sm:pl-4">
+                  Custom domain for file URLs (e.g., subdomain.twink.forsale)~
+                  🌟
                 </p>
               </div>
               <div class="space-y-3 sm:space-y-4">
@@ -369,7 +411,9 @@ export default component$(() => {
                       generatePreview();
                     }}
                   />
-                  <span class="text-xs sm:text-sm text-pink-200">Show file information (name, size, type)~ 📊</span>
+                  <span class="text-theme-secondary text-xs sm:text-sm">
+                    Show file information (name, size, type)~ 📊
+                  </span>
                 </label>
                 <label class={toggleClasses}>
                   <Toggle
@@ -381,7 +425,9 @@ export default component$(() => {
                       generatePreview();
                     }}
                   />
-                  <span class="text-xs sm:text-sm text-pink-200">Show upload date~ 📅</span>
+                  <span class="text-theme-secondary text-xs sm:text-sm">
+                    Show upload date~ 📅
+                  </span>
                 </label>
                 <label class={toggleClasses}>
                   <Toggle
@@ -391,10 +437,12 @@ export default component$(() => {
                     onChange$={(e, el) => {
                       showUserStats.value = el.checked;
                       generatePreview();
-                    }
-                    }
+                    }}
                   />
-                  <span class="text-xs sm:text-sm text-pink-200">Show user statistics (files uploaded, storage used, total views)~ 📊</span>
+                  <span class="text-theme-secondary text-xs sm:text-sm">
+                    Show user statistics (files uploaded, storage used, total
+                    views)~ 📊
+                  </span>
                 </label>
                 <label class={toggleClasses}>
                   <Toggle
@@ -406,16 +454,18 @@ export default component$(() => {
                       generatePreview();
                     }}
                   />
-                  <span class="text-xs sm:text-sm text-pink-200">Use cute words for file URLs~ 💕</span>
+                  <span class="text-theme-secondary text-xs sm:text-sm">
+                    Use cute words for file URLs~ 💕
+                  </span>
                 </label>
-                <p class="text-xs text-pink-300/70 ml-8 -mt-2">
-                  Generate adorable URLs like "bunny-sparkle-123" instead of random characters~ (◕‿◕)♡
+                <p class="text-theme-muted -mt-2 ml-8 text-xs">
+                  Generate adorable URLs like "bunny-sparkle-123" instead of
+                  random characters~ (◕‿◕)♡
                 </p>
-              </div>
-
+              </div>{" "}
               <button
                 type="submit"
-                class="w-full btn-cute text-white font-medium py-2 sm:py-3 px-4 sm:px-6 rounded-full transition-all duration-300 text-sm sm:text-base"
+                class="btn-cute text-theme-primary w-full rounded-full px-4 py-2 text-sm font-medium transition-all duration-300 sm:px-6 sm:py-3 sm:text-base"
               >
                 Save Settings~ 💾✨
               </button>
@@ -423,16 +473,16 @@ export default component$(() => {
           </Form>
 
           {updateAction.value?.success && (
-            <div class="mt-4 sm:mt-6 p-3 sm:p-4 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-400/30 rounded-2xl glass">
-              <p class="text-green-300 text-xs sm:text-sm flex items-center">
+            <div class="bg-gradient-theme-secondary-tertiary/20 border-theme-accent-secondary/30 glass mt-4 rounded-2xl border p-3 sm:mt-6 sm:p-4">
+              <p class="text-theme-accent-secondary flex items-center text-xs sm:text-sm">
                 ✅ {updateAction.value.message}~ ✨
               </p>
             </div>
           )}
 
           {updateAction.value?.failed && (
-            <div class="mt-4 sm:mt-6 p-3 sm:p-4 bg-gradient-to-r from-red-500/20 to-pink-500/20 border border-red-400/30 rounded-2xl glass">
-              <p class="text-red-300 text-xs sm:text-sm flex items-center">
+            <div class="bg-gradient-theme-primary-secondary/20 border-theme-accent-primary/30 glass mt-4 rounded-2xl border p-3 sm:mt-6 sm:p-4">
+              <p class="text-theme-accent-primary flex items-center text-xs sm:text-sm">
                 ❌ {updateAction.value.message}~ 💔
               </p>
             </div>
@@ -441,28 +491,34 @@ export default component$(() => {
 
         {/* Preview */}
         <div class="card-cute rounded-3xl p-4 sm:p-6">
-          <h2 class="text-lg sm:text-xl font-bold text-gradient-cute mb-4 sm:mb-6 flex items-center">
-            Discord Embed Preview~<span class="ml-2 sparkle">✨</span>
-          </h2>
-
-          <div class="glass rounded-2xl p-3 sm:p-4 border-l-4 border-gradient-to-b from-purple-500 to-pink-500">
-            <div class="text-xs text-pink-300/70 mb-3 flex items-center">
+          <h2 class="text-gradient-cute mb-4 flex items-center text-lg font-bold sm:mb-6 sm:text-xl">
+            Discord Embed Preview~<span class="sparkle ml-2">✨</span>
+          </h2>{" "}
+          <div class="glass border-gradient-theme-primary-secondary rounded-2xl border-l-4 p-3 sm:p-4">
+            <div class="text-theme-muted mb-3 flex items-center text-xs">
               Example embed structure~ 📋 <span class="ml-1">💕</span>
             </div>
-            <pre class="text-xs text-pink-100 whitespace-pre-wrap overflow-x-auto font-mono bg-black/20 p-3 rounded-lg">
+            <pre class="text-theme-secondary bg-theme-tertiary/20 overflow-x-auto rounded-lg p-3 font-mono text-xs whitespace-pre-wrap">
               {previewCode.value}
             </pre>
           </div>
-
-          <div class="mt-6 p-4 glass rounded-2xl border border-cyan-400/20">
-            <h3 class="text-sm font-medium text-cyan-300 mb-3 flex items-center">
+          <div class="glass border-theme-accent-quaternary/20 mt-6 rounded-2xl border p-4">
+            <h3 class="text-theme-accent-quaternary mb-3 flex items-center text-sm font-medium">
               How it works~ ⚙️ <span class="ml-2">✨</span>
             </h3>
-            <ul class="text-xs text-pink-200 space-y-2">
-              <li class="flex items-center">• Discord bots/crawlers see the embed metadata~ 🤖</li>
-              <li class="flex items-center">• Regular users are redirected to the actual file~ 📁</li>
-              <li class="flex items-center">• Images show inline previews in Discord~ 🖼️</li>
-              <li class="flex items-center">• Custom domains override the site name~ 🌐</li>
+            <ul class="text-theme-secondary space-y-2 text-xs">
+              <li class="flex items-center">
+                • Discord bots/crawlers see the embed metadata~ 🤖
+              </li>
+              <li class="flex items-center">
+                • Regular users are redirected to the actual file~ 📁
+              </li>
+              <li class="flex items-center">
+                • Images show inline previews in Discord~ 🖼️
+              </li>
+              <li class="flex items-center">
+                • Custom domains override the site name~ 🌐
+              </li>
             </ul>
           </div>
         </div>

@@ -12,15 +12,15 @@ import { $ } from "@builder.io/qwik";
  */
 export const getCookie = $((name: string): string | null => {
   if (typeof document === 'undefined') return null;
-  
+
   const value = `; ${document.cookie}`;
   const parts = value.split(`; ${name}=`);
-  
+
   if (parts.length === 2) {
     const cookieValue = parts.pop()?.split(';').shift();
     return cookieValue || null;
   }
-  
+
   return null;
 });
 
@@ -35,8 +35,8 @@ export const getCookie = $((name: string): string | null => {
  * @param sameSite - SameSite attribute (default: 'Lax')
  */
 export const setCookie = $((
-  name: string, 
-  value: string, 
+  name: string,
+  value: string,
   options: {
     days?: number;
     path?: string;
@@ -46,7 +46,7 @@ export const setCookie = $((
   } = {}
 ) => {
   if (typeof document === 'undefined') return;
-  
+
   const {
     days = 365,
     path = '/',
@@ -54,23 +54,23 @@ export const setCookie = $((
     secure = false,
     sameSite = 'Lax'
   } = options;
-  
+
   const expires = new Date();
   expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
-  
+
   let cookieString = `${name}=${value}`;
   cookieString += `; expires=${expires.toUTCString()}`;
   cookieString += `; path=${path}`;
   cookieString += `; SameSite=${sameSite}`;
-  
+
   if (domain) {
     cookieString += `; domain=${domain}`;
   }
-  
+
   if (secure) {
     cookieString += `; Secure`;
   }
-  
+
   document.cookie = cookieString;
 });
 
@@ -88,17 +88,17 @@ export const deleteCookie = $((
   } = {}
 ) => {
   if (typeof document === 'undefined') return;
-  
+
   const { path = '/', domain } = options;
-  
+
   let cookieString = `${name}=`;
   cookieString += `; expires=Thu, 01 Jan 1970 00:00:00 UTC`;
   cookieString += `; path=${path}`;
-  
+
   if (domain) {
     cookieString += `; domain=${domain}`;
   }
-  
+
   document.cookie = cookieString;
 });
 
@@ -109,7 +109,7 @@ export const deleteCookie = $((
  */
 export const hasCookie = $((name: string): boolean => {
   if (typeof document === 'undefined') return false;
-  return document.cookie.split(';').some(cookie => 
+  return document.cookie.split(';').some(cookie =>
     cookie.trim().startsWith(`${name}=`)
   );
 });
@@ -120,16 +120,16 @@ export const hasCookie = $((name: string): boolean => {
  */
 export const getAllCookies = $(() => {
   if (typeof document === 'undefined') return {};
-  
+
   const cookies: Record<string, string> = {};
-  
+
   document.cookie.split(';').forEach(cookie => {
     const [name, ...rest] = cookie.trim().split('=');
     if (name && rest.length > 0) {
       cookies[name] = rest.join('=');
     }
   });
-  
+
   return cookies;
 });
 
@@ -140,6 +140,7 @@ export const getAllCookies = $(() => {
 export const COOKIE_KEYS = {
   UPLOADS_VIEW_MODE: 'uploads-view-mode',
   THEME_PREFERENCE: 'theme-preference',
+  THEME_VARIANT: 'theme-variant', // For storing theme variants
   SIDEBAR_COLLAPSED: 'sidebar-collapsed',
   ANALYTICS_PERIOD: 'analytics-period',
   TABLE_PAGE_SIZE: 'table-page-size',
@@ -168,18 +169,18 @@ export const setUploadsViewMode = $((mode: 'grid' | 'list') => {
 
 /**
  * Get the theme preference
- * @returns Promise<'light' | 'dark' | 'auto' | null>
+ * @returns Promise<'light' | 'dark' | 'auto' | 'pastel' | 'neon' | 'valentine' | null>
  */
-export const getThemePreference = $(async (): Promise<'light' | 'dark' | 'auto' | null> => {
+export const getThemePreference = $(async (): Promise<'light' | 'dark' | 'auto' | 'pastel' | 'neon' | 'valentine' | null> => {
   const value = await getCookie(COOKIE_KEYS.THEME_PREFERENCE);
-  return value as 'light' | 'dark' | 'auto' | null;
+  return value as 'light' | 'dark' | 'auto' | 'pastel' | 'neon' | 'valentine' | null;
 });
 
 /**
  * Set the theme preference
- * @param theme - 'light', 'dark', or 'auto'
+ * @param theme - 'light', 'dark', 'auto', 'pastel', 'neon', or 'valentine'
  */
-export const setThemePreference = $((theme: 'light' | 'dark' | 'auto') => {
+export const setThemePreference = $((theme: 'light' | 'dark' | 'auto' | 'pastel' | 'neon' | 'valentine') => {
   return setCookie(COOKIE_KEYS.THEME_PREFERENCE, theme);
 });
 
@@ -233,3 +234,38 @@ export const getTablePageSize = $(async (): Promise<number | null> => {
 export const setTablePageSize = $((size: number) => {
   return setCookie(COOKIE_KEYS.TABLE_PAGE_SIZE, size.toString());
 });
+
+/**
+ * Server-side cookie reading utility
+ * This function works in server contexts where document is not available
+ * @param cookieHeader - The cookie header from the request
+ * @param name - The name of the cookie to retrieve
+ * @returns The cookie value or null if not found
+ */
+export function getServerCookie(cookieHeader: string | undefined, name: string): string | null {
+  if (!cookieHeader) return null;
+
+  const cookies = cookieHeader.split(';').map(cookie => cookie.trim());
+  const targetCookie = cookies.find(cookie => cookie.startsWith(`${name}=`));
+
+  if (targetCookie) {
+    return targetCookie.split('=')[1] || null;
+  }
+
+  return null;
+}
+
+/**
+ * Get the theme preference from server-side cookie header
+ * @param cookieHeader - The cookie header from the request
+ * @returns The theme preference or null if not found
+ */
+export function getServerThemePreference(cookieHeader: string | undefined): 'light' | 'dark' | 'auto' | 'pastel' | 'neon' | 'valentine' | null {
+  const value = getServerCookie(cookieHeader, COOKIE_KEYS.THEME_PREFERENCE);
+  return value as 'light' | 'dark' | 'auto' | 'pastel' | 'neon' | 'valentine' | null;
+}
+
+export function getServerUploadsViewMode(cookieHeader: string | undefined): 'grid' | 'list' | null {
+  const value = getServerCookie(cookieHeader, COOKIE_KEYS.UPLOADS_VIEW_MODE);
+  return value as 'grid' | 'list' | null;
+}

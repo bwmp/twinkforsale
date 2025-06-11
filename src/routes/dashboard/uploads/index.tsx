@@ -1,17 +1,42 @@
-import { component$, $, useContext, useSignal, useComputed$, useVisibleTask$ } from "@builder.io/qwik";
+import {
+  component$,
+  $,
+  useContext,
+  useSignal,
+  useComputed$,
+} from "@builder.io/qwik";
 import { routeLoader$, routeAction$, Link } from "@builder.io/qwik-city";
 import type { DocumentHead } from "@builder.io/qwik-city";
-import { getUploadsViewMode, setUploadsViewMode } from "~/lib/cookie-utils";
+import { setUploadsViewMode } from "~/lib/cookie-utils";
 import fs from "fs";
 import path from "path";
-import { Folder, Eye, HardDrive, Clock, Copy, Trash2, Sparkle, FileText, Ruler, Calendar, Zap, Search, ArrowUpDown, ArrowUp, ArrowDown, Grid, List, TrendingUp } from "lucide-icons-qwik";
+import {
+  Folder,
+  Eye,
+  HardDrive,
+  Clock,
+  Copy,
+  Trash2,
+  Sparkle,
+  FileText,
+  Ruler,
+  Calendar,
+  Zap,
+  Search,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  Grid,
+  List,
+  TrendingUp,
+} from "lucide-icons-qwik";
 import { ImagePreviewContext } from "~/lib/image-preview-store";
 
 export const useDeleteUpload = routeAction$(async (data, requestEvent) => {
   // Import server-side dependencies inside the action
   const { db } = await import("~/lib/db");
   const { getEnvConfig } = await import("~/lib/env");
-  
+
   const session = requestEvent.sharedMap.get("session");
 
   if (!session?.user?.email) {
@@ -27,7 +52,7 @@ export const useDeleteUpload = routeAction$(async (data, requestEvent) => {
     // Find upload by deletion key and verify ownership
     const upload = await db.upload.findUnique({
       where: { deletionKey },
-      include: { user: true }
+      include: { user: true },
     });
 
     if (!upload) {
@@ -38,17 +63,17 @@ export const useDeleteUpload = routeAction$(async (data, requestEvent) => {
     if (upload.user?.email !== session.user.email) {
       return { success: false, error: "Unauthorized" };
     }
-    
+
     // Delete file from storage
     const config = getEnvConfig();
     const baseUploadDir = config.UPLOAD_DIR;
-    
+
     // Determine the correct directory based on whether the upload has a user
     let filePath: string;
     if (upload.userId) {
       filePath = path.join(baseUploadDir, upload.userId, upload.filename);
     } else {
-      filePath = path.join(baseUploadDir, 'anonymous', upload.filename);
+      filePath = path.join(baseUploadDir, "anonymous", upload.filename);
     }
 
     if (fs.existsSync(filePath)) {
@@ -61,15 +86,15 @@ export const useDeleteUpload = routeAction$(async (data, requestEvent) => {
         where: { id: upload.userId },
         data: {
           storageUsed: {
-            decrement: upload.size
-          }
-        }
+            decrement: upload.size,
+          },
+        },
       });
     }
 
     // Delete from database
     await db.upload.delete({
-      where: { id: upload.id }
+      where: { id: upload.id },
     });
 
     return { success: true };
@@ -84,7 +109,7 @@ export const useUserUploads = routeLoader$(async (requestEvent) => {
   const { db } = await import("~/lib/db");
   const { getEnvConfig } = await import("~/lib/env");
   const { getUploadAnalytics } = await import("~/lib/analytics");
-  
+
   const session = requestEvent.sharedMap.get("session");
 
   if (!session?.user?.email) {
@@ -99,41 +124,53 @@ export const useUserUploads = routeLoader$(async (requestEvent) => {
     where: { email: session.user.email },
     include: {
       uploads: {
-        orderBy: { createdAt: "desc" }
-      }
-    }
+        orderBy: { createdAt: "desc" },
+      },
+    },
   });
-  
+
   if (!user) {
     throw requestEvent.redirect(302, "/");
   }
 
   // Calculate the effective storage limit (user's custom limit or default from env)
-  const effectiveStorageLimit = user.maxStorageLimit || config.BASE_STORAGE_LIMIT;
+  const effectiveStorageLimit =
+    user.maxStorageLimit || config.BASE_STORAGE_LIMIT;
 
   // Get analytics data for each upload (last 7 days)
   const uploadsWithAnalytics = await Promise.all(
     user.uploads.map(async (upload) => {
       const analytics = await getUploadAnalytics(upload.id, 7);
-      const totalViews = analytics.reduce((sum, day) => sum + day.totalViews, 0);
-      const uniqueViews = analytics.reduce((sum, day) => sum + day.uniqueViews, 0);
-      
+      const totalViews = analytics.reduce(
+        (sum, day) => sum + day.totalViews,
+        0,
+      );
+      const uniqueViews = analytics.reduce(
+        (sum, day) => sum + day.uniqueViews,
+        0,
+      );
+
       return {
         ...upload,
         analytics,
         weeklyViews: totalViews,
-        weeklyUniqueViews: uniqueViews
+        weeklyUniqueViews: uniqueViews,
       };
-    })
-  );
+    }),
+  ); // Get view mode preference from cookies server-side
+  const { getServerUploadsViewMode } = await import("~/lib/cookie-utils");
+  const cookieHeader = requestEvent.request.headers.get("cookie");
+  const savedViewMode =
+    getServerUploadsViewMode(cookieHeader || undefined) || "list";
 
   return {
     user: {
       ...user,
-      uploads: uploadsWithAnalytics
+      uploads: uploadsWithAnalytics,
     },
     effectiveStorageLimit,
-    origin: requestEvent.url.origin
+    origin: requestEvent.url.origin,
+    savedViewMode,
   };
 });
 
@@ -141,21 +178,13 @@ export default component$(() => {
   const userData = useUserUploads();
   const deleteUploadAction = useDeleteUpload();
   const imagePreview = useContext(ImagePreviewContext);
-  
+
   const searchQuery = useSignal("");
-  const sortBy = useSignal<'name' | 'size' | 'views' | 'date'>('date');
-  const sortOrder = useSignal<'asc' | 'desc'>('desc');
-    // Initialize viewMode from cookies or default to 'list'
-  const viewMode = useSignal<'grid' | 'list'>('list');
-  
-  // Load saved view mode from cookie when component becomes visible
-  // eslint-disable-next-line qwik/no-use-visible-task
-  useVisibleTask$(async () => {
-    const savedViewMode = await getUploadsViewMode();
-    if (savedViewMode === 'grid' || savedViewMode === 'list') {
-      viewMode.value = savedViewMode;
-    }
-  });
+  const sortBy = useSignal<"name" | "size" | "views" | "date">("date");
+  const sortOrder = useSignal<"asc" | "desc">("desc"); // Initialize viewMode from server-side data
+  const viewMode = useSignal<"grid" | "list">(
+    userData.value.savedViewMode as "grid" | "list",
+  );
 
   const copyToClipboard = $((text: string) => {
     navigator.clipboard.writeText(text);
@@ -187,7 +216,8 @@ export default component$(() => {
     const k = 1024;
     const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(absoluteBytes) / Math.log(k));
-    const formattedSize = parseFloat((absoluteBytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+    const formattedSize =
+      parseFloat((absoluteBytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 
     return isNegative ? `-${formattedSize}` : formattedSize;
   };
@@ -199,83 +229,83 @@ export default component$(() => {
     // Filter by search query
     if (searchQuery.value.trim()) {
       const query = searchQuery.value.toLowerCase().trim();
-      uploads = uploads.filter((upload: any) => 
-        upload.originalName.toLowerCase().includes(query) ||
-        upload.mimeType.toLowerCase().includes(query)
+      uploads = uploads.filter(
+        (upload: any) =>
+          upload.originalName.toLowerCase().includes(query) ||
+          upload.mimeType.toLowerCase().includes(query),
       );
     }
 
     // Sort uploads
     uploads = [...uploads].sort((a: any, b: any) => {
       let comparison = 0;
-      
+
       switch (sortBy.value) {
-        case 'name':
+        case "name":
           comparison = a.originalName.localeCompare(b.originalName);
           break;
-        case 'size':
+        case "size":
           comparison = a.size - b.size;
           break;
-        case 'views':
+        case "views":
           comparison = a.views - b.views;
           break;
-        case 'date':
+        case "date":
         default:
-          comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+          comparison =
+            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
           break;
       }
-      
-      return sortOrder.value === 'asc' ? comparison : -comparison;
+
+      return sortOrder.value === "asc" ? comparison : -comparison;
     });
 
     return uploads;
   });
 
-  const handleSort = $((column: 'name' | 'size' | 'views' | 'date') => {
+  const handleSort = $((column: "name" | "size" | "views" | "date") => {
     if (sortBy.value === column) {
       // Toggle sort order if clicking the same column
-      sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc';
+      sortOrder.value = sortOrder.value === "asc" ? "desc" : "asc";
     } else {
       // Set new column and default to descending
       sortBy.value = column;
-      sortOrder.value = 'desc';
+      sortOrder.value = "desc";
     }
   });
-
-  const getSortIcon = (column: 'name' | 'size' | 'views' | 'date') => {
+  const getSortIcon = (column: "name" | "size" | "views" | "date") => {
     if (sortBy.value !== column) {
-      return <ArrowUpDown class="inline w-3 h-3 ml-1 text-pink-300/50" />;
+      return (
+        <ArrowUpDown class="text-theme-muted ml-1 inline h-3 w-3 opacity-50" />
+      );
     }
-    return sortOrder.value === 'asc' 
-      ? <ArrowUp class="inline w-3 h-3 ml-1 text-pink-300" />
-      : <ArrowDown class="inline w-3 h-3 ml-1 text-pink-300" />;
-  };
-
-  // Mini analytics chart component for grid view
+    return sortOrder.value === "asc" ? (
+      <ArrowUp class="text-theme-muted ml-1 inline h-3 w-3" />
+    ) : (
+      <ArrowDown class="text-theme-muted ml-1 inline h-3 w-3" />
+    );
+  }; // Mini analytics chart component for grid view
   const MiniChart = component$(({ data }: { data: any[] }) => {
-    if (!data || data.length === 0) return <div class="text-xs text-pink-300">No data</div>;
-    
-    const maxViews = Math.max(...data.map(d => d.totalViews), 1);
-    const points = data.map((d, i) => {
-      const x = (i / (data.length - 1)) * 60;
-      const y = 20 - (d.totalViews / maxViews) * 20;
-      return `${x},${y}`;
-    }).join(' ');
+    if (!data || data.length === 0)
+      return <div class="text-theme-muted text-xs">No data</div>;
+
+    const maxViews = Math.max(...data.map((d) => d.totalViews), 1);
+    const points = data
+      .map((d, i) => {
+        const x = (i / (data.length - 1)) * 60;
+        const y = 20 - (d.totalViews / maxViews) * 20;
+        return `${x},${y}`;
+      })
+      .join(" ");
 
     return (
-      <svg class="w-16 h-6" viewBox="0 0 60 20">
+      <svg class="h-6 w-16" viewBox="0 0 60 20">
         <polyline
           fill="none"
-          stroke="url(#miniGradient)"
           stroke-width="1.5"
           points={points}
+          class="stroke-theme-accent-primary"
         />
-        <defs>
-          <linearGradient id="miniGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" style="stop-color:rgb(168, 85, 247);stop-opacity:1" />
-            <stop offset="100%" style="stop-color:rgb(236, 72, 153);stop-opacity:1" />
-          </linearGradient>
-        </defs>
       </svg>
     );
   });
@@ -283,80 +313,96 @@ export default component$(() => {
   return (
     <div>
       {/* Page Header */}
-      <div class="mb-6 sm:mb-8 text-center">
-        <h1 class="text-3xl sm:text-4xl font-bold text-gradient-cute mb-3 flex items-center justify-center gap-2 flex-wrap">
+      <div class="mb-6 text-center sm:mb-8">
+        <h1 class="text-gradient-cute mb-3 flex flex-wrap items-center justify-center gap-2 text-3xl font-bold sm:text-4xl">
           My Uploads~
-        </h1>
-        <p class="text-pink-200 text-base sm:text-lg px-4">
+        </h1>{" "}
+        <p class="text-theme-secondary px-4 text-base sm:text-lg">
           Manage all your cute uploads and view their sparkly statistics! (◕‿◕)♡
         </p>
       </div>
 
       {/* Stats Summary */}
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
-        <div class="card-cute rounded-3xl p-4 sm:p-6 pulse-soft">
+      <div class="mb-6 grid grid-cols-2 gap-3 sm:mb-8 sm:gap-6 md:grid-cols-4">
+        {" "}
+        <div class="card-cute pulse-soft rounded-3xl p-4 sm:p-6">
           <div class="flex items-center">
-            <div class="p-2 sm:p-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full">
-              <Folder class="w-4 sm:w-6 h-4 sm:h-6 text-white" />
+            {" "}
+            <div class="bg-gradient-theme-primary-secondary rounded-full p-2 sm:p-3">
+              <Folder class="text-theme-primary h-4 w-4 sm:h-6 sm:w-6" />
             </div>
             <div class="ml-3 sm:ml-4">
-              <p class="text-xs sm:text-sm font-medium text-pink-200 flex items-center gap-1">
-                {searchQuery.value.trim() ? 'Filtered Files~' : 'Total Files~'}
-                <Sparkle class="w-3 sm:w-4 h-3 sm:h-4" />
+              <p class="text-theme-secondary flex items-center gap-1 text-xs font-medium sm:text-sm">
+                {searchQuery.value.trim() ? "Filtered Files~" : "Total Files~"}
+                <Sparkle class="h-3 w-3 sm:h-4 sm:w-4" />
               </p>
-              <p class="text-lg sm:text-2xl font-bold text-white">
-                {searchQuery.value.trim() ? filteredAndSortedUploads.value.length : userData.value.user.uploads.length}
+              <p class="text-theme-primary text-lg font-bold sm:text-2xl">
+                {searchQuery.value.trim()
+                  ? filteredAndSortedUploads.value.length
+                  : userData.value.user.uploads.length}
               </p>
             </div>
           </div>
-        </div>
-        <div class="card-cute rounded-3xl p-4 sm:p-6 pulse-soft">
+        </div>{" "}
+        <div class="card-cute pulse-soft rounded-3xl p-4 sm:p-6">
           <div class="flex items-center">
-            <div class="p-2 sm:p-3 bg-gradient-to-r from-pink-500 to-violet-500 rounded-full">
-              <Eye class="w-4 sm:w-6 h-4 sm:h-6 text-white" />
+            {" "}
+            <div class="bg-gradient-theme-secondary-tertiary rounded-full p-2 sm:p-3">
+              <Eye class="text-theme-primary h-4 w-4 sm:h-6 sm:w-6" />
             </div>
             <div class="ml-3 sm:ml-4">
-              <p class="text-xs sm:text-sm font-medium text-pink-200 flex items-center gap-1">
-                {searchQuery.value.trim() ? 'Filtered Views~' : 'Total Views~'}
-                <Sparkle class="w-3 sm:w-4 h-3 sm:h-4" />
+              <p class="text-theme-secondary flex items-center gap-1 text-xs font-medium sm:text-sm">
+                {searchQuery.value.trim() ? "Filtered Views~" : "Total Views~"}
+                <Sparkle class="h-3 w-3 sm:h-4 sm:w-4" />
               </p>
-              <p class="text-lg sm:text-2xl font-bold text-white">
-                {searchQuery.value.trim() 
-                  ? filteredAndSortedUploads.value.reduce((sum, upload) => sum + upload.views, 0)
-                  : userData.value.user.uploads.reduce((sum, upload) => sum + upload.views, 0)
-                }
+              <p class="text-theme-primary text-lg font-bold sm:text-2xl">
+                {searchQuery.value.trim()
+                  ? filteredAndSortedUploads.value.reduce(
+                      (sum, upload) => sum + upload.views,
+                      0,
+                    )
+                  : userData.value.user.uploads.reduce(
+                      (sum, upload) => sum + upload.views,
+                      0,
+                    )}
               </p>
             </div>
           </div>
-        </div>
-        <div class="card-cute rounded-3xl p-4 sm:p-6 pulse-soft">
+        </div>{" "}
+        <div class="card-cute pulse-soft rounded-3xl p-4 sm:p-6">
           <div class="flex items-center">
-            <div class="p-2 sm:p-3 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full">
-              <HardDrive class="w-4 sm:w-6 h-4 sm:h-6 text-white" />
+            {" "}
+            <div class="bg-gradient-theme-tertiary-quaternary rounded-full p-2 sm:p-3">
+              <HardDrive class="text-theme-primary h-4 w-4 sm:h-6 sm:w-6" />
             </div>
             <div class="ml-3 sm:ml-4">
-              <p class="text-xs sm:text-sm font-medium text-pink-200 flex items-center gap-1">
+              <p class="text-theme-secondary flex items-center gap-1 text-xs font-medium sm:text-sm">
                 Storage Used~
-                <Sparkle class="w-3 sm:w-4 h-3 sm:h-4" />
+                <Sparkle class="h-3 w-3 sm:h-4 sm:w-4" />
               </p>
-              <p class="text-lg sm:text-xl font-bold text-white">
-                {formatFileSize(userData.value.user.storageUsed)} / {formatFileSize(userData.value.effectiveStorageLimit)}
+              <p class="text-theme-primary text-lg font-bold sm:text-xl">
+                {formatFileSize(userData.value.user.storageUsed)} /{" "}
+                {formatFileSize(userData.value.effectiveStorageLimit)}
               </p>
             </div>
           </div>
-        </div>
-        <div class="card-cute rounded-3xl p-4 sm:p-6 pulse-soft">
+        </div>{" "}
+        <div class="card-cute pulse-soft rounded-3xl p-4 sm:p-6">
           <div class="flex items-center">
-            <div class="p-2 sm:p-3 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full">
-              <Clock class="w-4 sm:w-6 h-4 sm:h-6 text-white" />
+            {" "}
+            <div class="bg-gradient-theme-quaternary-primary rounded-full p-2 sm:p-3">
+              <Clock class="text-theme-primary h-4 w-4 sm:h-6 sm:w-6" />
             </div>
             <div class="ml-3 sm:ml-4">
-              <p class="text-xs sm:text-sm font-medium text-pink-200 flex items-center gap-1">
+              <p class="text-theme-secondary flex items-center gap-1 text-xs font-medium sm:text-sm">
                 Available Space~
-                <Sparkle class="w-3 sm:w-4 h-3 sm:h-4" />
+                <Sparkle class="h-3 w-3 sm:h-4 sm:w-4" />
               </p>
-              <p class="text-lg sm:text-2xl font-bold text-white">
-                {formatFileSize(userData.value.effectiveStorageLimit - userData.value.user.storageUsed)}
+              <p class="text-theme-primary text-lg font-bold sm:text-2xl">
+                {formatFileSize(
+                  userData.value.effectiveStorageLimit -
+                    userData.value.user.storageUsed,
+                )}
               </p>
             </div>
           </div>
@@ -364,54 +410,59 @@ export default component$(() => {
       </div>
 
       {/* Uploads Section */}
-      <div class="card-cute rounded-3xl overflow-hidden">
-        <div class="px-4 sm:px-6 py-4 border-b border-pink-300/20">
-          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <h2 class="text-lg sm:text-xl font-bold text-gradient-cute flex items-center flex-wrap">
-              All Uploads~ 📋 <span class="ml-2 sparkle">✨</span>
+      <div class="card-cute overflow-hidden rounded-3xl">
+        {" "}
+        <div class="border-theme-card border-b px-4 py-4 sm:px-6">
+          <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <h2 class="text-gradient-cute flex flex-wrap items-center text-lg font-bold sm:text-xl">
+              All Uploads~ 📋 <span class="sparkle ml-2">✨</span>
               {searchQuery.value.trim() && (
-                <span class="text-sm font-normal text-pink-300 ml-2">
-                  ({filteredAndSortedUploads.value.length} of {userData.value.user.uploads.length} files)
+                <span class="text-theme-muted ml-2 text-sm font-normal">
+                  ({filteredAndSortedUploads.value.length} of{" "}
+                  {userData.value.user.uploads.length} files)
                 </span>
               )}
             </h2>
-            
-            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">              {/* View Mode Toggle */}
-              <div class="flex bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-full p-1 border border-purple-300/30">
+
+            <div class="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
+              {" "}
+              {/* View Mode Toggle */}
+              <div class="bg-gradient-theme-toggle border-theme-card flex rounded-full border p-1">
                 <button
-                  onClick$={() => { 
-                    viewMode.value = 'list';
-                    setUploadsViewMode('list');
+                  onClick$={() => {
+                    viewMode.value = "list";
+                    setUploadsViewMode("list");
                   }}
-                  class={`flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
-                    viewMode.value === 'list'
-                      ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg'
-                      : 'text-pink-300 hover:text-white hover:bg-purple-500/30'
+                  class={`flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium transition-all duration-300 ${
+                    viewMode.value === "list"
+                      ? "text-theme-primary bg-gradient-theme-primary-secondary shadow-lg"
+                      : "text-theme-muted hover:text-theme-primary hover:bg-theme-tertiary/10"
                   }`}
                 >
-                  <List class="w-4 h-4" />
+                  <List class="h-4 w-4" />
                   List
                 </button>
                 <button
-                  onClick$={() => { 
-                    viewMode.value = 'grid';
-                    setUploadsViewMode('grid');
+                  onClick$={() => {
+                    viewMode.value = "grid";
+                    setUploadsViewMode("grid");
                   }}
-                  class={`flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium transition-all duration-300 ${
-                    viewMode.value === 'grid'
-                      ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg'
-                      : 'text-pink-300 hover:text-white hover:bg-purple-500/30'
+                  class={`flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium transition-all duration-300 ${
+                    viewMode.value === "grid"
+                      ? "text-theme-primary bg-gradient-theme-primary-secondary shadow-lg"
+                      : "text-theme-muted hover:text-theme-primary hover:bg-theme-tertiary/10"
                   }`}
                 >
-                  <Grid class="w-4 h-4" />
+                  <Grid class="h-4 w-4" />
                   Grid
                 </button>
-              </div>
-
+              </div>{" "}
               {/* Search Input */}
-              <div class="relative max-w-md w-full sm:w-auto group">
-                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
-                  <Search class="h-4 w-4 text-pink-300 drop-shadow-sm transition-colors duration-300 group-focus-within:text-pink-200" />
+              <div class="group relative w-full max-w-md sm:w-auto">
+                <div class="pointer-events-none absolute inset-y-0 left-0 z-10 flex items-center pl-3">
+                  <div class="icon-theme-accent-primary-glow">
+                    <Search class="h-4 w-4 transition-colors duration-300" />
+                  </div>
                 </div>
                 <input
                   type="text"
@@ -420,137 +471,158 @@ export default component$(() => {
                   onInput$={(e) => {
                     searchQuery.value = (e.target as HTMLInputElement).value;
                   }}
-                  class="w-full pl-10 pr-4 py-2 text-sm rounded-full border text-white bg-gradient-to-r from-cyan-500/10 via-purple-500/10 to-pink-500/10 backdrop-blur-sm border-cyan-300/30 placeholder-cyan-300/70 focus:border-cyan-400/60 focus:bg-gradient-to-r focus:from-cyan-500/20 focus:via-purple-500/20 focus:to-pink-500/20 focus:outline-none focus:ring-2 focus:ring-cyan-400/30 focus:shadow-lg focus:shadow-cyan-400/20 transition-all duration-500 hover:border-cyan-400/50 hover:shadow-md hover:shadow-cyan-400/10"
+                  class="border-theme-card text-theme-text-primary bg-gradient-theme-search w-full rounded-full border py-2 pr-4 pl-10 text-sm backdrop-blur-sm transition-all duration-500"
                 />
-                <div class="absolute inset-0 rounded-full bg-gradient-to-r from-cyan-400/5 via-purple-400/5 to-pink-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+                <div class="bg-gradient-theme-quaternary-primary-5 pointer-events-none absolute inset-0 rounded-full opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
               </div>
             </div>
           </div>
         </div>
-
         {userData.value.user.uploads.length > 0 ? (
-          viewMode.value === 'list' ? (
+          viewMode.value === "list" ? (
             /* LIST VIEW */
             <div class="overflow-x-auto">
               <table class="w-full min-w-[600px]">
                 <thead class="glass">
                   <tr>
-                    <th 
-                      class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-pink-300 uppercase tracking-wider cursor-pointer hover:text-pink-200 transition-colors"
-                      onClick$={() => handleSort('name')}
+                    <th
+                      class="text-theme-text-muted hover:text-theme-text-secondary cursor-pointer px-3 py-3 text-left text-xs font-medium tracking-wider uppercase transition-colors sm:px-6"
+                      onClick$={() => handleSort("name")}
                     >
-                      File~ <FileText class="inline w-4 h-4" />
-                      {getSortIcon('name')}
+                      File~ <FileText class="inline h-4 w-4" />
+                      {getSortIcon("name")}
                     </th>
-                    <th 
-                      class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-pink-300 uppercase tracking-wider cursor-pointer hover:text-pink-200 transition-colors"
-                      onClick$={() => handleSort('size')}
+                    <th
+                      class="text-theme-text-muted hover:text-theme-text-secondary cursor-pointer px-3 py-3 text-left text-xs font-medium tracking-wider uppercase transition-colors sm:px-6"
+                      onClick$={() => handleSort("size")}
                     >
-                      Size~ <Ruler class="inline w-4 h-4" />
-                      {getSortIcon('size')}
+                      Size~ <Ruler class="inline h-4 w-4" />
+                      {getSortIcon("size")}
                     </th>
-                    <th 
-                      class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-pink-300 uppercase tracking-wider cursor-pointer hover:text-pink-200 transition-colors"
-                      onClick$={() => handleSort('views')}
+                    <th
+                      class="text-theme-text-muted hover:text-theme-text-secondary cursor-pointer px-3 py-3 text-left text-xs font-medium tracking-wider uppercase transition-colors sm:px-6"
+                      onClick$={() => handleSort("views")}
                     >
-                      Views~ <Eye class="inline w-4 h-4" />
-                      {getSortIcon('views')}
+                      Views~ <Eye class="inline h-4 w-4" />
+                      {getSortIcon("views")}
                     </th>
-                    <th 
-                      class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-pink-300 uppercase tracking-wider cursor-pointer hover:text-pink-200 transition-colors"
-                      onClick$={() => handleSort('date')}
+                    <th
+                      class="text-theme-text-muted hover:text-theme-text-secondary cursor-pointer px-3 py-3 text-left text-xs font-medium tracking-wider uppercase transition-colors sm:px-6"
+                      onClick$={() => handleSort("date")}
                     >
-                      Uploaded~ <Calendar class="inline w-4 h-4" />
-                      {getSortIcon('date')}
+                      Uploaded~ <Calendar class="inline h-4 w-4" />
+                      {getSortIcon("date")}
                     </th>
-                    <th class="px-3 sm:px-6 py-3 text-left text-xs font-medium text-pink-300 uppercase tracking-wider">
-                      Actions~ <Zap class="inline w-4 h-4" />
+                    <th class="text-theme-text-muted px-3 py-3 text-left text-xs font-medium tracking-wider uppercase sm:px-6">
+                      Actions~ <Zap class="inline h-4 w-4" />
                     </th>
                   </tr>
-                </thead>
-                <tbody class="divide-y divide-pink-300/20">
+                </thead>{" "}
+                <tbody class="border-theme-card">
                   {filteredAndSortedUploads.value.map((upload) => (
-                    <tr key={upload.id} class="hover:bg-pink-500/10 transition-all duration-300">
-                      <td class="px-3 sm:px-6 py-4">
+                    <tr
+                      key={upload.id}
+                      class="border-theme-card transition-all duration-300 hover:bg-white/5"
+                    >
+                      <td class="px-3 py-4 sm:px-6">
                         <div class="flex items-center space-x-2 sm:space-x-3">
                           <div class="flex-shrink-0">
-                            {upload.mimeType.startsWith('image/') ? (
+                            {upload.mimeType.startsWith("image/") ? (
                               <div
-                                class="w-8 sm:w-10 h-8 sm:h-10 rounded-lg overflow-hidden border border-pink-300/30 hover:border-pink-300/60 transition-all duration-300 cursor-pointer"
-                                onClick$={() => imagePreview.openPreview(`/f/${upload.shortCode}`, upload.originalName)}
+                                class="border-theme-card h-8 w-8 cursor-pointer overflow-hidden rounded-lg transition-all duration-300 sm:h-10 sm:w-10"
+                                onClick$={() =>
+                                  imagePreview.openPreview(
+                                    `/f/${upload.shortCode}`,
+                                    upload.originalName,
+                                  )
+                                }
                               >
                                 <img
                                   src={`/f/${upload.shortCode}`}
                                   alt={upload.originalName}
-                                  class="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
+                                  class="h-full w-full object-cover transition-transform duration-300 hover:scale-110"
                                   width="40"
                                   height="40"
                                 />
                               </div>
-                            ) : upload.mimeType.startsWith('video/') ? (
-                              <div class="w-8 sm:w-10 h-8 sm:h-10 bg-gradient-to-r from-red-500 to-pink-500 rounded-lg flex items-center justify-center">
+                            ) : upload.mimeType.startsWith("video/") ? (
+                              <div class="bg-gradient-video flex h-8 w-8 items-center justify-center rounded-lg sm:h-10 sm:w-10">
                                 <div class="text-sm sm:text-base">🎬</div>
                               </div>
-                            ) : upload.mimeType.startsWith('audio/') ? (
-                              <div class="w-8 sm:w-10 h-8 sm:h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
+                            ) : upload.mimeType.startsWith("audio/") ? (
+                              <div class="bg-gradient-audio flex h-8 w-8 items-center justify-center rounded-lg sm:h-10 sm:w-10">
                                 <div class="text-sm sm:text-base">🎵</div>
                               </div>
-                            ) : upload.mimeType.includes('pdf') ? (
-                              <div class="w-8 sm:w-10 h-8 sm:h-10 bg-gradient-to-r from-red-600 to-red-500 rounded-lg flex items-center justify-center">
+                            ) : upload.mimeType.includes("pdf") ? (
+                              <div class="bg-gradient-pdf flex h-8 w-8 items-center justify-center rounded-lg sm:h-10 sm:w-10">
                                 <div class="text-sm sm:text-base">📄</div>
                               </div>
-                            ) : upload.mimeType.includes('zip') || upload.mimeType.includes('rar') || upload.mimeType.includes('archive') ? (
-                              <div class="w-8 sm:w-10 h-8 sm:h-10 bg-gradient-to-r from-orange-500 to-yellow-500 rounded-lg flex items-center justify-center">
+                            ) : upload.mimeType.includes("zip") ||
+                              upload.mimeType.includes("rar") ||
+                              upload.mimeType.includes("archive") ? (
+                              <div class="bg-gradient-archive flex h-8 w-8 items-center justify-center rounded-lg sm:h-10 sm:w-10">
                                 <div class="text-sm sm:text-base">📦</div>
                               </div>
-                            ) : upload.mimeType.includes('text') ? (
-                              <div class="w-8 sm:w-10 h-8 sm:h-10 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
+                            ) : upload.mimeType.includes("text") ? (
+                              <div class="bg-gradient-text flex h-8 w-8 items-center justify-center rounded-lg sm:h-10 sm:w-10">
                                 <div class="text-sm sm:text-base">📝</div>
                               </div>
                             ) : (
-                              <div class="w-8 sm:w-10 h-8 sm:h-10 glass rounded-lg flex items-center justify-center">
+                              <div class="glass flex h-8 w-8 items-center justify-center rounded-lg sm:h-10 sm:w-10">
                                 <div class="text-sm sm:text-base">📄</div>
                               </div>
                             )}
                           </div>
                           <div class="min-w-0 flex-1">
-                            <p class="text-white font-medium text-sm sm:text-base truncate">{upload.originalName}</p>
-                            <p class="text-pink-200 text-xs sm:text-sm truncate">{upload.mimeType}</p>
+                            <p class="text-theme-text-primary truncate text-sm font-medium sm:text-base">
+                              {upload.originalName}
+                            </p>
+                            <p class="text-theme-text-secondary truncate text-xs sm:text-sm">
+                              {upload.mimeType}
+                            </p>
                           </div>
                         </div>
                       </td>
-                      <td class="px-3 sm:px-6 py-4 text-pink-100 text-sm">
+                      <td class="text-theme-text-secondary px-3 py-4 text-sm sm:px-6">
                         {formatFileSize(upload.size)}
                       </td>
-                      <td class="px-3 sm:px-6 py-4 text-pink-100 text-sm">
+                      <td class="text-theme-text-secondary px-3 py-4 text-sm sm:px-6">
+                        {" "}
                         <div class="flex items-center gap-2">
                           <span>{upload.views}</span>
-                          <TrendingUp class="w-4 h-4 text-pink-300" />
+                          <div class="text-theme-trending">
+                            <TrendingUp class="h-4 w-4" />
+                          </div>
                         </div>
                       </td>
-                      <td class="px-3 sm:px-6 py-4 text-pink-100 text-sm">
+                      <td class="text-theme-text-secondary px-3 py-4 text-sm sm:px-6">
                         {new Date(upload.createdAt).toLocaleDateString()}
-                      </td>
-                      <td class="px-3 sm:px-6 py-4">
-                        <div class="flex flex-col sm:flex-row space-y-1 sm:space-y-0 sm:space-x-2">
+                      </td>{" "}
+                      <td class="px-3 py-4 sm:px-6">
+                        {" "}
+                        <div class="flex flex-col space-y-1 sm:flex-row sm:space-y-0 sm:space-x-2">
                           <button
-                            onClick$={() => copyToClipboard(`${userData.value.origin}/f/${upload.shortCode}`)}
-                            class="text-purple-400 hover:text-purple-300 text-xs sm:text-sm font-medium px-2 sm:px-3 py-1 rounded-full hover:bg-purple-500/20 transition-all duration-300 whitespace-nowrap"
+                            onClick$={() =>
+                              copyToClipboard(
+                                `${userData.value.origin}/f/${upload.shortCode}`,
+                              )
+                            }
+                            class="text-theme-action-copy rounded-full px-2 py-1 text-sm font-medium whitespace-nowrap transition-all duration-300 hover:bg-white/10 sm:px-3"
                           >
-                            Copy URL <Copy class="inline w-4 h-4" />
+                            Copy URL <Copy class="inline h-4 w-4" />
                           </button>
                           <a
                             href={`/f/${upload.shortCode}`}
                             target="_blank"
-                            class="text-cyan-400 hover:text-cyan-300 text-xs sm:text-sm font-medium px-2 sm:px-3 py-1 rounded-full hover:bg-cyan-500/20 transition-all duration-300 whitespace-nowrap text-center"
+                            class="text-theme-action-view rounded-full px-2 py-1 text-center text-sm font-medium whitespace-nowrap transition-all duration-300 hover:bg-white/10 sm:px-3"
                           >
-                            View <Eye class="inline w-4 h-4" />
+                            View <Eye class="inline h-4 w-4" />
                           </a>
                           <button
                             onClick$={() => deleteUpload(upload.deletionKey)}
-                            class="text-red-400 hover:text-red-300 text-xs sm:text-sm font-medium px-2 sm:px-3 py-1 rounded-full hover:bg-red-500/20 transition-all duration-300 whitespace-nowrap"
+                            class="text-theme-action-delete rounded-full px-2 py-1 text-sm font-medium whitespace-nowrap transition-all duration-300 hover:bg-white/10 sm:px-3"
                           >
-                            Delete <Trash2 class="inline w-4 h-4" />
+                            Delete <Trash2 class="inline h-4 w-4" />
                           </button>
                         </div>
                       </td>
@@ -562,88 +634,114 @@ export default component$(() => {
           ) : (
             /* GRID VIEW */
             <div class="p-4 sm:p-6">
-              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+              <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4">
                 {filteredAndSortedUploads.value.map((upload) => (
-                  <div key={upload.id} class="card-cute rounded-2xl p-4 hover:scale-105 transition-all duration-300 group">
-                    {/* File Preview */}
-                    <div class="aspect-square rounded-xl overflow-hidden mb-3 bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center">
-                      {upload.mimeType.startsWith('image/') ? (
+                  <div
+                    key={upload.id}
+                    class="card-cute group rounded-2xl p-4 transition-all duration-300 hover:scale-105"
+                  >
+                    {" "}
+                    {/* File Preview */}{" "}
+                    <div class="bg-gradient-grid-item mb-3 flex aspect-square items-center justify-center overflow-hidden rounded-xl">
+                      {upload.mimeType.startsWith("image/") ? (
                         <img
                           width={400}
                           height={400}
                           src={`/f/${upload.shortCode}`}
                           alt={upload.originalName}
-                          class="w-full h-full object-cover cursor-pointer hover:scale-110 transition-transform duration-300"
-                          onClick$={() => imagePreview.openPreview(`/f/${upload.shortCode}`, upload.originalName)}
+                          class="h-full w-full cursor-pointer object-cover transition-transform duration-300 hover:scale-110"
+                          onClick$={() =>
+                            imagePreview.openPreview(
+                              `/f/${upload.shortCode}`,
+                              upload.originalName,
+                            )
+                          }
                         />
-                      ) : upload.mimeType.startsWith('video/') ? (
+                      ) : upload.mimeType.startsWith("video/") ? (
                         <div class="text-6xl">🎬</div>
-                      ) : upload.mimeType.startsWith('audio/') ? (
+                      ) : upload.mimeType.startsWith("audio/") ? (
                         <div class="text-6xl">🎵</div>
-                      ) : upload.mimeType.includes('pdf') ? (
+                      ) : upload.mimeType.includes("pdf") ? (
                         <div class="text-6xl">📄</div>
-                      ) : upload.mimeType.includes('zip') || upload.mimeType.includes('rar') || upload.mimeType.includes('archive') ? (
+                      ) : upload.mimeType.includes("zip") ||
+                        upload.mimeType.includes("rar") ||
+                        upload.mimeType.includes("archive") ? (
                         <div class="text-6xl">📦</div>
-                      ) : upload.mimeType.includes('text') ? (
+                      ) : upload.mimeType.includes("text") ? (
                         <div class="text-6xl">📝</div>
                       ) : (
                         <div class="text-6xl">📄</div>
                       )}
                     </div>
-
                     {/* File Info */}
                     <div class="space-y-2">
-                      <h3 class="text-white font-medium text-sm truncate" title={upload.originalName}>
+                      <h3
+                        class="text-theme-text-primary truncate text-sm font-medium"
+                        title={upload.originalName}
+                      >
                         {upload.originalName}
-                      </h3>
-                      
-                      <div class="flex items-center justify-between text-xs text-pink-200">
+                      </h3>{" "}
+                      <div class="text-theme-text-secondary flex items-center justify-between text-xs">
                         <span>{formatFileSize(upload.size)}</span>
-                        <span>{new Date(upload.createdAt).toLocaleDateString()}</span>
+                        <span>
+                          {new Date(upload.createdAt).toLocaleDateString()}
+                        </span>
                       </div>
-
                       {/* Analytics */}
                       <div class="space-y-2">
+                        {" "}
                         <div class="flex items-center justify-between">
                           <div class="flex items-center gap-1">
-                            <Eye class="w-3 h-3 text-pink-300" />
-                            <span class="text-xs text-pink-200">{upload.views} total</span>
+                            <div class="text-theme-accent-primary">
+                              <Eye class="h-3 w-3" />
+                            </div>
+                            <span class="text-theme-text-secondary text-xs">
+                              {upload.views} total
+                            </span>
                           </div>
                           <div class="flex items-center gap-1">
-                            <TrendingUp class="w-3 h-3 text-cyan-300" />
-                            <span class="text-xs text-cyan-200">{upload.weeklyViews || 0} this week</span>
+                            <div class="text-theme-accent-secondary">
+                              <TrendingUp class="h-3 w-3" />
+                            </div>
+                            <span class="text-theme-text-secondary text-xs">
+                              {upload.weeklyViews || 0} this week
+                            </span>
                           </div>
                         </div>
-                        
                         {/* Mini chart */}
                         <div class="flex items-center gap-2">
-                          <span class="text-xs text-pink-300">7 days:</span>
+                          <span class="text-theme-text-muted text-xs">
+                            7 days:
+                          </span>
                           <MiniChart data={upload.analytics || []} />
                         </div>
-                      </div>
-
+                      </div>{" "}
                       {/* Actions */}
                       <div class="flex gap-1 pt-2">
                         <button
-                          onClick$={() => copyToClipboard(`${userData.value.origin}/f/${upload.shortCode}`)}
-                          class="flex-1 text-purple-400 hover:text-purple-300 text-xs font-medium px-2 py-1 rounded-lg hover:bg-purple-500/20 transition-all duration-300"
+                          onClick$={() =>
+                            copyToClipboard(
+                              `${userData.value.origin}/f/${upload.shortCode}`,
+                            )
+                          }
+                          class="text-theme-action-copy flex-1 rounded-lg px-2 py-1 text-xs font-medium transition-all duration-300 hover:bg-white/10"
                         >
-                          <Copy class="inline w-3 h-3 mr-1" />
+                          <Copy class="mr-1 inline h-3 w-3" />
                           Copy
                         </button>
                         <a
                           href={`/f/${upload.shortCode}`}
                           target="_blank"
-                          class="flex-1 text-cyan-400 hover:text-cyan-300 text-xs font-medium px-2 py-1 rounded-lg hover:bg-cyan-500/20 transition-all duration-300 text-center"
+                          class="text-theme-action-view flex-1 rounded-lg px-2 py-1 text-center text-xs font-medium transition-all duration-300 hover:bg-white/10"
                         >
-                          <Eye class="inline w-3 h-3 mr-1" />
+                          <Eye class="mr-1 inline h-3 w-3" />
                           View
                         </a>
                         <button
                           onClick$={() => deleteUpload(upload.deletionKey)}
-                          class="flex-1 text-red-400 hover:text-red-300 text-xs font-medium px-2 py-1 rounded-lg hover:bg-red-500/20 transition-all duration-300"
+                          class="text-theme-action-delete flex-1 rounded-lg px-2 py-1 text-xs font-medium transition-all duration-300 hover:bg-white/10"
                         >
-                          <Trash2 class="inline w-3 h-3 mr-1" />
+                          <Trash2 class="mr-1 inline h-3 w-3" />
                           Delete
                         </button>
                       </div>
@@ -654,33 +752,42 @@ export default component$(() => {
             </div>
           )
         ) : userData.value.user.uploads.length === 0 ? (
-          <div class="text-center py-12">
-            <div class="w-16 h-16 glass rounded-full flex items-center justify-center mx-auto mb-4">
+          <div class="py-12 text-center">
+            <div class="glass mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full">
               <div class="text-3xl">📁</div>
-            </div>
-            <h3 class="text-lg font-medium text-white mb-2">No uploads yet~ ✨</h3>
-            <p class="text-pink-200 mb-4">
+            </div>{" "}
+            <h3 class="text-theme-text-primary mb-2 text-lg font-medium">
+              No uploads yet~ ✨
+            </h3>
+            <p class="text-theme-text-secondary mb-4">
               Upload your first cute file to get started! (◕‿◕)♡
             </p>
             <Link
               href="/setup/sharex"
-              class="btn-cute text-white px-6 py-3 rounded-full inline-block font-medium"
+              class="btn-cute text-theme-text-primary inline-block rounded-full px-6 py-3 font-medium"
             >
               Setup ShareX to get started~ 🚀
             </Link>
           </div>
         ) : (
-          <div class="text-center py-12">
-            <div class="w-16 h-16 glass rounded-full flex items-center justify-center mx-auto mb-4">
-              <Search class="h-8 w-8 text-pink-300" />
+          <div class="py-12 text-center">
+            {" "}
+            <div class="glass mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full">
+              <div class="text-theme-accent-primary">
+                <Search class="h-8 w-8" />
+              </div>
             </div>
-            <h3 class="text-lg font-medium text-white mb-2">No files found~ 🔍</h3>
-            <p class="text-pink-200 mb-4">
+            <h3 class="text-theme-text-primary mb-2 text-lg font-medium">
+              No files found~ 🔍
+            </h3>
+            <p class="text-theme-text-secondary mb-4">
               Try searching with a different term! (◕‿◕)♡
             </p>
             <button
-              onClick$={() => { searchQuery.value = ""; }}
-              class="btn-cute text-white px-6 py-3 rounded-full inline-block font-medium"
+              onClick$={() => {
+                searchQuery.value = "";
+              }}
+              class="btn-cute text-theme-text-primary inline-block rounded-full px-6 py-3 font-medium"
             >
               Clear Search~ ✨
             </button>
@@ -696,7 +803,8 @@ export const head: DocumentHead = {
   meta: [
     {
       name: "description",
-      content: "Manage all your cute uploaded files and view their sparkly statistics! (◕‿◕)♡",
+      content:
+        "Manage all your cute uploaded files and view their sparkly statistics! (◕‿◕)♡",
     },
   ],
 };

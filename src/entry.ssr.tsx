@@ -24,9 +24,11 @@ export default function (opts: RenderToStreamOptions) {
       BASE_URL: process.env.BASE_URL || "https://twink.forsale",
       UPLOAD_DIR: process.env.UPLOAD_DIR || "./uploads",
       MAX_FILE_SIZE: process.env.MAX_FILE_SIZE || "10485760",
-      ALLOWED_MIME_TYPES: process.env.ALLOWED_MIME_TYPES || "image/png,image/jpeg,image/gif,image/webp,text/plain,application/pdf",
-      NODE_ENV: process.env.NODE_ENV || "development"
-    }
+      ALLOWED_MIME_TYPES:
+        process.env.ALLOWED_MIME_TYPES ||
+        "image/png,image/jpeg,image/gif,image/webp,text/plain,application/pdf",
+      NODE_ENV: process.env.NODE_ENV || "development",
+    },
   };
 
   return renderToStream(<Root />, {
