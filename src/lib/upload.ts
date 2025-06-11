@@ -46,9 +46,19 @@ export function validateFile(file: File): { isValid: boolean; error?: string } {
 }
 
 // Save file to storage
-export async function saveFile(file: File, filename: string): Promise<string> {
+export async function saveFile(file: File, filename: string, userId?: string): Promise<string> {
   const config = getEnvConfig();
-  const uploadDir = config.UPLOAD_DIR;
+  const baseUploadDir = config.UPLOAD_DIR;
+  
+  // Determine the upload directory based on whether user is authenticated
+  let uploadDir: string;
+  if (userId) {
+    // Create user-specific directory
+    uploadDir = path.join(baseUploadDir, userId);
+  } else {
+    // Anonymous uploads go to 'anonymous' folder
+    uploadDir = path.join(baseUploadDir, 'anonymous');
+  }
   
   // Ensure upload directory exists
   if (!fs.existsSync(uploadDir)) {

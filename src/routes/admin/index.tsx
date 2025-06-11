@@ -1,8 +1,8 @@
-import { component$ } from "@builder.io/qwik";
+import { component$, useSignal, useComputed$ } from "@builder.io/qwik";
 import { routeLoader$, routeAction$ } from "@builder.io/qwik-city";
 import { db } from "~/lib/db";
 import { getEnvConfig } from "~/lib/env";
-import { Users, CheckCircle, Ban } from "lucide-icons-qwik";
+import { Users, CheckCircle, Ban, Search } from "lucide-icons-qwik";
 
 export const useUserData = routeLoader$(async ({ sharedMap, redirect }) => {
   const session = sharedMap.get("session");
@@ -19,7 +19,7 @@ export const useUserData = routeLoader$(async ({ sharedMap, redirect }) => {
 
   if (!user?.isAdmin) {
     throw redirect(302, "/dashboard");
-  }  // Get all users with their approval status
+  }  // Get all users with their approval status and Discord account info
   const users = await db.user.findMany({
     select: {
       id: true,
@@ -38,6 +38,15 @@ export const useUserData = routeLoader$(async ({ sharedMap, redirect }) => {
         select: {
           name: true,
           email: true
+        }
+      },
+      accounts: {
+        select: {
+          provider: true,
+          providerAccountId: true
+        },
+        where: {
+          provider: "discord"
         }
       },
       _count: {
@@ -136,6 +145,7 @@ export const useUpdateUser = routeAction$(async (data, { sharedMap }) => {
 export default component$(() => {
   const userData = useUserData();
   const updateUser = useUpdateUser();
+  const searchQuery = useSignal("");
 
   const formatBytes = (bytes: number): string => {
     if (bytes === 0) return '0 Bytes';
@@ -150,6 +160,31 @@ export default component$(() => {
   const getEffectiveStorageLimit = (user: any): number => {
     return user.maxStorageLimit || userData.value?.config.BASE_STORAGE_LIMIT || 10737418240;
   };
+  // Filter users based on search query
+  const filteredUsers = useComputed$(() => {
+    if (!searchQuery.value.trim()) {
+      return userData.value?.users || [];
+    }
+
+    const query = searchQuery.value.toLowerCase().trim();
+    return userData.value?.users.filter((user: any) => {
+      // Search by name (Discord display name/username)
+      if (user.name?.toLowerCase().includes(query)) return true;
+
+      // Search by email
+      if (user.email?.toLowerCase().includes(query)) return true;
+
+      // Search by Discord ID (providerAccountId)
+      if (user.accounts?.some((account: any) =>
+        account.provider === "discord" && account.providerAccountId?.includes(query)
+      )) return true;
+
+      // Search by user ID
+      if (user.id?.toLowerCase().includes(query)) return true;
+
+      return false;
+    }) || [];
+  });
 
   return (
     <>
@@ -224,13 +259,34 @@ export default component$(() => {
           </div>
         </div>
       </div>
-
       {/* User Management */}
       <div class="card-cute rounded-3xl p-4 sm:p-6 mb-6 sm:mb-8">
-        <h2 class="text-lg sm:text-xl font-bold text-gradient-cute mb-4 flex items-center gap-2">
-          User Management
-        </h2>
-
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+          <h2 class="text-lg sm:text-xl font-bold text-gradient-cute flex items-center gap-2">
+            User Management
+            {searchQuery.value.trim() && (
+              <span class="text-sm font-normal text-pink-300">
+                ({filteredUsers.value.length} of {userData.value?.users.length || 0} users)
+              </span>
+            )}
+          </h2>
+          {/* Search Input */}
+          <div class="relative max-w-md w-full sm:w-auto">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none z-10">
+              <Search class="h-4 w-4 text-pink-300 drop-shadow-sm" />
+            </div>
+            <input
+              type="text"
+              placeholder="Search by name, email, Discord ID..."
+              value={searchQuery.value}
+              onInput$={(e) => {
+                searchQuery.value = (e.target as HTMLInputElement).value;
+              }}
+              class="w-full pl-10 pr-4 py-2 text-sm rounded-full border text-white bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-cyan-500/10 backdrop-blur-sm border-pink-300/30 placeholder-pink-300/70 focus:border-pink-400/60 focus:bg-gradient-to-r focus:from-pink-500/20 focus:via-purple-500/20 focus:to-cyan-500/20 focus:outline-none focus:ring-2 focus:ring-pink-400/30 focus:shadow-lg focus:shadow-pink-400/20 transition-all duration-500 hover:border-pink-400/50 hover:shadow-md hover:shadow-pink-400/10"
+            />
+            <div class="absolute inset-0 rounded-full bg-gradient-to-r from-pink-400/5 via-purple-400/5 to-cyan-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+          </div>
+        </div>
         <div class="overflow-x-auto">
           <div class="glass rounded-2xl border border-pink-300/20">
             {(!userData.value?.users || userData.value.users.length === 0) ? (
@@ -243,10 +299,20 @@ export default component$(() => {
                   Waiting for the first kawaii users to join~ (◕‿◕)♡
                 </p>
               </div>
+            ) : filteredUsers.value.length === 0 ? (
+              <div class="text-center py-8 sm:py-12">
+                <div class="w-12 sm:w-16 h-12 sm:h-16 glass rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Search class="h-6 w-6 text-pink-300" />
+                </div>
+                <h3 class="text-base sm:text-lg font-medium text-white mb-2">No Results Found! 🔍</h3>
+                <p class="text-pink-200 text-sm sm:text-base px-4">
+                  Try searching with a different term~ (◕‿◕)♡
+                </p>
+              </div>
             ) : (
               <div class="space-y-3 sm:space-y-4 p-3 sm:p-4">
-                {userData.value.users.map((user: any) => (
-                  <div key={user.id} class="glass rounded-2xl p-3 sm:p-4 border border-pink-300/20 hover:border-pink-300/40 transition-all duration-300">
+                {filteredUsers.value.map((user: any) => (
+                  <div key={user.id} class="glass rounded-2xl p-3 sm:p-4 !border-pink-300/20 !hover:border-pink-300/40 transition-all duration-300">
                     <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 sm:gap-4">
                       {/* User Info */}
                       <div class="flex items-center space-x-3 min-w-0 flex-1">
@@ -264,8 +330,16 @@ export default component$(() => {
                             {user.name || "Anonymous Cutie"}
                           </div>
                           <div class="text-xs sm:text-sm text-pink-200 truncate">{user.email}</div>
+                          {user.accounts?.[0]?.providerAccountId && (
+                            <div class="text-xs text-purple-300 truncate">
+                              Discord ID: {user.accounts[0].providerAccountId}
+                            </div>
+                          )}
                           <div class="text-xs text-pink-300 mt-1">
                             Joined {new Date(user.createdAt).toLocaleDateString()}
+                          </div>
+                          <div class="text-xs text-pink-300 mt-1">
+                            {user.id}
                           </div>
                         </div>
                       </div>

@@ -87,11 +87,11 @@ export const onPost: RequestHandler = async ({ request, json }) => {
     useCuteWords = user?.useCustomWords || false;
     customUploadDomain = user?.customUploadDomain || null;
   }
-    const shortCode = generateShortCode(useCuteWords);
+  const shortCode = generateShortCode(useCuteWords);
   const deletionKey = nanoid(32);
   const filename = `${shortCode}_${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
     // Save file to storage
-  await saveFile(file, filename);
+  await saveFile(file, filename, userId);
     // Determine the upload domain based on request or user preference
   const requestHost = request.headers.get("host");
   const config = getEnvConfig();

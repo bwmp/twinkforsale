@@ -22,15 +22,16 @@ export default component$(() => {
             <p class="text-lg sm:text-xl text-pink-200 mb-6 sm:mb-8 max-w-3xl mx-auto px-2">
               Upload and share files with the cutest, most uwu file sharing service ever!
               I made this 80% with ai cuz i could (´｡• ᵕ •｡`) ♡
-            </p>            {session.value ? (
+            </p>
+            {session.value ? (
               <div class="flex flex-col sm:flex-row gap-4 justify-center items-center px-4">
                 <Link
-                href="/dashboard"
-                class="btn-cute text-white px-6 sm:px-8 py-3 sm:py-4 rounded-full text-base sm:text-lg font-semibold flex items-center justify-center gap-2 w-full sm:w-auto"
-              >
-                <Home class="w-5 h-5" />
-                Go to Dashboard
-              </Link>
+                  href="/dashboard"
+                  class="btn-cute text-white px-6 sm:px-8 py-3 sm:py-4 rounded-full text-base sm:text-lg font-semibold flex items-center justify-center gap-2 w-full sm:w-auto"
+                >
+                  <Home class="w-5 h-5" />
+                  Go to Dashboard
+                </Link>
                 <Link
                   href="/setup/sharex"
                   class="glass text-white px-6 sm:px-8 py-3 sm:py-4 rounded-full text-base sm:text-lg font-semibold hover:bg-white/20 transition-all duration-300 flex items-center justify-center gap-2 w-full sm:w-auto"
@@ -61,8 +62,10 @@ export default component$(() => {
             Why Choose twink.forsale?
             <Sparkle class="w-6 sm:w-8 h-6 sm:h-8" />
           </h2>
-          <p class="text-center text-pink-200 mb-8 sm:mb-16 px-4">Because we're the cutest file hosting uwu</p>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8"><div class="card-cute p-8 rounded-3xl">
+          <p class="text-center text-pink-200 px-4">Because we're the cutest file hosting uwu</p>
+          <p class="text-center text-gray-500 mb-8 sm:mb-16 px-4">Do note this is a private/application only site, hit me up on discord @akiradev to ask for access</p>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+            <div class="card-cute p-8 rounded-3xl">
               <div class="w-16 h-16 bg-gradient-to-br from-pink-500 to-purple-500 rounded-full flex items-center justify-center mb-6">
                 <Rocket class="w-8 h-8 text-white" />
               </div>
@@ -70,15 +73,17 @@ export default component$(() => {
               <p class="text-pink-200">
                 Gay femboy approved file sharing with a focus on simplicity, speed, and maximum cuteness! (◕‿◕)♡
               </p>
-            </div>            <div class="card-cute p-8 rounded-3xl">
+            </div>
+            <div class="card-cute p-8 rounded-3xl">
               <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-violet-500 rounded-full flex items-center justify-center mb-6" style="animation-delay: 0.5s;">
                 <Heart class="w-8 h-8 text-white" />
               </div>
               <h3 class="text-xl font-semibold text-white mb-3">Super Secure uwu</h3>
               <p class="text-pink-200">
-                Your files are protected with love and care~ Private uploads, custom domains, and all the security features you need (´｡• ᵕ •｡`) ♡
+                Your files are protected with love and care~ (´｡• ᵕ •｡`) ♡
               </p>
-            </div>            <div class="card-cute p-8 rounded-3xl">
+            </div>
+            <div class="card-cute p-8 rounded-3xl">
               <div class="w-16 h-16 bg-gradient-to-br from-violet-500 to-fuchsia-500 rounded-full flex items-center justify-center mb-6" style="animation-delay: 1s;">
                 <BarChart3 class="w-8 h-8 text-white" />
               </div>
@@ -101,7 +106,8 @@ export default component$(() => {
             Set up ShareX in seconds with our automatic configuration generator~ So easy even a catboy could do it! (=^･ω･^=)
           </p>
           <div class="glass rounded-3xl p-4 sm:p-8">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 text-left">              <div class="flex items-start space-x-3 sm:space-x-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 text-left">
+              <div class="flex items-start space-x-3 sm:space-x-4">
                 <div class="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-pink-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-base sm:text-lg pulse-soft flex-shrink-0">
                   1
                 </div>

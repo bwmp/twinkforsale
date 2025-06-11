@@ -9,11 +9,11 @@ function generateDiscordEmbed(upload: any, user: any, baseUrl: string, userStats
   // Helper function to replace placeholders
   const replacePlaceholders = (text: string) => {
     if (!text) return text;
-    
+
     const fileSize = (upload.size / 1024 / 1024).toFixed(2);
     const uploadDate = new Date(upload.createdAt).toLocaleDateString();
     const storageUsedMB = userStats ? (userStats.totalStorage / 1024 / 1024).toFixed(2) : '0';
-    
+
     return text
       .replace(/\{filename\}/g, upload.originalName)
       .replace(/\{filesize\}/g, `${fileSize} MB`)
@@ -58,7 +58,7 @@ function generateDiscordEmbed(upload: any, user: any, baseUrl: string, userStats
     const uploadDate = new Date(upload.createdAt).toLocaleDateString();
     plainDescription += `\nUploaded ${uploadDate}`;
   }
-  
+
   return `<!DOCTYPE html>
 <html>
 <head>
@@ -151,10 +151,10 @@ function generateDiscordEmbed(upload: any, user: any, baseUrl: string, userStats
     <h1>${embedTitle}</h1>
     ${description !== embedTitle ? `<p style="color: #ccc; margin-bottom: 20px;">${description}</p>` : ''}
     <div class="file-preview">
-      ${upload.mimeType.startsWith('image/') ? 
-        `<img src="${upload.url}?direct=true" alt="${upload.originalName}" />` :
-        `<div style="font-size: 48px; margin-bottom: 16px;">📄</div>`
-      }
+      ${upload.mimeType.startsWith('image/') ?
+      `<img src="${upload.url}?direct=true" alt="${upload.originalName}" />` :
+      `<div style="font-size: 48px; margin-bottom: 16px;">📄</div>`
+    }
       <div class="file-info">
         <strong>${upload.originalName}</strong><br>
         ${(upload.size / 1024 / 1024).toFixed(2)} MB • ${upload.mimeType}<br>
@@ -171,53 +171,71 @@ function generateDiscordEmbed(upload: any, user: any, baseUrl: string, userStats
 export const onRequest: RequestHandler = async ({ params, send, status, url, request }) => {
   try {
     const shortCode = params.shortCode;
-    
+
     if (!shortCode) {
       status(404);
       return;
     }
-    
+
     // Check if this is a direct file request
     const isDirect = url.searchParams.get('direct') === 'true';
-    
+
     // Find upload in database with user info for embed settings
     const upload = await db.upload.findUnique({
       where: { shortCode },
       include: { user: true }
     });
-    
+
     if (!upload) {
       status(404);
       return;
-    }
-    
-    // Update view count
-    await db.upload.update({
-      where: { id: upload.id },
-      data: {
-        views: { increment: 1 },
-        lastViewed: new Date()
-      }
-    });
-      // Get file path
+    }    // Update view count only for external views
+    // Don't count views when accessed from our own dashboard/uploads/admin pages
+    const referrer = request.headers.get('referer') || request.headers.get('referrer') || '';
+
+    // Check if this is an internal view from our dashboard/uploads pages
+    const isInternalDashboardView = referrer.includes('/dashboard') ||
+      referrer.includes('/uploads') ||
+      referrer.includes('/admin');
+
+    // Only increment views if:
+    // 1. Not from our internal dashboard/admin pages (excludes image previews, etc.)
+    // 2. Not a direct file request (which is usually for downloads)
+    // This ensures we only count "real" external views and embeds
+    if (!isInternalDashboardView && !isDirect) {
+      await db.upload.update({
+        where: { id: upload.id },
+        data: {
+          views: { increment: 1 },
+          lastViewed: new Date()
+        }
+      });
+    }// Get file path
     const config = getServerEnvConfig();
-    const uploadDir = config.UPLOAD_DIR;
-    const filePath = path.join(uploadDir, upload.filename);
-    
+    const baseUploadDir = config.UPLOAD_DIR;
+
+    // Determine the correct directory based on whether the upload has a user
+    let filePath: string;
+    if (upload.userId) {
+      filePath = path.join(baseUploadDir, upload.userId, upload.filename);
+    } else {
+      filePath = path.join(baseUploadDir, 'anonymous', upload.filename);
+    }
+
     // Check if file exists
     if (!fs.existsSync(filePath)) {
       status(404);
       return;
     }
-      // If this is a direct file request, always serve the file directly
+    // If this is a direct file request, always serve the file directly
     // For non-direct requests, serve embed HTML for bots/crawlers, direct file for browsers
     const userAgent = request.headers.get('user-agent')?.toLowerCase() || '';
     const isBotOrCrawler = /bot|crawler|spider|crawling|discord|telegram|whatsapp|facebook|twitter|slack/i.test(userAgent);
-    
+
     if (isDirect || (!isBotOrCrawler)) {
       // Read and serve file directly
       const fileBuffer = fs.readFileSync(filePath);
-        const response = new Response(fileBuffer, {
+      const response = new Response(fileBuffer, {
         headers: {
           "Content-Type": upload.mimeType,
           "Content-Length": upload.size.toString(),
@@ -225,13 +243,14 @@ export const onRequest: RequestHandler = async ({ params, send, status, url, req
           "Cache-Control": "public, max-age=31536000"
         }
       });
-      
+
       send(response);
-      return;    } else {
+      return;
+    } else {
       // Generate and serve Discord embed HTML
       const config = getServerEnvConfig();
       const baseUrl = config.BASE_URL;
-      
+
       // Fetch user statistics if the user wants to show them
       let userStats = undefined;
       if (upload.user?.showUserStats) {
@@ -246,26 +265,26 @@ export const onRequest: RequestHandler = async ({ params, send, status, url, req
             _sum: { views: true }
           })
         ]);
-        
+
         userStats = {
           totalFiles,
           totalStorage: totalStorageResult._sum.size || 0,
           totalViews: totalViewsResult._sum.views || 0
         };
       }
-      
+
       const embedHtml = generateDiscordEmbed(upload, upload.user, baseUrl, userStats);
-        const response = new Response(embedHtml, {
+      const response = new Response(embedHtml, {
         headers: {
           "Content-Type": "text/html",
           "Cache-Control": "public, max-age=300" // 5 minutes cache for embeds
         }
       });
-      
+
       send(response);
       return;
     }
-    
+
   } catch (error) {
     console.error("File serve error:", error);
     status(404);
