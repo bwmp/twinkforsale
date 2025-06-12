@@ -29,6 +29,8 @@ import {
   Grid,
   List,
   TrendingUp,
+  CheckSquare,
+  Square,
 } from "lucide-icons-qwik";
 import { ImagePreviewContext } from "~/lib/image-preview-store";
 
@@ -43,64 +45,91 @@ export const useDeleteUpload = routeAction$(async (data, requestEvent) => {
     return { success: false, error: "Not authenticated" };
   }
 
-  const deletionKey = data.deletionKey as string;
-  if (!deletionKey) {
-    return { success: false, error: "No deletion key provided" };
+  const deletionKeys = data.deletionKeys as string[] | string;
+  const keysArray = Array.isArray(deletionKeys) ? deletionKeys : [deletionKeys];
+
+  if (!keysArray.length) {
+    return { success: false, error: "No deletion keys provided" };
   }
-
   try {
-    // Find upload by deletion key and verify ownership
-    const upload = await db.upload.findUnique({
-      where: { deletionKey },
-      include: { user: true },
-    });
-
-    if (!upload) {
-      return { success: false, error: "File not found" };
-    }
-
-    // Verify user owns this upload
-    if (upload.user?.email !== session.user.email) {
-      return { success: false, error: "Unauthorized" };
-    }
-
-    // Delete file from storage
+    const results = [];
+    let totalStorageDecrement = 0;
     const config = getEnvConfig();
     const baseUploadDir = config.UPLOAD_DIR;
 
-    // Determine the correct directory based on whether the upload has a user
-    let filePath: string;
-    if (upload.userId) {
-      filePath = path.join(baseUploadDir, upload.userId, upload.filename);
-    } else {
-      filePath = path.join(baseUploadDir, "anonymous", upload.filename);
+    // Process each deletion key
+    for (const deletionKey of keysArray) {
+      // Find upload by deletion key and verify ownership
+      const upload = await db.upload.findUnique({
+        where: { deletionKey },
+        include: { user: true },
+      });
+
+      if (!upload) {
+        results.push({
+          key: deletionKey,
+          success: false,
+          error: "File not found",
+        });
+        continue;
+      }
+
+      // Verify user owns this upload
+      if (upload.user?.email !== session.user.email) {
+        results.push({
+          key: deletionKey,
+          success: false,
+          error: "Unauthorized",
+        });
+        continue;
+      }
+
+      // Delete file from storage
+      let filePath: string;
+      if (upload.userId) {
+        filePath = path.join(baseUploadDir, upload.userId, upload.filename);
+      } else {
+        filePath = path.join(baseUploadDir, "anonymous", upload.filename);
+      }
+
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+
+      // Delete from database
+      await db.upload.delete({
+        where: { id: upload.id },
+      });
+
+      totalStorageDecrement += upload.size;
+      results.push({ key: deletionKey, success: true });
     }
 
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-    }
-
-    // Update user storage
-    if (upload.userId) {
+    // Update user storage in a single transaction
+    if (totalStorageDecrement > 0) {
       await db.user.update({
-        where: { id: upload.userId },
+        where: { email: session.user.email },
         data: {
           storageUsed: {
-            decrement: upload.size,
+            decrement: totalStorageDecrement,
           },
         },
       });
     }
 
-    // Delete from database
-    await db.upload.delete({
-      where: { id: upload.id },
-    });
+    const successCount = results.filter((r) => r.success).length;
+    const failureCount = results.length - successCount;
 
-    return { success: true };
+    return {
+      success: true,
+      results,
+      successCount,
+      failureCount,
+      message: `Successfully deleted ${successCount} file${successCount !== 1 ? "s" : ""}${failureCount > 0 ? `, ${failureCount} failed` : ""}`,
+    };
   } catch (error) {
     console.error("Deletion error:", error);
-    return { success: false, error: "Failed to delete file" };
+    return { success: false, error: "Failed to delete files" };
   }
 });
 
@@ -181,22 +210,26 @@ export default component$(() => {
 
   const searchQuery = useSignal("");
   const sortBy = useSignal<"name" | "size" | "views" | "date">("date");
-  const sortOrder = useSignal<"asc" | "desc">("desc"); // Initialize viewMode from server-side data
+  const sortOrder = useSignal<"asc" | "desc">("desc");
+  // Initialize viewMode from server-side data
   const viewMode = useSignal<"grid" | "list">(
     userData.value.savedViewMode as "grid" | "list",
   );
+  // Bulk selection state
+  const selectedFiles = useSignal<Set<string>>(new Set());
 
   const copyToClipboard = $((text: string) => {
     navigator.clipboard.writeText(text);
     // Could add a toast notification here
   });
-
   const deleteUpload = $(async (deletionKey: string) => {
     if (!confirm("Are you sure you want to delete this file?")) {
       return;
     }
 
-    const result = await deleteUploadAction.submit({ deletionKey });
+    const result = await deleteUploadAction.submit({
+      deletionKeys: deletionKey,
+    });
 
     if (result.value.success) {
       // Reload the page to refresh the upload list
@@ -205,22 +238,6 @@ export default component$(() => {
       alert(result.value.error || "Failed to delete file");
     }
   });
-
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return "0 Bytes";
-
-    // Handle negative numbers (over quota)
-    const isNegative = bytes < 0;
-    const absoluteBytes = Math.abs(bytes);
-
-    const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(absoluteBytes) / Math.log(k));
-    const formattedSize =
-      parseFloat((absoluteBytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
-
-    return isNegative ? `-${formattedSize}` : formattedSize;
-  };
 
   // Filter and sort uploads
   const filteredAndSortedUploads = useComputed$(() => {
@@ -262,6 +279,80 @@ export default component$(() => {
 
     return uploads;
   });
+
+  // Bulk action functions
+  const toggleFileSelection = $((deletionKey: string) => {
+    const newSelection = new Set(selectedFiles.value);
+    if (newSelection.has(deletionKey)) {
+      newSelection.delete(deletionKey);
+    } else {
+      newSelection.add(deletionKey);
+    }
+    selectedFiles.value = newSelection;
+  });
+
+  const selectAllVisibleFiles = $(() => {
+    const allKeys = filteredAndSortedUploads.value.map(
+      (upload) => upload.deletionKey,
+    );
+    selectedFiles.value = new Set(allKeys);
+  });
+
+  const deselectAllFiles = $(() => {
+    selectedFiles.value = new Set();
+  });
+  const bulkDelete = $(async () => {
+    const selectedCount = selectedFiles.value.size;
+    if (selectedCount === 0) return;
+
+    if (
+      !confirm(
+        `Are you sure you want to delete ${selectedCount} selected file${selectedCount !== 1 ? "s" : ""}?`,
+      )
+    ) {
+      return;
+    }
+
+    const result = await deleteUploadAction.submit({
+      deletionKeys: Array.from(selectedFiles.value),
+    });
+
+    if (result.value.success) {
+      selectedFiles.value = new Set();
+      // Reload the page to refresh the upload list
+      window.location.reload();
+    } else {
+      alert(result.value.error || "Failed to delete files");
+    }
+  });
+  const bulkCopyUrls = $(() => {
+    const selectedUploads = filteredAndSortedUploads.value.filter((upload) =>
+      selectedFiles.value.has(upload.deletionKey),
+    );
+
+    const urls = selectedUploads
+      .map((upload) => `${userData.value.origin}/f/${upload.shortCode}`)
+      .join("\n");
+
+    navigator.clipboard.writeText(urls);
+    // Could show a toast notification here
+  });
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return "0 Bytes";
+
+    // Handle negative numbers (over quota)
+    const isNegative = bytes < 0;
+    const absoluteBytes = Math.abs(bytes);
+
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(absoluteBytes) / Math.log(k));
+    const formattedSize =
+      parseFloat((absoluteBytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+
+    return isNegative ? `-${formattedSize}` : formattedSize;
+  };
 
   const handleSort = $((column: "name" | "size" | "views" | "date") => {
     if (sortBy.value === column) {
@@ -316,7 +407,7 @@ export default component$(() => {
       <div class="mb-6 text-center sm:mb-8">
         <h1 class="text-gradient-cute mb-3 flex flex-wrap items-center justify-center gap-2 text-3xl font-bold sm:text-4xl">
           My Uploads~
-        </h1>{" "}
+        </h1>
         <p class="text-theme-secondary px-4 text-base sm:text-lg">
           Manage all your cute uploads and view their sparkly statistics! (◕‿◕)♡
         </p>
@@ -343,7 +434,7 @@ export default component$(() => {
               </p>
             </div>
           </div>
-        </div>{" "}
+        </div>
         <div class="card-cute pulse-soft rounded-3xl p-4 sm:p-6">
           <div class="flex items-center">
             {" "}
@@ -368,7 +459,7 @@ export default component$(() => {
               </p>
             </div>
           </div>
-        </div>{" "}
+        </div>
         <div class="card-cute pulse-soft rounded-3xl p-4 sm:p-6">
           <div class="flex items-center">
             {" "}
@@ -386,7 +477,7 @@ export default component$(() => {
               </p>
             </div>
           </div>
-        </div>{" "}
+        </div>
         <div class="card-cute pulse-soft rounded-3xl p-4 sm:p-6">
           <div class="flex items-center">
             {" "}
@@ -423,9 +514,7 @@ export default component$(() => {
                 </span>
               )}
             </h2>
-
             <div class="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
-              {" "}
               {/* View Mode Toggle */}
               <div class="bg-gradient-theme-toggle border-theme-card flex rounded-full border p-1">
                 <button
@@ -456,7 +545,7 @@ export default component$(() => {
                   <Grid class="h-4 w-4" />
                   Grid
                 </button>
-              </div>{" "}
+              </div>
               {/* Search Input */}
               <div class="group relative w-full max-w-md sm:w-auto">
                 <div class="pointer-events-none absolute inset-y-0 left-0 z-10 flex items-center pl-3">
@@ -477,14 +566,75 @@ export default component$(() => {
               </div>
             </div>
           </div>
+          {/* Bulk Selection Controls */}
+          <div class="border-theme-card border-t px-4 pt-3 sm:px-6">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div class="flex items-center gap-3">
+
+                <div
+                  class={`transition-all duration-300 ${selectedFiles.value.size > 0 ? "opacity-100" : "opacity-50"}`}
+                >
+                  <div class="bg-gradient-theme-secondary/20 text-theme-accent-primary flex items-center gap-2 rounded-full px-3 py-1.5 backdrop-blur-sm">
+                    <Sparkle class="h-3 w-3" />
+                    <span class="text-sm font-medium">
+                      {selectedFiles.value.size} file
+                      {selectedFiles.value.size !== 1 ? "s" : ""} selected
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                class={`flex items-center gap-2 transition-all duration-300 ${selectedFiles.value.size > 0 ? "opacity-100" : "pointer-events-none opacity-30"}`}
+              >
+                <button
+                  onClick$={bulkCopyUrls}
+                  class="text-theme-action-copy flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-300 hover:bg-white/10"
+                >
+                  <Copy class="h-4 w-4" />
+                  Copy URLs ({selectedFiles.value.size})
+                </button>
+                <button
+                  onClick$={bulkDelete}
+                  class="text-theme-action-delete flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-300 hover:bg-white/10"
+                >
+                  <Trash2 class="h-4 w-4" />
+                  Delete ({selectedFiles.value.size})
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
         {userData.value.user.uploads.length > 0 ? (
           viewMode.value === "list" ? (
             /* LIST VIEW */
             <div class="overflow-x-auto">
               <table class="w-full min-w-[600px]">
+                {" "}
                 <thead class="glass">
                   <tr>
+                    <th class="text-theme-text-muted px-3 py-3 text-left text-xs font-medium tracking-wider uppercase sm:px-6">
+                      <button
+                        onClick$={() => {
+                          if (
+                            selectedFiles.value.size ===
+                            filteredAndSortedUploads.value.length
+                          ) {
+                            deselectAllFiles();
+                          } else {
+                            selectAllVisibleFiles();
+                          }
+                        }}
+                        class="text-theme-accent-primary hover:text-theme-accent-secondary transition-colors"
+                      >
+                        {selectedFiles.value.size ===
+                        filteredAndSortedUploads.value.length ? (
+                          <CheckSquare class="h-4 w-4" />
+                        ) : (
+                          <Square class="h-4 w-4" />
+                        )}
+                      </button>
+                    </th>
                     <th
                       class="text-theme-text-muted hover:text-theme-text-secondary cursor-pointer px-3 py-3 text-left text-xs font-medium tracking-wider uppercase transition-colors sm:px-6"
                       onClick$={() => handleSort("name")}
@@ -517,13 +667,32 @@ export default component$(() => {
                       Actions~ <Zap class="inline h-4 w-4" />
                     </th>
                   </tr>
-                </thead>{" "}
+                </thead>
                 <tbody class="border-theme-card">
+                  {" "}
                   {filteredAndSortedUploads.value.map((upload) => (
                     <tr
                       key={upload.id}
-                      class="border-theme-card transition-all duration-300 hover:bg-white/5"
+                      class={`border-theme-card transition-all duration-300 hover:bg-white/5 ${
+                        selectedFiles.value.has(upload.deletionKey)
+                          ? "bg-gradient-theme-accent-primary/10 border-theme-accent-primary/20"
+                          : ""
+                      }`}
                     >
+                      <td class="px-3 py-4 sm:px-6">
+                        <button
+                          onClick$={() =>
+                            toggleFileSelection(upload.deletionKey)
+                          }
+                          class="text-theme-accent-primary hover:text-theme-accent-secondary transition-colors"
+                        >
+                          {selectedFiles.value.has(upload.deletionKey) ? (
+                            <CheckSquare class="h-4 w-4" />
+                          ) : (
+                            <Square class="h-4 w-4" />
+                          )}
+                        </button>
+                      </td>
                       <td class="px-3 py-4 sm:px-6">
                         <div class="flex items-center space-x-2 sm:space-x-3">
                           <div class="flex-shrink-0">
@@ -597,7 +766,7 @@ export default component$(() => {
                       </td>
                       <td class="text-theme-text-secondary px-3 py-4 text-sm sm:px-6">
                         {new Date(upload.createdAt).toLocaleDateString()}
-                      </td>{" "}
+                      </td>
                       <td class="px-3 py-4 sm:px-6">
                         {" "}
                         <div class="flex flex-col space-y-1 sm:flex-row sm:space-y-0 sm:space-x-2">
@@ -638,10 +807,27 @@ export default component$(() => {
                 {filteredAndSortedUploads.value.map((upload) => (
                   <div
                     key={upload.id}
-                    class="card-cute group rounded-2xl p-4 transition-all duration-300 hover:scale-105"
+                    class={`card-cute group rounded-2xl p-4 transition-all duration-300 hover:scale-105 ${
+                      selectedFiles.value.has(upload.deletionKey)
+                        ? "ring-theme-accent-primary bg-gradient-theme-accent-primary/10 ring-2"
+                        : ""
+                    }`}
                   >
-                    {" "}
-                    {/* File Preview */}{" "}
+                    {/* Selection Checkbox */}
+                    <div class="relative mb-2">
+                      <button
+                        onClick$={() => toggleFileSelection(upload.deletionKey)}
+                        class="text-theme-accent-primary hover:text-theme-accent-secondary absolute top-0 right-0 z-10 rounded-full bg-white/20 p-1 backdrop-blur-sm transition-all duration-300"
+                      >
+                        {selectedFiles.value.has(upload.deletionKey) ? (
+                          <CheckSquare class="h-5 w-5" />
+                        ) : (
+                          <Square class="h-5 w-5" />
+                        )}
+                      </button>
+                    </div>
+
+                    {/* File Preview */}
                     <div class="bg-gradient-grid-item mb-3 flex aspect-square items-center justify-center overflow-hidden rounded-xl">
                       {upload.mimeType.startsWith("image/") ? (
                         <img
@@ -680,7 +866,7 @@ export default component$(() => {
                         title={upload.originalName}
                       >
                         {upload.originalName}
-                      </h3>{" "}
+                      </h3>
                       <div class="text-theme-text-secondary flex items-center justify-between text-xs">
                         <span>{formatFileSize(upload.size)}</span>
                         <span>
@@ -715,7 +901,7 @@ export default component$(() => {
                           </span>
                           <MiniChart data={upload.analytics || []} />
                         </div>
-                      </div>{" "}
+                      </div>
                       {/* Actions */}
                       <div class="flex gap-1 pt-2">
                         <button
@@ -755,7 +941,7 @@ export default component$(() => {
           <div class="py-12 text-center">
             <div class="glass mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full">
               <div class="text-3xl">📁</div>
-            </div>{" "}
+            </div>
             <h3 class="text-theme-text-primary mb-2 text-lg font-medium">
               No uploads yet~ ✨
             </h3>
@@ -794,6 +980,40 @@ export default component$(() => {
           </div>
         )}
       </div>
+      {/* Floating Action Bar */}
+      {selectedFiles.value.size > 0 && (
+        <div class="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 transform">
+          <div class="card-cute flex items-center gap-3 rounded-full px-6 py-3 shadow-xl backdrop-blur-sm">
+            <span class="text-theme-text-primary text-sm font-medium">
+              {selectedFiles.value.size} file
+              {selectedFiles.value.size !== 1 ? "s" : ""} selected
+            </span>
+            <div class="h-4 w-px bg-white/20"></div>
+            <button
+              onClick$={bulkCopyUrls}
+              class="text-theme-action-copy flex items-center gap-1 rounded-full px-3 py-2 text-sm font-medium transition-all duration-300 hover:bg-white/10"
+            >
+              <Copy class="h-4 w-4" />
+              Copy URLs
+            </button>
+            <button
+              onClick$={bulkDelete}
+              class="text-theme-action-delete flex items-center gap-1 rounded-full px-3 py-2 text-sm font-medium transition-all duration-300 hover:bg-white/10"
+            >
+              <Trash2 class="h-4 w-4" />
+              Delete
+            </button>
+            <button
+              onClick$={() => {
+                selectedFiles.value = new Set();
+              }}
+              class="text-theme-muted hover:text-theme-text-secondary flex items-center gap-1 rounded-full px-3 py-2 text-sm font-medium transition-all duration-300 hover:bg-white/10"
+            >
+              ✕ Clear
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 });

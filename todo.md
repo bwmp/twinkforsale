@@ -1,7 +1,4 @@
 Drag & Drop Upload Area - Add a beautiful drag-and-drop zone on the dashboard with cute animations
-Bulk File Management - Select multiple files for batch operations (delete, copy URLs, etc.)
-File Previews & Thumbnails - Expand beyond just images to support PDF previews, video thumbnails, etc.
-Dark/Light Theme Toggle - Let users switch between different cute themes
 File Organization - Add folders/albums to organize uploads
 Detailed File Analytics - Individual file analytics pages with referrer data, device types
 Download Tracking - Track not just views but actual downloads
