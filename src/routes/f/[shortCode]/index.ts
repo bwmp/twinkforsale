@@ -65,33 +65,31 @@ function generateDiscordEmbed(upload: any, user: any, baseUrl: string, userStats
 <head>
   <meta charset="utf-8">
   <title>${embedTitle}</title>
-  
   <!-- Discord Embed Meta Tags -->
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="${domain}">
   <meta property="og:title" content="${embedTitle}">  <meta property="og:description" content="${plainDescription}">
   <meta property="og:url" content="${upload.url}">
   <meta name="theme-color" content="${embedColor}">
-    <!-- Twitter Card Meta Tags -->
-  <meta name="twitter:card" content="${upload.mimeType === 'image/gif' ? 'player' : 'summary_large_image'}">
+  <!-- Twitter Card Meta Tags -->
+  <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${embedTitle}">
-  <meta name="twitter:description" content="${plainDescription}">${upload.mimeType.startsWith('image/') ? `
+  <meta name="twitter:description" content="${plainDescription}">  
+  ${upload.mimeType === 'image/gif' ? `
+  <!-- GIF-specific meta tags for Discord animation support -->
+  <meta property="og:image" content="${upload.url}?direct=true">
+  <meta property="og:image:type" content="image/gif">
+  <meta property="og:image:width" content="498">
+  <meta property="og:image:height" content="498">
+  <meta name="twitter:image" content="${upload.url}?direct=true">
+  <meta name="twitter:image:alt" content="${embedTitle}">
+  ` : upload.mimeType.startsWith('image/') ? `
+  <!-- Standard image meta tags -->
   <meta property="og:image" content="${upload.url}?direct=true">
   <meta property="og:image:type" content="${upload.mimeType}">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta name="twitter:image" content="${upload.url}?direct=true">
-  ${upload.mimeType === 'image/gif' ? `
-  <!-- Additional GIF/Animation support -->
-  <meta property="og:video" content="${upload.url}?direct=true">
-  <meta property="og:video:type" content="image/gif">
-  <meta property="og:video:width" content="1200">
-  <meta property="og:video:height" content="630">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:player" content="${upload.url}?direct=true">
-  <meta name="twitter:player:width" content="1200">
-  <meta name="twitter:player:height" content="630">
-  ` : ''}
   ` : ''}
   ${embedAuthor ? `<meta name="author" content="${embedAuthor}">` : ''}
   
@@ -254,26 +252,27 @@ export const onRequest: RequestHandler = async ({ params, send, status, url, req
     if (!fs.existsSync(filePath)) {
       status(404);
       return;
-    }
-    // If this is a direct file request, always serve the file directly
+    }    // If this is a direct file request, always serve the file directly
     // For non-direct requests, serve embed HTML for bots/crawlers, direct file for browsers
     const userAgent = request.headers.get('user-agent')?.toLowerCase() || '';
-    const isBotOrCrawler = /bot|crawler|spider|crawling|discord|telegram|whatsapp|facebook|twitter|slack/i.test(userAgent);    if (isDirect || (!isBotOrCrawler)) {
+    const isBotOrCrawler = /bot|crawler|spider|crawling|discord|telegram|whatsapp|facebook|twitter|slack/i.test(userAgent);
+
+    if (isDirect || (!isBotOrCrawler)) {
       // Read and serve file directly
       const fileBuffer = fs.readFileSync(filePath);
-      
+
       // Special headers for GIFs to ensure proper animation support
       const headers: Record<string, string> = {
         "Content-Type": upload.mimeType,
         "Content-Length": upload.size.toString(),
         "Content-Disposition": `inline; filename="${upload.originalName}"`,
         "Cache-Control": "public, max-age=31536000"
-      };
-
-      // Additional headers for GIFs to ensure proper playback
+      };      // Additional headers for GIFs to ensure proper playback
       if (upload.mimeType === 'image/gif') {
         headers["X-Content-Type-Options"] = "nosniff";
         headers["Accept-Ranges"] = "bytes";
+        // Ensure proper caching for Discord
+        headers["Cache-Control"] = "public, max-age=31536000, immutable";
       }
 
       const response = new Response(fileBuffer, { headers });
