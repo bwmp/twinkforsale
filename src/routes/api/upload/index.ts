@@ -76,37 +76,40 @@ export const onPost: RequestHandler = async ({ request, json }) => {
     }
   }  // Generate unique identifiers
   let useCuteWords = false;
-  let customUploadDomain: string | null = null;
+  let userUploadDomain: string | null = null;
 
   // Get user's preferences if authenticated
   if (userId) {
     const user = await db.user.findUnique({
       where: { id: userId },
-      select: { useCustomWords: true, customDomain: true }
+      select: { 
+        useCustomWords: true, 
+        customSubdomain: true,
+        uploadDomain: true
+      }
     });
     useCuteWords = user?.useCustomWords || false;
-    customUploadDomain = user?.customDomain || null;
+    
+    // Build the user's preferred upload domain
+    if (user?.uploadDomain) {
+      if (user.customSubdomain) {
+        userUploadDomain = `https://${user.customSubdomain}.${user.uploadDomain.domain}`;
+      } else {
+        userUploadDomain = `https://${user.uploadDomain.domain}`;
+      }
+    }
   }
   const shortCode = generateShortCode(useCuteWords);
   const deletionKey = nanoid(32);
   const filename = `${shortCode}_${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
   // Save file to storage
-  await saveFile(file, filename, userId);
-  // Determine the upload domain based on request or user preference
-  const requestHost = request.headers.get("host");
+  await saveFile(file, filename, userId);  // Determine the upload domain based on user preference
   const config = getEnvConfig();
   let uploadDomain = config.BASE_URL;
 
-  // Check if request came from a custom domain
-  if (requestHost && requestHost !== new URL(config.BASE_URL).host) {
-    // Validate this is an allowed custom domain (*.twink.forsale or user's custom domain)
-    if (requestHost.endsWith('.twink.forsale') ||
-      (customUploadDomain && requestHost === customUploadDomain)) {
-      uploadDomain = `https://${requestHost}`;
-    }
-  } else if (customUploadDomain && !requestHost?.endsWith('.twink.forsale')) {
-    // Use user's preferred custom domain if no specific subdomain was used
-    uploadDomain = `https://${customUploadDomain}`;
+  // Use user's preferred upload domain if they have one configured
+  if (userUploadDomain) {
+    uploadDomain = userUploadDomain;
   }
 
   // Create database record
