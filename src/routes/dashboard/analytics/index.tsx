@@ -146,7 +146,7 @@ export default component$(() => {
 
         <div class="card-cute rounded-2xl p-4">
           <div class="flex items-center gap-3">
-            <div class="bg-gradient-theme-quaternary-primary rounded-full p-2">
+            <div class="bg-gradient-theme-accent-primary rounded-full p-2">
               <Download class="text-theme-primary h-5 w-5" />
             </div>
             <div>
@@ -183,10 +183,11 @@ export default component$(() => {
         <h3 class="text-gradient-cute mb-4 flex items-center gap-2 text-lg font-bold">
           <BarChart3 class="h-5 w-5" />
           Your Activity (30 Days)
-        </h3>
+        </h3>{" "}
         <DetailedAnalyticsChart
           data={data.value.userAnalytics}
           metric="totalViews"
+          colorTheme="primary"
           height={250}
         />
       </div>
@@ -207,7 +208,7 @@ export default component$(() => {
               >
                 <div class="flex items-center justify-between">
                   <div class="flex min-w-0 flex-1 items-center gap-3">
-                    <div class="bg-gradient-theme-quaternary-primary text-theme-primary flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold">
+                    <div class="bg-gradient-theme-accent-primary text-theme-primary flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold">
                       #{index + 1}
                     </div>
                     <div class="min-w-0 flex-1">

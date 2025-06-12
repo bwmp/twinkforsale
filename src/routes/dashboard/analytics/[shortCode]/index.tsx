@@ -50,13 +50,22 @@ export const useFileAnalytics = routeLoader$(async (requestEvent) => {
     orderBy: { viewedAt: "desc" },
     take: 100, // Last 100 views
   });
-
   // Get detailed download logs for analytics
   const downloadLogs = await db.downloadLog.findMany({
     where: { uploadId: upload.id },
     orderBy: { downloadedAt: "desc" },
     take: 100, // Last 100 downloads
   });
+  // Function to redact IP addresses - only show first two octets for privacy
+  // This prevents users from accessing full IP addresses via dev tools
+  const redactIpAddress = (ip: string | null): string => {
+    if (!ip) return "Unknown";
+    const parts = ip.split(".");
+    if (parts.length >= 2) {
+      return `${parts[0]}.${parts[1]}.xx.xx`;
+    }
+    return "xxx.xxx.xx.xx"; // Fallback for invalid IPs
+  };
 
   // Process referrer data
   const referrerStats = viewLogs.reduce(
@@ -125,12 +134,17 @@ export const useFileAnalytics = routeLoader$(async (requestEvent) => {
 
     return { hour, count };
   }).reverse();
-
   return {
     upload,
     analytics,
-    viewLogs: viewLogs.slice(0, 20), // Recent 20 views for display
-    downloadLogs: downloadLogs.slice(0, 20), // Recent 20 downloads for display
+    viewLogs: viewLogs.slice(0, 20).map((log) => ({
+      ...log,
+      ipAddress: redactIpAddress(log.ipAddress),
+    })), // Recent 20 views for display with redacted IPs
+    downloadLogs: downloadLogs.slice(0, 20).map((log) => ({
+      ...log,
+      ipAddress: redactIpAddress(log.ipAddress),
+    })), // Recent 20 downloads for display with redacted IPs
     referrerStats,
     deviceStats,
     hourlyActivity,
@@ -374,10 +388,11 @@ export default component$(() => {
           <h3 class="text-gradient-cute mb-4 flex items-center gap-2 text-lg font-bold">
             <BarChart3 class="h-5 w-5" />
             Views Over Time (30 Days)
-          </h3>
+          </h3>{" "}
           <DetailedAnalyticsChart
             data={data.value.analytics}
             metric="totalViews"
+            colorTheme="primary"
             height={200}
           />
         </div>
@@ -501,10 +516,9 @@ export default component$(() => {
                   key={index}
                   class="border-theme-card-border border-b pb-2 last:border-b-0 last:pb-0"
                 >
+                  {" "}
                   <div class="flex items-center justify-between text-sm">
-                    <span class="text-theme-text-primary">
-                      {log.ipAddress?.slice(0, -2)}**
-                    </span>
+                    <span class="text-theme-text-primary">{log.ipAddress}</span>
                     <span class="text-theme-text-secondary">
                       {formatDate(log.viewedAt)}
                     </span>
@@ -537,10 +551,9 @@ export default component$(() => {
                   key={index}
                   class="border-theme-card-border border-b pb-2 last:border-b-0 last:pb-0"
                 >
+                  {" "}
                   <div class="flex items-center justify-between text-sm">
-                    <span class="text-theme-text-primary">
-                      {log.ipAddress?.slice(0, -2)}**
-                    </span>
+                    <span class="text-theme-text-primary">{log.ipAddress}</span>
                     <span class="text-theme-text-secondary">
                       {formatDate(log.downloadedAt)}
                     </span>
