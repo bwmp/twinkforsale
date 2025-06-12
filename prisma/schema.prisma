@@ -92,6 +92,10 @@ model User {
   // URL/Shortcode preferences
   useCustomWords Boolean @default(false) // Use cute words instead of random chars
   
+  // Global expiration and view limit settings
+  defaultExpirationDays Int? // Default days until files expire (null = never)
+  defaultMaxViews Int? // Default max views before files are deleted (null = unlimited)
+  
   // Auth.js relations
   accounts Account[]
   sessions Session[]
@@ -115,6 +119,9 @@ model Upload {
   
   createdAt   DateTime @default(now())
   expiresAt   DateTime?
+  
+  // Per-file expiration and view limits (overrides user defaults)
+  maxViews    Int? // Max views before deletion (null = use user default or unlimited)
   
   // User association (nullable for anonymous uploads)
   userId      String?

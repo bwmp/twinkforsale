@@ -37,7 +37,6 @@ export const useUserLoader = routeLoader$(async (requestEvent) => {
   if (!user) {
     throw requestEvent.redirect(302, "/");
   }
-
   return {
     user: {
       id: user.id,
@@ -46,6 +45,8 @@ export const useUserLoader = routeLoader$(async (requestEvent) => {
       uploadDomainId: user.uploadDomainId,
       customSubdomain: user.customSubdomain,
       uploadDomain: user.uploadDomain,
+      defaultExpirationDays: user.defaultExpirationDays,
+      defaultMaxViews: user.defaultMaxViews,
     },
   };
 });
@@ -90,21 +91,22 @@ export const useUpdateSettingsAction = routeAction$(
           message: "Invalid upload domain selected",
         });
       }
-    }
-
-    await db.user.update({
+    }    await db.user.update({
       where: { id: user.id },
       data: {
         uploadDomainId: values.uploadDomainId || null,
         customSubdomain: values.customSubdomain || null,
+        defaultExpirationDays: values.defaultExpirationDays || null,
+        defaultMaxViews: values.defaultMaxViews || null,
       },
     });
 
     return { success: true, message: "Settings updated successfully" };
-  },
-  zod$({
+  },  zod$({
     uploadDomainId: z.string().optional(),
     customSubdomain: z.string().optional(),
+    defaultExpirationDays: z.number().min(1).max(365).optional(),
+    defaultMaxViews: z.number().min(1).optional(),
   }),
 );
 
@@ -124,9 +126,10 @@ export default component$(() => {
       return defaultDomain.id;
     }
     return uploadDomains.value.length > 0 ? uploadDomains.value[0].id : "";
-  };
-  const selectedDomainId = useSignal(getDefaultDomainId());
+  };  const selectedDomainId = useSignal(getDefaultDomainId());
   const customSubdomain = useSignal(userData.value.user.customSubdomain || "");
+  const defaultExpirationDays = useSignal(userData.value.user.defaultExpirationDays || "");
+  const defaultMaxViews = useSignal(userData.value.user.defaultMaxViews || "");
   const currentThemeDisplay = useSignal<ThemeName>("dark");
 
   // Update current theme display from DOM
@@ -293,6 +296,53 @@ export default component$(() => {
               <p class="text-theme-muted mt-2 pl-3 text-xs sm:pl-4">
                 Add a custom subdomain to your uploads (e.g., "files" →
                 files.domain.com)~ 💕
+              </p>
+            </div>
+
+            {/* File Expiration Settings */}
+            <div>
+              <label class="text-theme-secondary mb-2 block text-xs font-medium sm:text-sm">
+                Default File Expiration (Days)~ ⏰
+              </label>
+              <input
+                type="number"
+                name="defaultExpirationDays"
+                value={defaultExpirationDays.value}
+                placeholder="Never expires (leave empty)"
+                min="1"
+                max="365"
+                class={inputClasses}
+                onInput$={(event) => {
+                  defaultExpirationDays.value = (
+                    event.target as HTMLInputElement
+                  ).value;
+                }}
+              />
+              <p class="text-theme-muted mt-2 pl-3 text-xs sm:pl-4">
+                Files will automatically delete after this many days. Leave empty for no expiration~ 🕐
+              </p>
+            </div>
+
+            {/* View Limits Settings */}
+            <div>
+              <label class="text-theme-secondary mb-2 block text-xs font-medium sm:text-sm">
+                Default Max Views~ 👁️
+              </label>
+              <input
+                type="number"
+                name="defaultMaxViews"
+                value={defaultMaxViews.value}
+                placeholder="Unlimited views (leave empty)"
+                min="1"
+                class={inputClasses}
+                onInput$={(event) => {
+                  defaultMaxViews.value = (
+                    event.target as HTMLInputElement
+                  ).value;
+                }}
+              />
+              <p class="text-theme-muted mt-2 pl-3 text-xs sm:pl-4">
+                Files will automatically delete after this many views. Leave empty for unlimited views~ 👀✨
               </p>
             </div>
 

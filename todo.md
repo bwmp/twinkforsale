@@ -1,10 +1,7 @@
 Drag & Drop Upload Area - Add a beautiful drag-and-drop zone on the dashboard with cute animations
 File Organization - Add folders/albums to organize uploads
 Detailed File Analytics - Individual file analytics pages with referrer data, device types
-Download Tracking - Track not just views but actual downloads
 Heatmap Calendar - GitHub-style contribution calendar showing upload activity
-File Expiration - Let users set automatic deletion dates for files
-View Limits - Set maximum view counts before files auto-delete
 Password Protection - Add password protection for sensitive files
 File Comments/Notes - Let users add private notes to their uploads
 QR Code Generation - Generate QR codes for easy mobile sharing

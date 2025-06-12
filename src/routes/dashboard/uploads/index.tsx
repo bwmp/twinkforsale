@@ -29,6 +29,7 @@ import {
   Grid,
   List,
   TrendingUp,
+  BarChart3,
   CheckSquare,
   Square,
 } from "lucide-icons-qwik";
@@ -168,7 +169,8 @@ export const useUserUploads = routeLoader$(async (requestEvent) => {
 
   // Get analytics data for each upload (last 7 days)
   const uploadsWithAnalytics = await Promise.all(
-    user.uploads.map(async (upload) => {      const analytics = await getUploadAnalytics(upload.id, 7);
+    user.uploads.map(async (upload) => {
+      const analytics = await getUploadAnalytics(upload.id, 7);
       const totalViews = analytics.reduce(
         (sum, day) => sum + day.totalViews,
         0,
@@ -217,8 +219,9 @@ export default component$(() => {
   const deleteUploadAction = useDeleteUpload();
   const imagePreview = useContext(ImagePreviewContext);
 
-  const searchQuery = useSignal("");
-  const sortBy = useSignal<"name" | "size" | "views" | "downloads" | "date">("date");
+  const searchQuery = useSignal("");  const sortBy = useSignal<"name" | "size" | "views" | "downloads" | "date" | "weeklyViews">(
+    "date",
+  );
   const sortOrder = useSignal<"asc" | "desc">("desc");
   // Initialize viewMode from server-side data
   const viewMode = useSignal<"grid" | "list">(
@@ -272,11 +275,14 @@ export default component$(() => {
           break;
         case "size":
           comparison = a.size - b.size;
-          break;        case "views":
-          comparison = a.views - b.views;
           break;
-        case "downloads":
+        case "views":
+          comparison = a.views - b.views;
+          break;        case "downloads":
           comparison = a.downloads - b.downloads;
+          break;
+        case "weeklyViews":
+          comparison = (a.weeklyViews || 0) - (b.weeklyViews || 0);
           break;
         case "date":
         default:
@@ -364,18 +370,20 @@ export default component$(() => {
 
     return isNegative ? `-${formattedSize}` : formattedSize;
   };
-
-  const handleSort = $((column: "name" | "size" | "views" | "downloads" | "date") => {
-    if (sortBy.value === column) {
-      // Toggle sort order if clicking the same column
-      sortOrder.value = sortOrder.value === "asc" ? "desc" : "asc";
-    } else {
-      // Set new column and default to descending
-      sortBy.value = column;
-      sortOrder.value = "desc";
-    }
-  });
-  const getSortIcon = (column: "name" | "size" | "views" | "downloads" | "date") => {
+  const handleSort = $(
+    (column: "name" | "size" | "views" | "downloads" | "date" | "weeklyViews") => {
+      if (sortBy.value === column) {
+        // Toggle sort order if clicking the same column
+        sortOrder.value = sortOrder.value === "asc" ? "desc" : "asc";
+      } else {
+        // Set new column and default to descending
+        sortBy.value = column;
+        sortOrder.value = "desc";
+      }
+    },
+  );  const getSortIcon = (
+    column: "name" | "size" | "views" | "downloads" | "date" | "weeklyViews",
+  ) => {
     if (sortBy.value !== column) {
       return (
         <ArrowUpDown class="text-theme-muted ml-1 inline h-3 w-3 opacity-50" />
@@ -386,7 +394,7 @@ export default component$(() => {
     ) : (
       <ArrowDown class="text-theme-muted ml-1 inline h-3 w-3" />
     );
-  }; // Mini analytics chart component for grid view
+  };// Mini analytics chart component for grid view
   const MiniChart = component$(({ data }: { data: any[] }) => {
     if (!data || data.length === 0)
       return <div class="text-theme-muted text-xs">No data</div>;
@@ -417,19 +425,17 @@ export default component$(() => {
       {/* Page Header */}
       <div class="mb-6 text-center sm:mb-8">
         <h1 class="text-gradient-cute mb-3 flex flex-wrap items-center justify-center gap-2 text-3xl font-bold sm:text-4xl">
-          My Uploads~
+          My Files~
         </h1>
         <p class="text-theme-secondary px-4 text-base sm:text-lg">
-          Manage all your cute uploads and view their sparkly statistics! (◕‿◕)♡
+          Manage your files with expiration dates and view limits! (◕‿◕)♡
         </p>
       </div>
 
       {/* Stats Summary */}
       <div class="mb-6 grid grid-cols-2 gap-3 sm:mb-8 sm:gap-6 md:grid-cols-4">
-        {" "}
         <div class="card-cute pulse-soft rounded-3xl p-4 sm:p-6">
           <div class="flex items-center">
-            {" "}
             <div class="bg-gradient-theme-primary-secondary rounded-full p-2 sm:p-3">
               <Folder class="text-theme-primary h-4 w-4 sm:h-6 sm:w-6" />
             </div>
@@ -444,10 +450,10 @@ export default component$(() => {
                   : userData.value.user.uploads.length}
               </p>
             </div>
-          </div>        </div>
+          </div>
+        </div>
         <div class="card-cute pulse-soft rounded-3xl p-4 sm:p-6">
           <div class="flex items-center">
-            {" "}
             <div class="bg-gradient-theme-secondary-tertiary rounded-full p-2 sm:p-3">
               <Eye class="text-theme-primary h-4 w-4 sm:h-6 sm:w-6" />
             </div>
@@ -472,13 +478,14 @@ export default component$(() => {
         </div>
         <div class="card-cute pulse-soft rounded-3xl p-4 sm:p-6">
           <div class="flex items-center">
-            {" "}
-            <div class="bg-gradient-theme-accent-primary rounded-full p-2 sm:p-3">
+            <div class="bg-gradient-theme-quaternary-primary rounded-full p-2 sm:p-3">
               <TrendingUp class="text-theme-primary h-4 w-4 sm:h-6 sm:w-6" />
             </div>
             <div class="ml-3 sm:ml-4">
               <p class="text-theme-secondary flex items-center gap-1 text-xs font-medium sm:text-sm">
-                {searchQuery.value.trim() ? "Filtered Downloads~" : "Total Downloads~"}
+                {searchQuery.value.trim()
+                  ? "Filtered Downloads~"
+                  : "Total Downloads~"}
                 <Sparkle class="h-3 w-3 sm:h-4 sm:w-4" />
               </p>
               <p class="text-theme-primary text-lg font-bold sm:text-2xl">
@@ -497,7 +504,6 @@ export default component$(() => {
         </div>
         <div class="card-cute pulse-soft rounded-3xl p-4 sm:p-6">
           <div class="flex items-center">
-            {" "}
             <div class="bg-gradient-theme-tertiary-quaternary rounded-full p-2 sm:p-3">
               <HardDrive class="text-theme-primary h-4 w-4 sm:h-6 sm:w-6" />
             </div>
@@ -515,7 +521,6 @@ export default component$(() => {
         </div>
         <div class="card-cute pulse-soft rounded-3xl p-4 sm:p-6">
           <div class="flex items-center">
-            {" "}
             <div class="bg-gradient-theme-quaternary-primary rounded-full p-2 sm:p-3">
               <Clock class="text-theme-primary h-4 w-4 sm:h-6 sm:w-6" />
             </div>
@@ -537,11 +542,10 @@ export default component$(() => {
 
       {/* Uploads Section */}
       <div class="card-cute overflow-hidden rounded-3xl">
-        {" "}
         <div class="border-theme-card border-b px-4 py-4 sm:px-6">
           <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <h2 class="text-gradient-cute flex flex-wrap items-center text-lg font-bold sm:text-xl">
-              All Uploads~ 📋 <span class="sparkle ml-2">✨</span>
+              All Files~ 📋 <span class="sparkle ml-2">✨</span>
               {searchQuery.value.trim() && (
                 <span class="text-theme-muted ml-2 text-sm font-normal">
                   ({filteredAndSortedUploads.value.length} of{" "}
@@ -605,7 +609,6 @@ export default component$(() => {
           <div class="border-theme-card border-t px-4 pt-3 sm:px-6">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div class="flex items-center gap-3">
-
                 <div
                   class={`transition-all duration-300 ${selectedFiles.value.size > 0 ? "opacity-100" : "opacity-50"}`}
                 >
@@ -645,7 +648,6 @@ export default component$(() => {
             /* LIST VIEW */
             <div class="overflow-x-auto">
               <table class="w-full min-w-[600px]">
-                {" "}
                 <thead class="glass">
                   <tr>
                     <th class="text-theme-text-muted px-3 py-3 text-left text-xs font-medium tracking-wider uppercase sm:px-6">
@@ -683,19 +685,26 @@ export default component$(() => {
                     >
                       Size~ <Ruler class="inline h-4 w-4" />
                       {getSortIcon("size")}
-                    </th>                    <th
+                    </th>
+                    <th
                       class="text-theme-text-muted hover:text-theme-text-secondary cursor-pointer px-3 py-3 text-left text-xs font-medium tracking-wider uppercase transition-colors sm:px-6"
                       onClick$={() => handleSort("views")}
                     >
                       Views~ <Eye class="inline h-4 w-4" />
                       {getSortIcon("views")}
-                    </th>
-                    <th
+                    </th>                    <th
                       class="text-theme-text-muted hover:text-theme-text-secondary cursor-pointer px-3 py-3 text-left text-xs font-medium tracking-wider uppercase transition-colors sm:px-6"
                       onClick$={() => handleSort("downloads")}
                     >
                       Downloads~ <TrendingUp class="inline h-4 w-4" />
                       {getSortIcon("downloads")}
+                    </th>
+                    <th
+                      class="text-theme-text-muted hover:text-theme-text-secondary cursor-pointer px-3 py-3 text-left text-xs font-medium tracking-wider uppercase transition-colors sm:px-6"
+                      onClick$={() => handleSort("weeklyViews")}
+                    >
+                      7d Views~ <BarChart3 class="inline h-4 w-4" />
+                      {getSortIcon("weeklyViews")}
                     </th>
                     <th
                       class="text-theme-text-muted hover:text-theme-text-secondary cursor-pointer px-3 py-3 text-left text-xs font-medium tracking-wider uppercase transition-colors sm:px-6"
@@ -705,18 +714,20 @@ export default component$(() => {
                       {getSortIcon("date")}
                     </th>
                     <th class="text-theme-text-muted px-3 py-3 text-left text-xs font-medium tracking-wider uppercase sm:px-6">
+                      Limits~ <Clock class="inline h-4 w-4" />
+                    </th>
+                    <th class="text-theme-text-muted px-3 py-3 text-left text-xs font-medium tracking-wider uppercase sm:px-6">
                       Actions~ <Zap class="inline h-4 w-4" />
                     </th>
                   </tr>
                 </thead>
                 <tbody class="border-theme-card">
-                  {" "}
                   {filteredAndSortedUploads.value.map((upload) => (
                     <tr
                       key={upload.id}
                       class={`border-theme-card transition-all duration-300 hover:bg-white/5 ${
                         selectedFiles.value.has(upload.deletionKey)
-                          ? "bg-gradient-theme-accent-primary/10 border-theme-accent-primary/20"
+                          ? "bg-gradient-theme-quaternary-primary/10 border-theme-accent-primary/20"
                           : ""
                       }`}
                     >
@@ -746,7 +757,8 @@ export default component$(() => {
                                     upload.originalName,
                                   )
                                 }
-                              >                                <img
+                              >
+                                <img
                                   src={`/f/${upload.shortCode}?preview=true`}
                                   alt={upload.originalName}
                                   class="h-full w-full object-cover transition-transform duration-300 hover:scale-110"
@@ -794,17 +806,15 @@ export default component$(() => {
                       </td>
                       <td class="text-theme-text-secondary px-3 py-4 text-sm sm:px-6">
                         {formatFileSize(upload.size)}
-                      </td>                      <td class="text-theme-text-secondary px-3 py-4 text-sm sm:px-6">
-                        {" "}
+                      </td>
+                      <td class="text-theme-text-secondary px-3 py-4 text-sm sm:px-6">
                         <div class="flex items-center gap-2">
                           <span>{upload.views}</span>
                           <div class="text-theme-trending">
                             <TrendingUp class="h-4 w-4" />
                           </div>
                         </div>
-                      </td>
-                      <td class="text-theme-text-secondary px-3 py-4 text-sm sm:px-6">
-                        {" "}
+                      </td>                      <td class="text-theme-text-secondary px-3 py-4 text-sm sm:px-6">
                         <div class="flex items-center gap-2">
                           <span>{upload.downloads}</span>
                           <div class="text-theme-trending">
@@ -813,33 +823,73 @@ export default component$(() => {
                         </div>
                       </td>
                       <td class="text-theme-text-secondary px-3 py-4 text-sm sm:px-6">
+                        <div class="flex items-center gap-2">
+                          <span class="text-theme-accent-primary font-bold">{upload.weeklyViews || 0}</span>
+                          <div class="text-theme-trending">
+                            <BarChart3 class="h-4 w-4" />
+                          </div>
+                        </div>
+                      </td>
+                      <td class="text-theme-text-secondary px-3 py-4 text-sm sm:px-6">
                         {new Date(upload.createdAt).toLocaleDateString()}
                       </td>
-                      <td class="px-3 py-4 sm:px-6">
-                        {" "}
-                        <div class="flex flex-col space-y-1 sm:flex-row sm:space-y-0 sm:space-x-2">
+                      <td class="text-theme-text-secondary px-3 py-4 text-sm sm:px-6">
+                        <div class="space-y-1">
+                          {upload.expiresAt && (
+                            <div class="flex items-center gap-1 text-xs">
+                              <Clock class="h-3 w-3" />
+                              <span>
+                                Expires:{" "}
+                                {new Date(
+                                  upload.expiresAt,
+                                ).toLocaleDateString()}
+                              </span>
+                            </div>
+                          )}
+                          {upload.maxViews && (
+                            <div class="flex items-center gap-1 text-xs">
+                              <Eye class="h-3 w-3" />
+                              <span>
+                                {upload.views}/{upload.maxViews} views
+                              </span>
+                            </div>
+                          )}
+                          {!upload.expiresAt && !upload.maxViews && (
+                            <span class="text-theme-text-muted text-xs">
+                              No limits
+                            </span>
+                          )}
+                        </div>
+                      </td>                      <td class="px-3 py-4 sm:px-6">
+                        <div class="flex flex-col space-y-1 sm:flex-row sm:space-y-0 sm:space-x-1">
                           <button
                             onClick$={() =>
                               copyToClipboard(
                                 `${userData.value.origin}/f/${upload.shortCode}`,
                               )
                             }
-                            class="text-theme-action-copy rounded-full px-2 py-1 text-sm font-medium whitespace-nowrap transition-all duration-300 hover:bg-white/10 sm:px-3"
+                            class="text-theme-action-copy rounded-full px-2 py-1 text-xs font-medium whitespace-nowrap transition-all duration-300 hover:bg-white/10 sm:px-2"
                           >
-                            Copy URL <Copy class="inline h-4 w-4" />
+                            Copy <Copy class="inline h-3 w-3" />
                           </button>
                           <a
                             href={`/f/${upload.shortCode}`}
                             target="_blank"
-                            class="text-theme-action-view rounded-full px-2 py-1 text-center text-sm font-medium whitespace-nowrap transition-all duration-300 hover:bg-white/10 sm:px-3"
+                            class="text-theme-action-view rounded-full px-2 py-1 text-center text-xs font-medium whitespace-nowrap transition-all duration-300 hover:bg-white/10 sm:px-2"
                           >
-                            View <Eye class="inline h-4 w-4" />
+                            View <Eye class="inline h-3 w-3" />
+                          </a>
+                          <a
+                            href={`/dashboard/analytics/${upload.shortCode}`}
+                            class="text-theme-accent-secondary rounded-full px-2 py-1 text-center text-xs font-medium whitespace-nowrap transition-all duration-300 hover:bg-white/10 sm:px-2"
+                          >
+                            Analytics <BarChart3 class="inline h-3 w-3" />
                           </a>
                           <button
                             onClick$={() => deleteUpload(upload.deletionKey)}
-                            class="text-theme-action-delete rounded-full px-2 py-1 text-sm font-medium whitespace-nowrap transition-all duration-300 hover:bg-white/10 sm:px-3"
+                            class="text-theme-action-delete rounded-full px-2 py-1 text-xs font-medium whitespace-nowrap transition-all duration-300 hover:bg-white/10 sm:px-2"
                           >
-                            Delete <Trash2 class="inline h-4 w-4" />
+                            Delete <Trash2 class="inline h-3 w-3" />
                           </button>
                         </div>
                       </td>
@@ -857,7 +907,7 @@ export default component$(() => {
                     key={upload.id}
                     class={`card-cute group rounded-2xl p-4 transition-all duration-300 hover:scale-105 ${
                       selectedFiles.value.has(upload.deletionKey)
-                        ? "ring-theme-accent-primary bg-gradient-theme-accent-primary/10 ring-2"
+                        ? "ring-theme-accent-primary bg-gradient-theme-quaternary-primary/10 ring-2"
                         : ""
                     }`}
                   >
@@ -877,7 +927,8 @@ export default component$(() => {
 
                     {/* File Preview */}
                     <div class="bg-gradient-grid-item mb-3 flex aspect-square items-center justify-center overflow-hidden rounded-xl">
-                      {upload.mimeType.startsWith("image/") ? (                        <img
+                      {upload.mimeType.startsWith("image/") ? (
+                        <img
                           width={400}
                           height={400}
                           src={`/f/${upload.shortCode}?preview=true`}
@@ -920,8 +971,8 @@ export default component$(() => {
                           {new Date(upload.createdAt).toLocaleDateString()}
                         </span>
                       </div>
-                      {/* Analytics */}                      <div class="space-y-2">
-                        {" "}
+                      {/* Analytics */}{" "}
+                      <div class="space-y-2">
                         <div class="flex items-center justify-between">
                           <div class="flex items-center gap-1">
                             <div class="text-theme-accent-primary">
@@ -956,6 +1007,35 @@ export default component$(() => {
                           <MiniChart data={upload.analytics || []} />
                         </div>
                       </div>
+                      {/* Expiration and View Limits */}
+                      {(upload.expiresAt || upload.maxViews) && (
+                        <div class="border-theme-card-border mt-2 border-t pt-2">
+                          <div class="text-theme-text-muted mb-1 text-xs font-medium">
+                            Limits:
+                          </div>
+                          <div class="space-y-1">
+                            {upload.expiresAt && (
+                              <div class="flex items-center gap-1 text-xs">
+                                <Clock class="text-theme-accent-tertiary h-3 w-3" />
+                                <span class="text-theme-text-secondary">
+                                  Expires:{" "}
+                                  {new Date(
+                                    upload.expiresAt,
+                                  ).toLocaleDateString()}
+                                </span>
+                              </div>
+                            )}
+                            {upload.maxViews && (
+                              <div class="flex items-center gap-1 text-xs">
+                                <Eye class="text-theme-accent-quaternary h-3 w-3" />
+                                <span class="text-theme-text-secondary">
+                                  {upload.views}/{upload.maxViews} views
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
                       {/* Actions */}
                       <div class="flex gap-1 pt-2">
                         <button
@@ -968,14 +1048,20 @@ export default component$(() => {
                         >
                           <Copy class="mr-1 inline h-3 w-3" />
                           Copy
-                        </button>
-                        <a
+                        </button>                        <a
                           href={`/f/${upload.shortCode}`}
                           target="_blank"
                           class="text-theme-action-view flex-1 rounded-lg px-2 py-1 text-center text-xs font-medium transition-all duration-300 hover:bg-white/10"
                         >
                           <Eye class="mr-1 inline h-3 w-3" />
                           View
+                        </a>
+                        <a
+                          href={`/dashboard/analytics/${upload.shortCode}`}
+                          class="text-theme-accent-secondary flex-1 rounded-lg px-2 py-1 text-center text-xs font-medium transition-all duration-300 hover:bg-white/10"
+                        >
+                          <BarChart3 class="mr-1 inline h-3 w-3" />
+                          Analytics
                         </a>
                         <button
                           onClick$={() => deleteUpload(upload.deletionKey)}
@@ -997,10 +1083,11 @@ export default component$(() => {
               <div class="text-3xl">📁</div>
             </div>
             <h3 class="text-theme-text-primary mb-2 text-lg font-medium">
-              No uploads yet~ ✨
+              No files yet~ ✨
             </h3>
             <p class="text-theme-text-secondary mb-4">
-              Upload your first cute file to get started! (◕‿◕)♡
+              Your files will appear here once uploaded via ShareX or API!
+              (◕‿◕)♡
             </p>
             <Link
               href="/setup/sharex"
@@ -1011,7 +1098,6 @@ export default component$(() => {
           </div>
         ) : (
           <div class="py-12 text-center">
-            {" "}
             <div class="glass mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full">
               <div class="text-theme-accent-primary">
                 <Search class="h-8 w-8" />
@@ -1073,12 +1159,12 @@ export default component$(() => {
 });
 
 export const head: DocumentHead = {
-  title: "My Uploads~ - twink.forsale",
+  title: "My Files~ - twink.forsale",
   meta: [
     {
       name: "description",
       content:
-        "Manage all your cute uploaded files and view their sparkly statistics! (◕‿◕)♡",
+        "Manage your files with expiration dates and view limits! (◕‿◕)♡",
     },
   ],
 };

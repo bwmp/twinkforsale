@@ -55,19 +55,16 @@ export default component$(() => {
         <div class="heart-gradient sm"></div>
         <span>twink.forsale</span>
       </Link>
-      {/* Desktop Center Navigation */}
-      {session.value && (
-        <div q:slot="center" class="hidden items-center space-x-3 lg:flex">
-          <Link href="/dashboard" class={getNavLinkClasses(isDashboardExact())}>
+      {/* Desktop Center Navigation */}      {session.value && (
+        <div q:slot="center" class="hidden items-center space-x-3 lg:flex">          <Link href="/dashboard" class={getNavLinkClasses(isDashboardExact())}>
             <Home class="h-4 w-4" />
             Dashboard
-          </Link>
-          <Link
+          </Link>          <Link
             href="/dashboard/uploads"
             class={getNavLinkClasses(isCurrentPage("/dashboard/uploads"))}
           >
             <Upload class="h-4 w-4" />
-            Uploads
+            Files
           </Link>
           <Link
             href="/dashboard/api-keys"
@@ -133,14 +130,13 @@ export default component$(() => {
           >
             <Home class="h-5 w-5" />
             Dashboard
-          </Link>
-          <Link
+          </Link>          <Link
             href="/dashboard/uploads"
             q:slot="mobile"
             class={getNavLinkClasses(isCurrentPage("/dashboard/uploads"), true)}
           >
             <Upload class="h-5 w-5" />
-            Uploads
+            Files
           </Link>
           <Link
             href="/dashboard/api-keys"

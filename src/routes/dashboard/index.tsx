@@ -11,6 +11,7 @@ import {
   File,
   TrendingUp,
   Sliders,
+  Upload,
 } from "lucide-icons-qwik";
 import { ImagePreviewContext } from "~/lib/image-preview-store";
 import { AnalyticsChart } from "~/components/analytics-chart/analytics-chart";
@@ -245,24 +246,21 @@ export default component$(() => {
       <div class="mb-6 sm:mb-8">
         <h2 class="text-gradient-cute mb-4 flex items-center justify-center gap-2 text-center text-xl font-bold sm:mb-6 sm:text-2xl">
           Quick Actions
-        </h2>
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
-          {" "}
-          <Link
+        </h2>        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
+          {" "}          <Link
             href="/dashboard/uploads"
             class="card-cute group rounded-3xl p-4 sm:p-6"
           >
             <div class="mb-3 flex items-center sm:mb-4">
-              <div class="pulse-soft bg-gradient-theme-primary-secondary rounded-full p-2 sm:p-3">
-                <Folder class="text-theme-primary h-5 w-5 sm:h-6 sm:w-6" />
+              <div class="pulse-soft bg-gradient-theme-quaternary-primary rounded-full p-2 sm:p-3">
+                <Upload class="text-theme-primary h-5 w-5 sm:h-6 sm:w-6" />
               </div>
               <h3 class="group-hover:text-gradient-cute text-theme-primary ml-2 text-base font-medium transition-all duration-300 sm:ml-3 sm:text-lg">
-                File Manager
+                Manage Files
               </h3>
             </div>
             <p class="text-theme-secondary text-xs sm:text-sm">
-              View, manage, and organize all your uploaded files~ So many cute
-              files! (｡♥‿♥｡)
+              View and manage your uploaded files with expiration and view limits~ (◕‿◕)♡
             </p>
           </Link>
           <Link
@@ -293,11 +291,28 @@ export default component$(() => {
               <h3 class="group-hover:text-gradient-cute text-theme-primary ml-2 text-base font-medium transition-all duration-300 sm:ml-3 sm:text-lg">
                 Discord Embeds
               </h3>
-            </div>
-            <p class="text-theme-secondary text-xs sm:text-sm">
+            </div>            <p class="text-theme-secondary text-xs sm:text-sm">
               Customize how your uploads appear on Discord and social media~
               Make them extra cute! uwu
-            </p>          </Link>          <Link
+            </p>
+          </Link>
+          <Link
+            href="/dashboard/analytics"
+            class="card-cute group rounded-3xl p-4 sm:p-6"
+          >
+            <div class="mb-3 flex items-center sm:mb-4">
+              <div class="pulse-soft bg-gradient-theme-quaternary-primary animation-delay-600 rounded-full p-2 sm:p-3">
+                <TrendingUp class="text-theme-primary h-5 w-5 sm:h-6 sm:w-6" />
+              </div>
+              <h3 class="group-hover:text-gradient-cute text-theme-primary ml-2 text-base font-medium transition-all duration-300 sm:ml-3 sm:text-lg">
+                Detailed Analytics
+              </h3>
+            </div>
+            <p class="text-theme-secondary text-xs sm:text-sm">
+              Deep dive into your file analytics with detailed insights and charts~ 📊
+            </p>
+          </Link>
+          <Link
             href="/dashboard/settings"
             class="card-cute group rounded-3xl p-4 sm:p-6"
           >
@@ -423,9 +438,8 @@ export default component$(() => {
           </div>
         ) : (
           <div class="py-12 text-center">
-            <div class="sparkle mb-4 text-6xl">🌸</div>
-            <p class="text-theme-secondary mb-6 text-lg">
-              No uploads yet~ Time to share some cute files!
+            <div class="sparkle mb-4 text-6xl">🌸</div>            <p class="text-theme-secondary mb-6 text-lg">
+              No files yet~ Upload via ShareX or API!
             </p>
             <a
               href="/setup/sharex"

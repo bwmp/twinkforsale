@@ -76,19 +76,23 @@ export const onPost: RequestHandler = async ({ request, json }) => {
     }
   }  // Generate unique identifiers
   let useCuteWords = false;
-  let userUploadDomain: string | null = null;
-
-  // Get user's preferences if authenticated
+  let userUploadDomain: string | null = null;  // Get user's preferences if authenticated
+  let userExpirationDays = null;
+  let userMaxViews = null;
   if (userId) {
     const user = await db.user.findUnique({
       where: { id: userId },
       select: { 
         useCustomWords: true, 
         customSubdomain: true,
-        uploadDomain: true
+        uploadDomain: true,
+        defaultExpirationDays: true,
+        defaultMaxViews: true
       }
     });
     useCuteWords = user?.useCustomWords || false;
+    userExpirationDays = user?.defaultExpirationDays;
+    userMaxViews = user?.defaultMaxViews;
     
     // Build the user's preferred upload domain
     if (user?.uploadDomain) {
@@ -98,7 +102,18 @@ export const onPost: RequestHandler = async ({ request, json }) => {
         userUploadDomain = `https://${user.uploadDomain.domain}`;
       }
     }
-  }
+  }  // Check for custom expiration and view limit overrides from form data
+  const customExpirationDays = formData.get('expirationDays');
+  const customMaxViews = formData.get('maxViews');
+  
+  // Use custom values if provided, otherwise use user defaults
+  const finalExpirationDays = customExpirationDays 
+    ? parseInt(customExpirationDays as string) 
+    : userExpirationDays;
+  const finalMaxViews = customMaxViews 
+    ? parseInt(customMaxViews as string) 
+    : userMaxViews;
+
   const shortCode = generateShortCode(useCuteWords);
   const deletionKey = nanoid(32);
   const filename = `${shortCode}_${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
@@ -111,8 +126,11 @@ export const onPost: RequestHandler = async ({ request, json }) => {
   if (userUploadDomain) {
     uploadDomain = userUploadDomain;
   }
-
   // Create database record
+  const expiresAt = finalExpirationDays 
+    ? new Date(Date.now() + finalExpirationDays * 24 * 60 * 60 * 1000)
+    : null;
+    
   const upload = await db.upload.create({
     data: {
       filename,
@@ -122,7 +140,9 @@ export const onPost: RequestHandler = async ({ request, json }) => {
       url: `${uploadDomain}/f/${shortCode}`,
       shortCode,
       deletionKey,
-      userId
+      userId,
+      expiresAt,
+      maxViews: finalMaxViews
     }
   });
 

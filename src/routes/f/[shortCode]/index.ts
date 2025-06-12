@@ -190,12 +190,22 @@ export const onRequest: RequestHandler = async ({ params, send, status, url, req
     const upload = await db.upload.findUnique({
       where: { shortCode },
       include: { user: true }
-    });
-
-    if (!upload) {
+    });    if (!upload) {
       status(404);
       return;
-    }    
+    }
+
+    // Check if file has expired
+    if (upload.expiresAt && new Date() > upload.expiresAt) {
+      status(404);
+      return;
+    }
+
+    // Check if file has exceeded view limit
+    if (upload.maxViews && upload.views >= upload.maxViews) {
+      status(404);
+      return;
+    }
     // Update view count only for external views    // Don't count views when accessed from our own dashboard/uploads/admin pages
     const referrer = request.headers.get('referer') || request.headers.get('referrer') || '';
 
