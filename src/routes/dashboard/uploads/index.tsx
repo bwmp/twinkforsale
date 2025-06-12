@@ -168,8 +168,7 @@ export const useUserUploads = routeLoader$(async (requestEvent) => {
 
   // Get analytics data for each upload (last 7 days)
   const uploadsWithAnalytics = await Promise.all(
-    user.uploads.map(async (upload) => {
-      const analytics = await getUploadAnalytics(upload.id, 7);
+    user.uploads.map(async (upload) => {      const analytics = await getUploadAnalytics(upload.id, 7);
       const totalViews = analytics.reduce(
         (sum, day) => sum + day.totalViews,
         0,
@@ -178,12 +177,22 @@ export const useUserUploads = routeLoader$(async (requestEvent) => {
         (sum, day) => sum + day.uniqueViews,
         0,
       );
+      const totalDownloads = analytics.reduce(
+        (sum, day) => sum + day.totalDownloads,
+        0,
+      );
+      const uniqueDownloads = analytics.reduce(
+        (sum, day) => sum + day.uniqueDownloads,
+        0,
+      );
 
       return {
         ...upload,
         analytics,
         weeklyViews: totalViews,
         weeklyUniqueViews: uniqueViews,
+        weeklyDownloads: totalDownloads,
+        weeklyUniqueDownloads: uniqueDownloads,
       };
     }),
   ); // Get view mode preference from cookies server-side
@@ -209,7 +218,7 @@ export default component$(() => {
   const imagePreview = useContext(ImagePreviewContext);
 
   const searchQuery = useSignal("");
-  const sortBy = useSignal<"name" | "size" | "views" | "date">("date");
+  const sortBy = useSignal<"name" | "size" | "views" | "downloads" | "date">("date");
   const sortOrder = useSignal<"asc" | "desc">("desc");
   // Initialize viewMode from server-side data
   const viewMode = useSignal<"grid" | "list">(
@@ -263,9 +272,11 @@ export default component$(() => {
           break;
         case "size":
           comparison = a.size - b.size;
-          break;
-        case "views":
+          break;        case "views":
           comparison = a.views - b.views;
+          break;
+        case "downloads":
+          comparison = a.downloads - b.downloads;
           break;
         case "date":
         default:
@@ -354,7 +365,7 @@ export default component$(() => {
     return isNegative ? `-${formattedSize}` : formattedSize;
   };
 
-  const handleSort = $((column: "name" | "size" | "views" | "date") => {
+  const handleSort = $((column: "name" | "size" | "views" | "downloads" | "date") => {
     if (sortBy.value === column) {
       // Toggle sort order if clicking the same column
       sortOrder.value = sortOrder.value === "asc" ? "desc" : "asc";
@@ -364,7 +375,7 @@ export default component$(() => {
       sortOrder.value = "desc";
     }
   });
-  const getSortIcon = (column: "name" | "size" | "views" | "date") => {
+  const getSortIcon = (column: "name" | "size" | "views" | "downloads" | "date") => {
     if (sortBy.value !== column) {
       return (
         <ArrowUpDown class="text-theme-muted ml-1 inline h-3 w-3 opacity-50" />
@@ -433,8 +444,7 @@ export default component$(() => {
                   : userData.value.user.uploads.length}
               </p>
             </div>
-          </div>
-        </div>
+          </div>        </div>
         <div class="card-cute pulse-soft rounded-3xl p-4 sm:p-6">
           <div class="flex items-center">
             {" "}
@@ -454,6 +464,31 @@ export default component$(() => {
                     )
                   : userData.value.user.uploads.reduce(
                       (sum, upload) => sum + upload.views,
+                      0,
+                    )}
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="card-cute pulse-soft rounded-3xl p-4 sm:p-6">
+          <div class="flex items-center">
+            {" "}
+            <div class="bg-gradient-theme-accent-primary rounded-full p-2 sm:p-3">
+              <TrendingUp class="text-theme-primary h-4 w-4 sm:h-6 sm:w-6" />
+            </div>
+            <div class="ml-3 sm:ml-4">
+              <p class="text-theme-secondary flex items-center gap-1 text-xs font-medium sm:text-sm">
+                {searchQuery.value.trim() ? "Filtered Downloads~" : "Total Downloads~"}
+                <Sparkle class="h-3 w-3 sm:h-4 sm:w-4" />
+              </p>
+              <p class="text-theme-primary text-lg font-bold sm:text-2xl">
+                {searchQuery.value.trim()
+                  ? filteredAndSortedUploads.value.reduce(
+                      (sum, upload) => sum + upload.downloads,
+                      0,
+                    )
+                  : userData.value.user.uploads.reduce(
+                      (sum, upload) => sum + upload.downloads,
                       0,
                     )}
               </p>
@@ -648,13 +683,19 @@ export default component$(() => {
                     >
                       Size~ <Ruler class="inline h-4 w-4" />
                       {getSortIcon("size")}
-                    </th>
-                    <th
+                    </th>                    <th
                       class="text-theme-text-muted hover:text-theme-text-secondary cursor-pointer px-3 py-3 text-left text-xs font-medium tracking-wider uppercase transition-colors sm:px-6"
                       onClick$={() => handleSort("views")}
                     >
                       Views~ <Eye class="inline h-4 w-4" />
                       {getSortIcon("views")}
+                    </th>
+                    <th
+                      class="text-theme-text-muted hover:text-theme-text-secondary cursor-pointer px-3 py-3 text-left text-xs font-medium tracking-wider uppercase transition-colors sm:px-6"
+                      onClick$={() => handleSort("downloads")}
+                    >
+                      Downloads~ <TrendingUp class="inline h-4 w-4" />
+                      {getSortIcon("downloads")}
                     </th>
                     <th
                       class="text-theme-text-muted hover:text-theme-text-secondary cursor-pointer px-3 py-3 text-left text-xs font-medium tracking-wider uppercase transition-colors sm:px-6"
@@ -705,9 +746,8 @@ export default component$(() => {
                                     upload.originalName,
                                   )
                                 }
-                              >
-                                <img
-                                  src={`/f/${upload.shortCode}`}
+                              >                                <img
+                                  src={`/f/${upload.shortCode}?preview=true`}
                                   alt={upload.originalName}
                                   class="h-full w-full object-cover transition-transform duration-300 hover:scale-110"
                                   width="40"
@@ -754,11 +794,19 @@ export default component$(() => {
                       </td>
                       <td class="text-theme-text-secondary px-3 py-4 text-sm sm:px-6">
                         {formatFileSize(upload.size)}
+                      </td>                      <td class="text-theme-text-secondary px-3 py-4 text-sm sm:px-6">
+                        {" "}
+                        <div class="flex items-center gap-2">
+                          <span>{upload.views}</span>
+                          <div class="text-theme-trending">
+                            <TrendingUp class="h-4 w-4" />
+                          </div>
+                        </div>
                       </td>
                       <td class="text-theme-text-secondary px-3 py-4 text-sm sm:px-6">
                         {" "}
                         <div class="flex items-center gap-2">
-                          <span>{upload.views}</span>
+                          <span>{upload.downloads}</span>
                           <div class="text-theme-trending">
                             <TrendingUp class="h-4 w-4" />
                           </div>
@@ -829,11 +877,10 @@ export default component$(() => {
 
                     {/* File Preview */}
                     <div class="bg-gradient-grid-item mb-3 flex aspect-square items-center justify-center overflow-hidden rounded-xl">
-                      {upload.mimeType.startsWith("image/") ? (
-                        <img
+                      {upload.mimeType.startsWith("image/") ? (                        <img
                           width={400}
                           height={400}
-                          src={`/f/${upload.shortCode}`}
+                          src={`/f/${upload.shortCode}?preview=true`}
                           alt={upload.originalName}
                           class="h-full w-full cursor-pointer object-cover transition-transform duration-300 hover:scale-110"
                           onClick$={() =>
@@ -873,8 +920,7 @@ export default component$(() => {
                           {new Date(upload.createdAt).toLocaleDateString()}
                         </span>
                       </div>
-                      {/* Analytics */}
-                      <div class="space-y-2">
+                      {/* Analytics */}                      <div class="space-y-2">
                         {" "}
                         <div class="flex items-center justify-between">
                           <div class="flex items-center gap-1">
@@ -882,7 +928,7 @@ export default component$(() => {
                               <Eye class="h-3 w-3" />
                             </div>
                             <span class="text-theme-text-secondary text-xs">
-                              {upload.views} total
+                              {upload.views} views
                             </span>
                           </div>
                           <div class="flex items-center gap-1">
@@ -890,9 +936,17 @@ export default component$(() => {
                               <TrendingUp class="h-3 w-3" />
                             </div>
                             <span class="text-theme-text-secondary text-xs">
-                              {upload.weeklyViews || 0} this week
+                              {upload.downloads} downloads
                             </span>
                           </div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                          <span class="text-theme-text-muted text-xs">
+                            7 days: {upload.weeklyViews || 0} views
+                          </span>
+                          <span class="text-theme-text-muted text-xs">
+                            {upload.weeklyDownloads || 0} downloads
+                          </span>
                         </div>
                         {/* Mini chart */}
                         <div class="flex items-center gap-2">

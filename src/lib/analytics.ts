@@ -39,7 +39,38 @@ export async function updateDailyAnalytics(): Promise<void> {
       }
     });
 
-    const uniqueViews = uniqueViewsResult.length;    // Count uploads for today
+    const uniqueViews = uniqueViewsResult.length;
+
+    // Count total downloads for today
+    const totalDownloads = await db.downloadLog.count({
+      where: {
+        downloadedAt: {
+          gte: today,
+          lt: tomorrow
+        }
+      }
+    });
+
+    // Count unique downloads for today (unique IP addresses)
+    const uniqueDownloadsResult = await db.downloadLog.groupBy({
+      by: ['ipAddress'],
+      where: {
+        downloadedAt: {
+          gte: today,
+          lt: tomorrow
+        },
+        ipAddress: {
+          not: null
+        }
+      },
+      _count: {
+        ipAddress: true
+      }
+    });
+
+    const uniqueDownloads = uniqueDownloadsResult.length;
+
+    // Count uploads for today
     const uploadsCount = await db.upload.count({
       where: {
         createdAt: {
@@ -63,10 +94,11 @@ export async function updateDailyAnalytics(): Promise<void> {
     await db.dailyAnalytics.upsert({
       where: {
         date: today
-      },
-      update: {
+      },      update: {
         totalViews,
         uniqueViews,
+        totalDownloads,
+        uniqueDownloads,
         uploadsCount,
         usersRegistered,
         updatedAt: new Date()
@@ -75,6 +107,8 @@ export async function updateDailyAnalytics(): Promise<void> {
         date: today,
         totalViews,
         uniqueViews,
+        totalDownloads,
+        uniqueDownloads,
         uploadsCount,
         usersRegistered
       }
@@ -121,8 +155,36 @@ export async function getTodayAnalytics() {
       ipAddress: true
     }
   });
-
   const uniqueViews = uniqueViewsResult.length;
+
+  // Count total downloads for today
+  const totalDownloads = await db.downloadLog.count({
+    where: {
+      downloadedAt: {
+        gte: today,
+        lt: tomorrow
+      }
+    }
+  });
+
+  // Count unique downloads for today (unique IP addresses)
+  const uniqueDownloadsResult = await db.downloadLog.groupBy({
+    by: ['ipAddress'],
+    where: {
+      downloadedAt: {
+        gte: today,
+        lt: tomorrow
+      },
+      ipAddress: {
+        not: null
+      }
+    },
+    _count: {
+      ipAddress: true
+    }
+  });
+
+  const uniqueDownloads = uniqueDownloadsResult.length;
 
   // Count uploads for today
   const uploadsCount = await db.upload.count({
@@ -143,11 +205,12 @@ export async function getTodayAnalytics() {
       }
     }
   });
-
   return {
     date: today.toISOString().split('T')[0],
     totalViews,
     uniqueViews,
+    totalDownloads,
+    uniqueDownloads,
     uploadsCount,
     usersRegistered
   };
@@ -198,11 +261,12 @@ export async function getAnalyticsData(days: number = 7) {
       // Use stored data for previous days
       const existing = analytics.find(a =>
         a.date.toISOString().split('T')[0] === dateStr
-      );
-      result.push({
+      );      result.push({
         date: dateStr,
         totalViews: existing?.totalViews || 0,
         uniqueViews: existing?.uniqueViews || 0,
+        totalDownloads: existing?.totalDownloads || 0,
+        uniqueDownloads: existing?.uniqueDownloads || 0,
         uploadsCount: existing?.uploadsCount || 0,
         usersRegistered: existing?.usersRegistered || 0
       });
@@ -233,14 +297,29 @@ export async function getUploadTodayAnalytics(uploadId: string) {
       }
     }
   });
-
   const totalViews = viewLogs.length;
   const uniqueIPs = new Set(viewLogs.map(log => log.ipAddress).filter(Boolean));
+
+  // Get download logs for today
+  const downloadLogs = await db.downloadLog.findMany({
+    where: {
+      uploadId,
+      downloadedAt: {
+        gte: today,
+        lt: tomorrow
+      }
+    }
+  });
+
+  const totalDownloads = downloadLogs.length;
+  const uniqueDownloadIPs = new Set(downloadLogs.map(log => log.ipAddress).filter(Boolean));
 
   return {
     date: today.toISOString().split('T')[0],
     totalViews,
-    uniqueViews: uniqueIPs.size
+    uniqueViews: uniqueIPs.size,
+    totalDownloads,
+    uniqueDownloads: uniqueDownloadIPs.size
   };
 }
 
@@ -255,7 +334,6 @@ export async function getUploadAnalytics(uploadId: string, days: number = 7) {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const todayStr = today.toISOString().split('T')[0];
-
   // Get view logs excluding today for real-time data
   const viewLogs = await db.viewLog.findMany({
     where: {
@@ -270,20 +348,60 @@ export async function getUploadAnalytics(uploadId: string, days: number = 7) {
     }
   });
 
+  // Get download logs excluding today for real-time data
+  const downloadLogs = await db.downloadLog.findMany({
+    where: {
+      uploadId,
+      downloadedAt: {
+        gte: startDate,
+        lt: today // Exclude today for real-time data
+      }
+    },
+    orderBy: {
+      downloadedAt: 'asc'
+    }
+  });
+
   // Get real-time data for today
   const todayAnalytics = await getUploadTodayAnalytics(uploadId);
 
   // Group by date
-  const groupedByDate: { [key: string]: { total: number; unique: Set<string> } } = {};
+  const groupedByDate: { [key: string]: { 
+    totalViews: number; 
+    uniqueViews: Set<string>;
+    totalDownloads: number;
+    uniqueDownloads: Set<string>;
+  } } = {};
 
   viewLogs.forEach(log => {
     const dateStr = log.viewedAt.toISOString().split('T')[0];
     if (!groupedByDate[dateStr]) {
-      groupedByDate[dateStr] = { total: 0, unique: new Set() };
+      groupedByDate[dateStr] = { 
+        totalViews: 0, 
+        uniqueViews: new Set(),
+        totalDownloads: 0,
+        uniqueDownloads: new Set()
+      };
     }
-    groupedByDate[dateStr].total += 1;
+    groupedByDate[dateStr].totalViews += 1;
     if (log.ipAddress) {
-      groupedByDate[dateStr].unique.add(log.ipAddress);
+      groupedByDate[dateStr].uniqueViews.add(log.ipAddress);
+    }
+  });
+
+  downloadLogs.forEach(log => {
+    const dateStr = log.downloadedAt.toISOString().split('T')[0];
+    if (!groupedByDate[dateStr]) {
+      groupedByDate[dateStr] = { 
+        totalViews: 0, 
+        uniqueViews: new Set(),
+        totalDownloads: 0,
+        uniqueDownloads: new Set()
+      };
+    }
+    groupedByDate[dateStr].totalDownloads += 1;
+    if (log.ipAddress) {
+      groupedByDate[dateStr].uniqueDownloads.add(log.ipAddress);
     }
   });
 
@@ -297,13 +415,14 @@ export async function getUploadAnalytics(uploadId: string, days: number = 7) {
     if (dateStr === todayStr) {
       // Use real-time data for today
       result.push(todayAnalytics);
-    } else {
-      // Use stored data for previous days
+    } else {      // Use stored data for previous days
       const data = groupedByDate[dateStr];
       result.push({
         date: dateStr,
-        totalViews: data?.total || 0,
-        uniqueViews: data?.unique.size || 0
+        totalViews: data?.totalViews || 0,
+        uniqueViews: data?.uniqueViews.size || 0,
+        totalDownloads: data?.totalDownloads || 0,
+        uniqueDownloads: data?.uniqueDownloads.size || 0
       });
     }
 

@@ -162,11 +162,10 @@ function generateDiscordEmbed(upload: any, user: any, baseUrl: string, userStats
       ${upload.mimeType.startsWith('image/') ?
       `<img src="${upload.url}?direct=true" alt="${upload.originalName}" />` :
       `<div style="font-size: 48px; margin-bottom: 16px;">📄</div>`
-    }
-      <div class="file-info">
+    }      <div class="file-info">
         <strong>${upload.originalName}</strong><br>
         ${(upload.size / 1024 / 1024).toFixed(2)} MB • ${upload.mimeType}<br>
-        ${upload.views} views
+        ${upload.views} views • ${upload.downloads} downloads
       </div>
     </div>
     <a href="${upload.url}?direct=true" class="download-btn">Download File</a>
@@ -183,10 +182,9 @@ export const onRequest: RequestHandler = async ({ params, send, status, url, req
     if (!shortCode) {
       status(404);
       return;
-    }
-
-    // Check if this is a direct file request
+    }    // Check if this is a direct file request or preview request
     const isDirect = url.searchParams.get('direct') === 'true';
+    const isPreview = url.searchParams.get('preview') === 'true';
 
     // Find upload in database with user info for embed settings
     const upload = await db.upload.findUnique({
@@ -198,20 +196,21 @@ export const onRequest: RequestHandler = async ({ params, send, status, url, req
       status(404);
       return;
     }    
-    // Update view count only for external views
-    // Don't count views when accessed from our own dashboard/uploads/admin pages
+    // Update view count only for external views    // Don't count views when accessed from our own dashboard/uploads/admin pages
     const referrer = request.headers.get('referer') || request.headers.get('referrer') || '';
 
     // Check if this is an internal view from our dashboard/uploads pages
     const isInternalDashboardView = referrer.includes('/dashboard') ||
       referrer.includes('/uploads') ||
-      referrer.includes('/admin');
-
-    // Only increment views if:
+      referrer.includes('/admin') ||
+      referrer.includes('/api') ||
+      referrer.includes('/setup');    // Only increment views if:
     // 1. Not from our internal dashboard/admin pages (excludes image previews, etc.)
     // 2. Not a direct file request (which is usually for downloads)
+    // 3. This is not a direct request (which would be a download)
+    // 4. Not a preview request (internal dashboard previews)
     // This ensures we only count "real" external views and embeds
-    if (!isInternalDashboardView && !isDirect) {
+    if (!isInternalDashboardView && !isDirect && !isPreview) {
       // Get visitor info for analytics
       const ipAddress = request.headers.get('x-forwarded-for') ||
         request.headers.get('x-real-ip') ||
@@ -227,7 +226,9 @@ export const onRequest: RequestHandler = async ({ params, send, status, url, req
           userAgent,
           referer: referrer || null,
         }
-      }); await db.upload.update({
+      });
+
+      await db.upload.update({
         where: { id: upload.id },
         data: {
           views: { increment: 1 },
@@ -254,13 +255,46 @@ export const onRequest: RequestHandler = async ({ params, send, status, url, req
     if (!fs.existsSync(filePath)) {
       status(404);
       return;
-    }
-    // If this is a direct file request, always serve the file directly
+    }    // If this is a direct file request, preview request, or browser request, serve the file directly
     // For non-direct requests, serve embed HTML for bots/crawlers, direct file for browsers
     const userAgent = request.headers.get('user-agent')?.toLowerCase() || '';
     const isBotOrCrawler = /bot|crawler|spider|crawling|discord|telegram|whatsapp|facebook|twitter|slack/i.test(userAgent);
 
-    if (isDirect || (!isBotOrCrawler)) {
+    if (isDirect || isPreview || (!isBotOrCrawler)) {
+      // Track download ONLY when it's an explicit direct request (?direct=true)
+      // or when it's a non-bot request that's not from our internal pages
+      // and not a preview request
+      if (isDirect && !isInternalDashboardView && !isPreview) {
+        // Get visitor info for download analytics
+        const ipAddress = request.headers.get('x-forwarded-for') ||
+          request.headers.get('x-real-ip') ||
+          request.headers.get('cf-connecting-ip') ||
+          'unknown';
+        const userAgent = request.headers.get('user-agent') || 'unknown';
+
+        // Create download log entry
+        await db.downloadLog.create({
+          data: {
+            uploadId: upload.id,
+            ipAddress: ipAddress.split(',')[0].trim(), // Take first IP if multiple
+            userAgent,
+            referer: referrer || null,
+          }
+        });
+
+        // Update download count
+        await db.upload.update({
+          where: { id: upload.id },
+          data: {
+            downloads: { increment: 1 },
+            lastDownloaded: new Date()
+          }
+        });
+
+        // Update daily analytics (async, don't wait for it)
+        updateDailyAnalytics().catch(console.error);
+      }
+
       // Read and serve file directly
       const fileBuffer = fs.readFileSync(filePath);
 
@@ -270,7 +304,7 @@ export const onRequest: RequestHandler = async ({ params, send, status, url, req
         "Content-Length": upload.size.toString(),
         "Content-Disposition": `inline; filename="${upload.originalName}"`,
         "Cache-Control": "public, max-age=31536000"
-      };      // Additional headers for GIFs to ensure proper playback
+      };// Additional headers for GIFs to ensure proper playback
       if (upload.mimeType === 'image/gif') {
         headers["X-Content-Type-Options"] = "nosniff";
         headers["Accept-Ranges"] = "bytes";
