@@ -1,5 +1,5 @@
 import { component$, useSignal, useComputed$ } from "@builder.io/qwik";
-import { routeLoader$, routeAction$ } from "@builder.io/qwik-city";
+import { routeLoader$, routeAction$, Link } from "@builder.io/qwik-city";
 import {
   Users,
   CheckCircle,
@@ -7,6 +7,7 @@ import {
   Search,
   Filter,
   ArrowUpDown,
+  Globe,
 } from "lucide-icons-qwik";
 import { AnalyticsChart } from "~/components/analytics-chart/analytics-chart";
 import { UserAnalytics } from "~/components/user-analytics/user-analytics";
@@ -400,10 +401,37 @@ export default component$(() => {
             data={userData.value?.analyticsData || []}
             metric="usersRegistered"
             title="New Users"
-            color="var(--theme-success)"
-          />
+            color="var(--theme-success)"          />
         </div>
       </div>
+      
+      {/* Admin Quick Actions */}
+      <div class="mb-6 sm:mb-8">
+        <h2 class="text-gradient-cute mb-4 flex items-center justify-center gap-2 text-center text-xl font-bold sm:mb-6 sm:text-2xl">
+          Admin Actions~ ⚙️
+        </h2>
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <Link
+            href="/admin/domains"
+            class="card-cute group rounded-3xl p-4 sm:p-6"
+          >
+            <div class="mb-3 flex items-center sm:mb-4">
+              <div class="pulse-soft bg-gradient-theme-primary-secondary rounded-full p-2 sm:p-3">
+                <Globe class="text-theme-primary h-5 w-5 sm:h-6 sm:w-6" />
+              </div>
+            </div>
+            <div class="mb-2">
+              <h3 class="group-hover:text-gradient-cute text-theme-primary text-base font-medium transition-all duration-300 sm:text-lg">
+                Upload Domains
+              </h3>
+            </div>
+            <p class="text-theme-secondary text-xs sm:text-sm">
+              Manage available upload domains for users~ Add cute domains! (◕‿◕)♡
+            </p>
+          </Link>
+        </div>
+      </div>
+      
       {/* User Management */}
       <div class="card-cute mb-6 rounded-3xl p-4 sm:mb-8 sm:p-6">
         <div class="mb-4 flex flex-col gap-4">

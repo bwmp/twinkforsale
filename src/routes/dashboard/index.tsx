@@ -10,6 +10,7 @@ import {
   Share,
   File,
   TrendingUp,
+  Sliders,
 } from "lucide-icons-qwik";
 import { ImagePreviewContext } from "~/lib/image-preview-store";
 import { AnalyticsChart } from "~/components/analytics-chart/analytics-chart";
@@ -296,6 +297,21 @@ export default component$(() => {
             <p class="text-theme-secondary text-xs sm:text-sm">
               Customize how your uploads appear on Discord and social media~
               Make them extra cute! uwu
+            </p>          </Link>          <Link
+            href="/dashboard/settings"
+            class="card-cute group rounded-3xl p-4 sm:p-6"
+          >
+            <div class="mb-3 flex items-center sm:mb-4">
+              <div class="pulse-soft bg-gradient-theme-quaternary-primary animation-delay-600 rounded-full p-2 sm:p-3">
+                <Sliders class="text-theme-primary h-5 w-5 sm:h-6 sm:w-6" />
+              </div>
+              <h3 class="group-hover:text-gradient-cute text-theme-primary ml-2 text-base font-medium transition-all duration-300 sm:ml-3 sm:text-lg">
+                Settings
+              </h3>
+            </div>
+            <p class="text-theme-secondary text-xs sm:text-sm">
+              Configure upload domains, themes, and personalize your experience~ 
+              (◕‿◕)♡
             </p>
           </Link>
           <Link
@@ -303,7 +319,7 @@ export default component$(() => {
             class="card-cute group rounded-3xl p-4 sm:p-6"
           >
             <div class="mb-3 flex items-center sm:mb-4">
-              <div class="pulse-soft bg-gradient-theme-quaternary-primary animation-delay-600 rounded-full p-2 sm:p-3">
+              <div class="pulse-soft bg-gradient-theme-quaternary-primary animation-delay-800 rounded-full p-2 sm:p-3">
                 <Settings class="text-theme-primary h-5 w-5 sm:h-6 sm:w-6" />
               </div>
               <h3 class="group-hover:text-gradient-cute text-theme-primary ml-2 text-base font-medium transition-all duration-300 sm:ml-3 sm:text-lg">

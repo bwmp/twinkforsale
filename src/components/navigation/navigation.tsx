@@ -44,7 +44,7 @@ export default component$(() => {
   return (
     <Nav
       fixed
-      colorClass="bg-theme-secondary/60 backdrop-blur-md !border-b border-theme-accent/30"
+      colorClass="bg-theme-secondary/60 backdrop-blur-md !border-b border-theme-card-border"
     >
       {/* Logo/Brand */}
       <Link
@@ -75,8 +75,7 @@ export default component$(() => {
           >
             <Key class="h-4 w-4" />
             API Keys
-          </Link>{" "}
-          <Link
+          </Link>{" "}          <Link
             href="/dashboard/embed"
             class={getNavLinkClasses(isCurrentPage("/dashboard/embed"))}
           >
@@ -84,11 +83,11 @@ export default component$(() => {
             Embed
           </Link>
           <Link
-            href="/dashboard/themes"
-            class={getNavLinkClasses(isCurrentPage("/dashboard/themes"))}
+            href="/dashboard/settings"
+            class={getNavLinkClasses(isCurrentPage("/dashboard/settings"))}
           >
             <Settings class="h-4 w-4" />
-            Themes
+            Settings
           </Link>
           <ThemeToggle variant="compact" class="mr-4" />
         </div>
@@ -153,8 +152,7 @@ export default component$(() => {
           >
             <Key class="h-5 w-5" />
             API Keys
-          </Link>{" "}
-          <Link
+          </Link>{" "}          <Link
             href="/dashboard/embed"
             q:slot="mobile"
             class={getNavLinkClasses(isCurrentPage("/dashboard/embed"), true)}
@@ -163,12 +161,12 @@ export default component$(() => {
             Embed
           </Link>
           <Link
-            href="/dashboard/themes"
+            href="/dashboard/settings"
             q:slot="mobile"
-            class={getNavLinkClasses(isCurrentPage("/dashboard/themes"), true)}
+            class={getNavLinkClasses(isCurrentPage("/dashboard/settings"), true)}
           >
             <Settings class="h-5 w-5" />
-            Themes
+            Settings
           </Link>
           <Link
             href="/setup/sharex"

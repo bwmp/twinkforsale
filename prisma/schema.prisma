@@ -84,8 +84,10 @@ model User {
   showUserStats Boolean   @default(false) // Show user stats (files uploaded, storage used, total views)
   customDomain  String?   // Custom domain for embeds
   
-  // Custom domain settings
-  customUploadDomain String? // Custom domain for file URLs (e.g., "cute.twink.forsale")
+  // Upload domain selection (references UploadDomain)
+  uploadDomainId String?
+  uploadDomain   UploadDomain? @relation(fields: [uploadDomainId], references: [id])
+  customSubdomain String?  // User's custom subdomain (e.g., "files", "cdn", "cute")
   
   // URL/Shortcode preferences
   useCustomWords Boolean @default(false) // Use cute words instead of random chars
@@ -170,4 +172,19 @@ model ViewLog {
   @@index([viewedAt])
   @@index([ipAddress, uploadId, viewedAt])
   @@map("view_logs")
+}
+
+model UploadDomain {
+  id          String   @id @default(cuid())
+  domain      String   @unique // e.g., "files.twink.forsale", "cdn.twink.forsale"
+  name        String   // Display name e.g., "Files", "CDN"
+  isActive    Boolean  @default(true)
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  users       User[]
+  
+  @@map("upload_domains")
 }

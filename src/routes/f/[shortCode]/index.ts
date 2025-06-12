@@ -197,7 +197,8 @@ export const onRequest: RequestHandler = async ({ params, send, status, url, req
     if (!upload) {
       status(404);
       return;
-    }    // Update view count only for external views
+    }    
+    // Update view count only for external views
     // Don't count views when accessed from our own dashboard/uploads/admin pages
     const referrer = request.headers.get('referer') || request.headers.get('referrer') || '';
 
@@ -236,7 +237,8 @@ export const onRequest: RequestHandler = async ({ params, send, status, url, req
 
       // Update daily analytics (async, don't wait for it)
       updateDailyAnalytics().catch(console.error);
-    }// Get file path
+    }
+    // Get file path
     const config = getEnvConfig();
     const baseUploadDir = config.UPLOAD_DIR;
 
@@ -252,7 +254,8 @@ export const onRequest: RequestHandler = async ({ params, send, status, url, req
     if (!fs.existsSync(filePath)) {
       status(404);
       return;
-    }    // If this is a direct file request, always serve the file directly
+    }
+    // If this is a direct file request, always serve the file directly
     // For non-direct requests, serve embed HTML for bots/crawlers, direct file for browsers
     const userAgent = request.headers.get('user-agent')?.toLowerCase() || '';
     const isBotOrCrawler = /bot|crawler|spider|crawling|discord|telegram|whatsapp|facebook|twitter|slack/i.test(userAgent);

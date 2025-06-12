@@ -37,10 +37,8 @@ export const useUserLoader = routeLoader$(async (requestEvent) => {
       embedAuthor: user.embedAuthor,
       embedFooter: user.embedFooter,
       showFileInfo: Boolean(user.showFileInfo),
-      showUploadDate: Boolean(user.showUploadDate),
-      showUserStats: Boolean(user.showUserStats),
+      showUploadDate: Boolean(user.showUploadDate),      showUserStats: Boolean(user.showUserStats),
       customDomain: user.customDomain,
-      customUploadDomain: user.customUploadDomain,
       useCustomWords: Boolean(user.useCustomWords),
     },
   };
@@ -74,10 +72,8 @@ export const useUpdateEmbedSettings = routeAction$(
         embedAuthor: values.embedAuthor || null,
         embedFooter: values.embedFooter || null,
         showFileInfo: Boolean(values.showFileInfo),
-        showUploadDate: Boolean(values.showUploadDate),
-        showUserStats: Boolean(values.showUserStats),
+        showUploadDate: Boolean(values.showUploadDate),        showUserStats: Boolean(values.showUserStats),
         customDomain: values.customDomain || null,
-        customUploadDomain: values.customUploadDomain || null,
         useCustomWords: Boolean(values.useCustomWords),
       },
     });
@@ -104,9 +100,7 @@ export const useUpdateEmbedSettings = routeAction$(
     showUserStats: z.preprocess(
       (val) => val === "on" || val === true,
       z.boolean().default(false),
-    ),
-    customDomain: z.string().optional(),
-    customUploadDomain: z.string().optional(),
+    ),    customDomain: z.string().optional(),
     useCustomWords: z.preprocess(
       (val) => val === "on" || val === true,
       z.boolean().default(false),
@@ -382,24 +376,7 @@ export default component$(() => {
                 />
                 <p class="text-theme-muted mt-2 pl-3 text-xs sm:pl-4">
                   Override the domain shown in embeds (for custom domains)~ ✨
-                </p>
-              </div>
-              <div>
-                <label class="text-theme-secondary mb-2 block text-xs font-medium sm:text-sm">
-                  Upload Domain (Optional)~ 🔗
-                </label>{" "}
-                <input
-                  type="text"
-                  name="customUploadDomain"
-                  value={userData.value.user.customUploadDomain || ""}
-                  placeholder="files.your-domain.com"
-                  class={inputClasses}
-                />
-                <p class="text-theme-muted mt-2 pl-3 text-xs sm:pl-4">
-                  Custom domain for file URLs (e.g., subdomain.twink.forsale)~
-                  🌟
-                </p>
-              </div>
+                </p>              </div>
               <div class="space-y-3 sm:space-y-4">
                 <label class={toggleClasses}>
                   <Toggle
