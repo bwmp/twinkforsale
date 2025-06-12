@@ -82,10 +82,10 @@ export const onPost: RequestHandler = async ({ request, json }) => {
   if (userId) {
     const user = await db.user.findUnique({
       where: { id: userId },
-      select: { useCustomWords: true, customUploadDomain: true }
+      select: { useCustomWords: true, customDomain: true }
     });
     useCuteWords = user?.useCustomWords || false;
-    customUploadDomain = user?.customUploadDomain || null;
+    customUploadDomain = user?.customDomain || null;
   }
   const shortCode = generateShortCode(useCuteWords);
   const deletionKey = nanoid(32);
