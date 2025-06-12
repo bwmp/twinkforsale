@@ -1,6 +1,5 @@
 Drag & Drop Upload Area - Add a beautiful drag-and-drop zone on the dashboard with cute animations
 File Organization - Add folders/albums to organize uploads
-Detailed File Analytics - Individual file analytics pages with referrer data, device types
 Heatmap Calendar - GitHub-style contribution calendar showing upload activity
 Password Protection - Add password protection for sensitive files
 File Comments/Notes - Let users add private notes to their uploads
