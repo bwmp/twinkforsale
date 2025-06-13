@@ -57,7 +57,7 @@ export const AlertItem = component$<AlertItemProps>(({ alert }) => {
     switch (alert.type) {
       case "success":
         return {
-          container: "bg-gradient-theme-success border-theme-success",
+          container: "bg-bg-gradient-to-br from-theme-confirm to-theme-confirm-hover border-theme-success",
           icon: "text-theme-success",
           title: "text-theme-success",
           message: "text-theme-success",
@@ -65,7 +65,7 @@ export const AlertItem = component$<AlertItemProps>(({ alert }) => {
         };
       case "error":
         return {
-          container: "bg-gradient-theme-error border-theme-error",
+          container: "bg-bg-gradient-to-br from-theme-deny to-theme-deny-hover border-theme-error",
           icon: "text-theme-error",
           title: "text-theme-error",
           message: "text-theme-error",
@@ -73,7 +73,7 @@ export const AlertItem = component$<AlertItemProps>(({ alert }) => {
         };
       case "warning":
         return {
-          container: "bg-gradient-theme-warning border-theme-warning",
+          container: "bg-bg-gradient-to-br from-theme-[#f59e0b] to-theme-[#d97706] border-theme-warning",
           icon: "text-theme-warning",
           title: "text-theme-warning",
           message: "text-theme-warning",
@@ -82,31 +82,31 @@ export const AlertItem = component$<AlertItemProps>(({ alert }) => {
       case "info":
         return {
           container:
-            "bg-gradient-theme-primary-secondary/20 border-theme-accent-secondary/30",
+            "bg-gradient-to-br from-theme-accent-primary/20 to-theme-accent-secondary/20 border-theme-accent-secondary/30",
           icon: "text-theme-accent-secondary",
           title: "text-theme-accent-secondary",
-          message: "text-theme-secondary",
+          message: "text-theme-text-secondary",
           button:
             "text-theme-accent-secondary hover:bg-theme-accent-secondary/10",
         };
       case "confirm":
         return {
           container:
-            "bg-gradient-theme-tertiary-quaternary/20 border-theme-accent-tertiary/30",
+            "bg-gradient-to-br from-theme-accent-tertiary/20 to-theme-accent-quaternary/20 border-theme-accent-tertiary/30",
           icon: "text-theme-accent-tertiary",
           title: "text-theme-accent-tertiary",
-          message: "text-theme-secondary",
+          message: "text-theme-text-secondary",
           button:
             "text-theme-accent-tertiary hover:bg-theme-accent-tertiary/10",
         };
       default:
         return {
           container: "glass border-theme-card-border",
-          icon: "text-theme-secondary",
+          icon: "text-theme-text-secondary",
           title: "text-theme-primary",
-          message: "text-theme-secondary",
+          message: "text-theme-text-secondary",
           button:
-            "text-theme-muted hover:text-theme-primary hover:bg-theme-accent/10",
+            "text-theme-text-muted hover:text-theme-text-primary hover:bg-theme-accent/10",
         };
     }
   };
@@ -148,7 +148,7 @@ export const AlertItem = component$<AlertItemProps>(({ alert }) => {
               </button>
               <button
                 onClick$={() => handleCancel(alertId)}
-                class="glass border-theme-card-border text-theme-secondary hover:border-theme-accent-primary/40 hover:text-theme-primary rounded-lg border px-3 py-1.5 text-xs font-medium transition-all duration-300 hover:scale-105"
+                class="glass border-theme-card-border text-theme-text-secondary hover:border-theme-accent-primary/40 hover:text-theme-text-primary rounded-lg border px-3 py-1.5 text-xs font-medium transition-all duration-300 hover:scale-105"
               >
                 {alert.cancelText || "Cancel"}
               </button>

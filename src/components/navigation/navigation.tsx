@@ -35,7 +35,7 @@ export default component$(() => {
       : "px-4 py-2 rounded-full";
     const activeClasses = isActive
       ? "btn-cute text-white shadow-lg"
-      : "text-theme-secondary hover:text-theme-primary hover:bg-theme-tertiary/20";
+      : "text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-bg-tertiary/20";
 
     return `${baseClasses} ${sizeClasses} ${activeClasses}`;
   };
@@ -103,7 +103,7 @@ export default component$(() => {
             <Form action={signOut}>
               <input type="hidden" name="providerId" value="discord" />
               <input type="hidden" name="options.redirectTo" />
-              <button class="text-theme-secondary hover:text-theme-primary hover:bg-theme-tertiary/20 flex items-center gap-2 rounded-full px-4 py-2 !whitespace-nowrap transition-all duration-300">
+              <button class="text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-bg-tertiary/20 flex items-center gap-2 rounded-full px-4 py-2 !whitespace-nowrap transition-all duration-300">
                 <LogOut class="h-4 w-4" />
                 Sign Out
               </button>
@@ -179,7 +179,7 @@ export default component$(() => {
             <input type="hidden" name="providerId" value="discord" />
             <input type="hidden" name="options.redirectTo" />
             <button
-              class={`${buttonClasses} text-theme-secondary hover:text-theme-primary hover:bg-theme-tertiary/20 !whitespace-nowrap`}
+              class={`${buttonClasses} text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-bg-tertiary/20 !whitespace-nowrap`}
             >
               <LogOut class="h-5 w-5" />
               Sign Out

@@ -186,7 +186,7 @@ export default component$(() => {
   const editingDomain = useSignal<string | null>(null);
 
   const inputClasses =
-    "w-full px-3 sm:px-4 py-2 sm:py-3 glass rounded-full placeholder-theme-muted focus:outline-none focus:ring-2 focus:ring-theme-accent-primary/50 transition-all duration-300 text-sm sm:text-base text-theme-primary";
+    "w-full px-3 sm:px-4 py-2 sm:py-3 glass rounded-full placeholder:theme-text-muted focus:outline-none focus:ring-2 focus:ring-theme-accent-primary/50 transition-all duration-300 text-sm sm:text-base text-theme-primary";
 
   return (
     <div class="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
@@ -194,7 +194,7 @@ export default component$(() => {
         <h1 class="text-gradient-cute mb-3 flex flex-wrap items-center justify-center gap-2 text-3xl font-bold sm:text-4xl">
           Upload Domains Management~
         </h1>
-        <p class="text-theme-secondary px-4 text-base sm:text-lg">
+        <p class="text-theme-text-secondary px-4 text-base sm:text-lg">
           Manage available upload domains for users~ Add cute domains! (◕‿◕)♡
         </p>
       </div>
@@ -206,7 +206,7 @@ export default component$(() => {
             showCreateForm.value = !showCreateForm.value;
             editingDomain.value = null;
           }}
-          class="btn-cute text-theme-primary flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all duration-300 sm:px-6 sm:py-3 sm:text-base"
+          class="btn-cute text-theme-text-primary flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all duration-300 sm:px-6 sm:py-3 sm:text-base"
         >
           <Plus class="h-4 w-4" />
           Add New Domain
@@ -223,7 +223,7 @@ export default component$(() => {
           <Form action={createAction}>
             <div class="space-y-4 sm:space-y-6">
               <div>
-                <label class="text-theme-secondary mb-2 block text-xs font-medium sm:text-sm">
+                <label class="text-theme-text-secondary mb-2 block text-xs font-medium sm:text-sm">
                   Domain~ 🌍
                 </label>
                 <input
@@ -233,14 +233,14 @@ export default component$(() => {
                   class={inputClasses}
                   required
                 />
-                <p class="text-theme-muted mt-2 pl-3 text-xs sm:pl-4">
+                <p class="text-theme-text-muted mt-2 pl-3 text-xs sm:pl-4">
                   The top-level domain (e.g., "twink.forsale", "example.com")~
                   ✨
                 </p>
               </div>
 
               <div>
-                <label class="text-theme-secondary mb-2 block text-xs font-medium sm:text-sm">
+                <label class="text-theme-text-secondary mb-2 block text-xs font-medium sm:text-sm">
                   Display Name~ 💝
                 </label>
                 <input
@@ -250,7 +250,7 @@ export default component$(() => {
                   class={inputClasses}
                   required
                 />
-                <p class="text-theme-muted mt-2 pl-3 text-xs sm:pl-4">
+                <p class="text-theme-text-muted mt-2 pl-3 text-xs sm:pl-4">
                   Friendly name shown to users~ 💕
                 </p>
               </div>
@@ -264,7 +264,7 @@ export default component$(() => {
                 />
                 <label
                   for="isDefault"
-                  class="text-theme-secondary text-xs sm:text-sm"
+                  class="text-theme-text-secondary text-xs sm:text-sm"
                 >
                   Set as default domain~ ⭐
                 </label>
@@ -273,14 +273,14 @@ export default component$(() => {
               <div class="flex gap-3">
                 <button
                   type="submit"
-                  class="btn-cute text-theme-primary flex-1 rounded-full px-4 py-2 text-sm font-medium transition-all duration-300 sm:px-6 sm:py-3 sm:text-base"
+                  class="btn-cute text-theme-text-primary flex-1 rounded-full px-4 py-2 text-sm font-medium transition-all duration-300 sm:px-6 sm:py-3 sm:text-base"
                 >
                   Create Domain~ 💾✨
                 </button>
                 <button
                   type="button"
                   onClick$={() => (showCreateForm.value = false)}
-                  class="text-theme-secondary hover:text-theme-primary hover:bg-theme-tertiary/20 flex-1 rounded-full px-4 py-2 text-sm font-medium transition-all duration-300 sm:px-6 sm:py-3 sm:text-base"
+                  class="text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-bg-tertiary/20 flex-1 rounded-full px-4 py-2 text-sm font-medium transition-all duration-300 sm:px-6 sm:py-3 sm:text-base"
                 >
                   Cancel
                 </button>
@@ -289,7 +289,7 @@ export default component$(() => {
           </Form>
 
           {createAction.value?.success && (
-            <div class="bg-gradient-theme-secondary-tertiary/20 border-theme-accent-secondary/30 glass mt-4 rounded-2xl border p-3 sm:mt-6 sm:p-4">
+            <div class="bg-gradient-to-br from-theme-accent-secondary/20 to-theme-accent-tertiary/20 border-theme-accent-secondary/30 glass mt-4 rounded-2xl border p-3 sm:mt-6 sm:p-4">
               <p class="text-theme-accent-secondary flex items-center text-xs sm:text-sm">
                 ✅ {createAction.value.message}~ ✨
               </p>
@@ -297,7 +297,7 @@ export default component$(() => {
           )}
 
           {createAction.value?.failed && (
-            <div class="bg-gradient-theme-primary-secondary/20 border-theme-accent-primary/30 glass mt-4 rounded-2xl border p-3 sm:mt-6 sm:p-4">
+            <div class="bg-gradient-to-br from-theme-accent-primary/20 to-theme-accent-secondary/20 border-theme-accent-primary/30 glass mt-4 rounded-2xl border p-3 sm:mt-6 sm:p-4">
               <p class="text-theme-accent-primary flex items-center text-xs sm:text-sm">
                 ❌ {createAction.value.message}~ 💔
               </p>
@@ -316,7 +316,7 @@ export default component$(() => {
           {domains.value.map((domain) => (
             <div
               key={domain.id}
-              class="glass border-theme-card-border rounded-2xl border p-4"
+              class="glass bg-red-500 rounded-2xl border-2 p-4"
             >
               {editingDomain.value === domain.id ? (
                 <Form action={updateAction}>
@@ -324,7 +324,7 @@ export default component$(() => {
                   <div class="space-y-4">
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                       <div>
-                        <label class="text-theme-secondary mb-2 block text-xs font-medium">
+                        <label class="text-theme-text-secondary mb-2 block text-xs font-medium">
                           Domain
                         </label>
                         <input
@@ -336,7 +336,7 @@ export default component$(() => {
                         />
                       </div>
                       <div>
-                        <label class="text-theme-secondary mb-2 block text-xs font-medium">
+                        <label class="text-theme-text-secondary mb-2 block text-xs font-medium">
                           Display Name
                         </label>
                         <input
@@ -356,7 +356,7 @@ export default component$(() => {
                           checked={domain.isActive}
                           class="glass border-theme-accent-primary/30 rounded border-2"
                         />
-                        <label class="text-theme-secondary text-xs">
+                        <label class="text-theme-text-secondary text-xs">
                           Active
                         </label>
                       </div>
@@ -367,7 +367,7 @@ export default component$(() => {
                           checked={domain.isDefault}
                           class="glass border-theme-accent-primary/30 rounded border-2"
                         />
-                        <label class="text-theme-secondary text-xs">
+                        <label class="text-theme-text-secondary text-xs">
                           Default
                         </label>
                       </div>
@@ -375,14 +375,14 @@ export default component$(() => {
                     <div class="flex gap-2">
                       <button
                         type="submit"
-                        class="btn-cute text-theme-primary rounded-full px-4 py-2 text-xs font-medium"
+                        class="btn-cute text-theme-text-primary rounded-full px-4 py-2 text-xs font-medium"
                       >
                         Save
                       </button>
                       <button
                         type="button"
                         onClick$={() => (editingDomain.value = null)}
-                        class="text-theme-secondary hover:text-theme-primary hover:bg-theme-tertiary/20 rounded-full px-4 py-2 text-xs font-medium transition-all duration-300"
+                        class="text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-bg-tertiary/20 rounded-full px-4 py-2 text-xs font-medium transition-all duration-300"
                       >
                         Cancel
                       </button>
@@ -396,24 +396,24 @@ export default component$(() => {
                       <Globe class="text-theme-accent-primary h-5 w-5" />
                       <div>
                         <div class="flex items-center gap-2">
-                          <h3 class="text-theme-primary font-medium">
+                          <h3 class="text-theme-text-primary font-medium">
                             {domain.name}
                           </h3>
                           {domain.isDefault && (
-                            <span class="bg-gradient-theme-accent-secondary text-theme-primary rounded-full px-2 py-1 text-xs">
+                            <span class="bg-gradient-to-br from-theme-accent-secondary to-theme-accent-tertiary text-theme-text-primary rounded-full px-2 py-1 text-xs">
                               Default
                             </span>
                           )}
                           {!domain.isActive && (
-                            <span class="bg-gradient-theme-error text-theme-error rounded-full px-2 py-1 text-xs">
+                            <span class="bg-bg-gradient-to-br from-theme-deny to-theme-deny-hover text-theme-error rounded-full px-2 py-1 text-xs">
                               Inactive
                             </span>
                           )}
                         </div>
-                        <p class="text-theme-secondary text-sm">
+                        <p class="text-theme-text-secondary text-sm">
                           {domain.domain}
                         </p>
-                        <p class="text-theme-muted text-xs">
+                        <p class="text-theme-text-muted text-xs">
                           {domain._count.users} users using this domain
                         </p>
                       </div>
@@ -422,7 +422,7 @@ export default component$(() => {
                   <div class="flex gap-2">
                     <button
                       onClick$={() => (editingDomain.value = domain.id)}
-                      class="text-theme-accent-secondary hover:bg-theme-tertiary/20 hover:text-theme-accent-primary rounded-full p-2 transition-all duration-300"
+                      class="text-theme-accent-secondary hover:bg-theme-bg-tertiary/20 hover:text-theme-accent-primary rounded-full p-2 transition-all duration-300"
                     >
                       <Edit class="h-4 w-4" />
                     </button>
@@ -452,7 +452,7 @@ export default component$(() => {
         </div>
 
         {updateAction.value?.success && (
-          <div class="bg-gradient-theme-secondary-tertiary/20 border-theme-accent-secondary/30 glass mt-4 rounded-2xl border p-3 sm:mt-6 sm:p-4">
+          <div class="bg-gradient-to-br from-theme-accent-secondary/20 to-theme-accent-tertiary/20 border-theme-accent-secondary/30 glass mt-4 rounded-2xl border p-3 sm:mt-6 sm:p-4">
             <p class="text-theme-accent-secondary flex items-center text-xs sm:text-sm">
               ✅ {updateAction.value.message}~ ✨
             </p>
@@ -460,7 +460,7 @@ export default component$(() => {
         )}
 
         {(updateAction.value?.failed || deleteAction.value?.failed) && (
-          <div class="bg-gradient-theme-primary-secondary/20 border-theme-accent-primary/30 glass mt-4 rounded-2xl border p-3 sm:mt-6 sm:p-4">
+          <div class="bg-gradient-to-br from-theme-accent-primary/20 to-theme-accent-secondary/20 border-theme-accent-primary/30 glass mt-4 rounded-2xl border p-3 sm:mt-6 sm:p-4">
             <p class="text-theme-accent-primary flex items-center text-xs sm:text-sm">
               ❌ {updateAction.value?.message || deleteAction.value?.message}~
               💔
@@ -469,7 +469,7 @@ export default component$(() => {
         )}
 
         {deleteAction.value?.success && (
-          <div class="bg-gradient-theme-secondary-tertiary/20 border-theme-accent-secondary/30 glass mt-4 rounded-2xl border p-3 sm:mt-6 sm:p-4">
+          <div class="bg-gradient-to-br from-theme-accent-secondary/20 to-theme-accent-tertiary/20 border-theme-accent-secondary/30 glass mt-4 rounded-2xl border p-3 sm:mt-6 sm:p-4">
             <p class="text-theme-accent-secondary flex items-center text-xs sm:text-sm">
               ✅ {deleteAction.value.message}~ ✨
             </p>

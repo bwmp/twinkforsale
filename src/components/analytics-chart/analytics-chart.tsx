@@ -21,7 +21,7 @@ export const AnalyticsChart = component$<AnalyticsChartProps>(
       return (
         <div class="py-8 text-center">
           <div class="text-theme-accent-tertiary mb-2">📈</div>
-          <p class="text-theme-secondary text-sm">No data available</p>
+          <p class="text-theme-text-secondary text-sm">No data available</p>
         </div>
       );
     }
@@ -51,7 +51,7 @@ export const AnalyticsChart = component$<AnalyticsChartProps>(
 
     return (
       <div class="card-cute rounded-2xl p-4">
-        <h3 class="text-theme-secondary mb-3 flex items-center gap-2 text-sm font-medium">
+        <h3 class="text-theme-text-secondary mb-3 flex items-center gap-2 text-sm font-medium">
           <span class="text-lg">📊</span>
           {title}
         </h3>
@@ -168,7 +168,7 @@ export const AnalyticsChart = component$<AnalyticsChartProps>(
         </div>
         {/* Current value */}
         <div class="mt-2 text-center">
-          <span class="text-theme-primary text-lg font-bold">
+          <span class="text-theme-text-primary text-lg font-bold">
             {data[data.length - 1]?.[metric] || 0}
           </span>
           <span class="text-theme-accent-tertiary ml-1 text-xs">today</span>

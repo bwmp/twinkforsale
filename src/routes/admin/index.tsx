@@ -278,7 +278,7 @@ export default component$(() => {
         <h1 class="text-gradient-cute mb-3 flex flex-wrap items-center justify-center gap-2 text-3xl font-bold sm:gap-3 sm:text-4xl">
           Admin Dashboard
         </h1>{" "}
-        <p class="text-theme-secondary px-4 text-base sm:text-lg">
+        <p class="text-theme-text-secondary px-4 text-base sm:text-lg">
           Manage your twink community~ Approve users and keep everything safe!
           (◕‿◕)♡
         </p>
@@ -312,10 +312,10 @@ export default component$(() => {
               <Users class="h-4 w-4 text-white sm:h-6 sm:w-6" />
             </div>{" "}
             <div class="ml-3 sm:ml-4">
-              <p class="text-theme-secondary text-xs font-medium sm:text-sm">
+              <p class="text-theme-text-secondary text-xs font-medium sm:text-sm">
                 Total Users
               </p>
-              <p class="text-theme-primary text-lg font-bold sm:text-2xl">
+              <p class="text-theme-text-primary text-lg font-bold sm:text-2xl">
                 {userData.value?.users.length || 0}
               </p>
             </div>
@@ -328,10 +328,10 @@ export default component$(() => {
               <CheckCircle class="h-4 w-4 text-white sm:h-6 sm:w-6" />
             </div>{" "}
             <div class="ml-3 sm:ml-4">
-              <p class="text-theme-secondary text-xs font-medium sm:text-sm">
+              <p class="text-theme-text-secondary text-xs font-medium sm:text-sm">
                 Approved
               </p>
-              <p class="text-theme-primary text-lg font-bold sm:text-2xl">
+              <p class="text-theme-text-primary text-lg font-bold sm:text-2xl">
                 {userData.value?.users.filter((u) => u.isApproved).length || 0}
               </p>
             </div>
@@ -344,10 +344,10 @@ export default component$(() => {
               <Ban class="h-4 w-4 text-white sm:h-6 sm:w-6" />
             </div>{" "}
             <div class="ml-3 sm:ml-4">
-              <p class="text-theme-secondary text-xs font-medium sm:text-sm">
+              <p class="text-theme-text-secondary text-xs font-medium sm:text-sm">
                 Pending
               </p>
-              <p class="text-theme-primary text-lg font-bold sm:text-2xl">
+              <p class="text-theme-text-primary text-lg font-bold sm:text-2xl">
                 {userData.value?.users.filter((u) => !u.isApproved).length || 0}
               </p>
             </div>
@@ -360,10 +360,10 @@ export default component$(() => {
               <Users class="h-4 w-4 text-white sm:h-6 sm:w-6" />
             </div>{" "}
             <div class="ml-3 sm:ml-4">
-              <p class="text-theme-secondary text-xs font-medium sm:text-sm">
+              <p class="text-theme-text-secondary text-xs font-medium sm:text-sm">
                 New Users (7d)
               </p>
-              <p class="text-theme-primary text-lg font-bold sm:text-2xl">
+              <p class="text-theme-text-primary text-lg font-bold sm:text-2xl">
                 {userData.value?.analyticsData?.reduce(
                   (sum, day) => sum + (day.usersRegistered || 0),
                   0,
@@ -416,16 +416,16 @@ export default component$(() => {
             class="card-cute group rounded-3xl p-4 sm:p-6"
           >
             <div class="mb-3 flex items-center sm:mb-4">
-              <div class="pulse-soft bg-gradient-theme-primary-secondary rounded-full p-2 sm:p-3">
-                <Globe class="text-theme-primary h-5 w-5 sm:h-6 sm:w-6" />
+              <div class="pulse-soft from-theme-accent-primary to-theme-accent-secondary rounded-full bg-gradient-to-br p-2 sm:p-3">
+                <Globe class="text-theme-text-primary h-5 w-5 sm:h-6 sm:w-6" />
               </div>
             </div>
             <div class="mb-2">
-              <h3 class="group-hover:text-gradient-cute text-theme-primary text-base font-medium transition-all duration-300 sm:text-lg">
+              <h3 class="group-hover:text-gradient-cute text-theme-text-primary text-base font-medium transition-all duration-300 sm:text-lg">
                 Upload Domains
               </h3>
             </div>
-            <p class="text-theme-secondary text-xs sm:text-sm">
+            <p class="text-theme-text-secondary text-xs sm:text-sm">
               Manage available upload domains for users~ Add cute domains!
               (◕‿◕)♡
             </p>
@@ -436,16 +436,16 @@ export default component$(() => {
             class="card-cute group rounded-3xl p-4 sm:p-6"
           >
             <div class="mb-3 flex items-center sm:mb-4">
-              <div class="pulse-soft bg-gradient-theme-secondary-tertiary animation-delay-200 rounded-full p-2 sm:p-3">
-                <Activity class="text-theme-primary h-5 w-5 sm:h-6 sm:w-6" />
+              <div class="pulse-soft from-theme-accent-secondary to-theme-accent-tertiary animation-delay-200 rounded-full bg-gradient-to-br p-2 sm:p-3">
+                <Activity class="text-theme-text-primary h-5 w-5 sm:h-6 sm:w-6" />
               </div>
             </div>
             <div class="mb-2">
-              <h3 class="group-hover:text-gradient-cute text-theme-primary text-base font-medium transition-all duration-300 sm:text-lg">
+              <h3 class="group-hover:text-gradient-cute text-theme-text-primary text-base font-medium transition-all duration-300 sm:text-lg">
                 Health Dashboard
               </h3>
             </div>
-            <p class="text-theme-secondary text-xs sm:text-sm">
+            <p class="text-theme-text-secondary text-xs sm:text-sm">
               Monitor server performance, system metrics, and health status~
               📊✨
             </p>
@@ -456,16 +456,16 @@ export default component$(() => {
             class="card-cute group rounded-3xl p-4 sm:p-6"
           >
             <div class="mb-3 flex items-center sm:mb-4">
-              <div class="pulse-soft bg-gradient-theme-tertiary-quaternary animation-delay-400 rounded-full p-2 sm:p-3">
-                <Bell class="text-theme-primary h-5 w-5 sm:h-6 sm:w-6" />
+              <div class="pulse-soft from-theme-accent-tertiary to-theme-accent-quaternary animation-delay-400 rounded-full bg-gradient-to-br p-2 sm:p-3">
+                <Bell class="text-theme-text-primary h-5 w-5 sm:h-6 sm:w-6" />
               </div>
             </div>
             <div class="mb-2">
-              <h3 class="group-hover:text-gradient-cute text-theme-primary text-base font-medium transition-all duration-300 sm:text-lg">
+              <h3 class="group-hover:text-gradient-cute text-theme-text-primary text-base font-medium transition-all duration-300 sm:text-lg">
                 System Events
               </h3>
             </div>
-            <p class="text-theme-secondary text-xs sm:text-sm">
+            <p class="text-theme-text-secondary text-xs sm:text-sm">
               Monitor system alerts, user warnings, and automated events~ 🔔⚡
             </p>
           </Link>
@@ -480,7 +480,7 @@ export default component$(() => {
               {(searchQuery.value.trim() ||
                 approvalFilter.value !== "all" ||
                 adminFilter.value !== "all") && (
-                <span class="text-theme-accent text-sm font-normal">
+                <span class="text-theme-accent-primary text-sm font-normal">
                   ({filteredUsers.value.length} of{" "}
                   {userData.value?.users.length || 0} users)
                 </span>
@@ -490,7 +490,7 @@ export default component$(() => {
             <div class="relative w-full max-w-md sm:w-auto">
               {" "}
               <div class="pointer-events-none absolute inset-y-0 left-0 z-10 flex items-center pl-3">
-                <Search class="text-theme-accent h-4 w-4 drop-shadow-sm" />
+                <Search class="text-theme-accent-primary h-4 w-4 drop-shadow-sm" />
               </div>
               <input
                 type="text"
@@ -499,7 +499,7 @@ export default component$(() => {
                 onInput$={(e) => {
                   searchQuery.value = (e.target as HTMLInputElement).value;
                 }}
-                class="text-theme-primary bg-gradient-theme-card border-theme-card-border placeholder-theme-muted focus:border-theme-border focus:bg-gradient-theme-accent focus:ring-theme-accent/30 focus:shadow-theme-accent/20 hover:border-theme-border hover:shadow-theme-accent/10 w-full rounded-full border py-2 pr-4 pl-10 text-sm backdrop-blur-sm transition-all duration-500 hover:shadow-md focus:shadow-lg focus:ring-2 focus:outline-none"
+                class="text-theme-text-primary from-theme-accent-primary/10 via-theme-accent-secondary to-theme-accent-tertiary/10 border-theme-card-border placeholder:theme-text-muted focus:border-theme-accent-primary/60 focus:from-theme-accent-primary/20 focus:to-theme-accent-secondary/20 focus:ring-theme-accent-primary/30 focus:shadow-theme-accent-primary/20 hover:border-theme-accent-primary/40 hover:shadow-theme-accent-primary/10 w-full rounded-full border bg-gradient-to-br py-2 pr-4 pl-10 text-sm backdrop-blur-sm transition-all duration-500 hover:shadow-md focus:bg-gradient-to-br focus:shadow-lg focus:ring-2 focus:outline-none"
               />
               <div class="pointer-events-none absolute inset-0 rounded-full bg-gradient-to-r from-pink-400/5 via-purple-400/5 to-cyan-400/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
             </div>
@@ -508,13 +508,13 @@ export default component$(() => {
           <div class="flex flex-wrap items-center gap-3 sm:gap-4">
             {/* Approval Status Filter */}{" "}
             <div class="flex items-center gap-2">
-              <Filter class="text-theme-accent h-4 w-4" />{" "}
+              <Filter class="text-theme-accent-primary h-4 w-4" />{" "}
               <select
                 value={approvalFilter.value}
                 onChange$={(e) => {
                   approvalFilter.value = (e.target as HTMLSelectElement).value;
                 }}
-                class="glass border-theme-card-border text-theme-primary focus:border-theme-border rounded-full border bg-transparent px-3 py-1 text-sm focus:outline-none"
+                class="glass border-theme-card-border text-theme-text-primary focus:border-theme-accent-primary/60 rounded-full border px-3 py-1 text-sm focus:outline-none"
               >
                 <option value="all" class="bg-theme-card text-theme-primary">
                   All Users
@@ -541,7 +541,7 @@ export default component$(() => {
                 onChange$={(e) => {
                   adminFilter.value = (e.target as HTMLSelectElement).value;
                 }}
-                class="glass border-theme-card-border text-theme-primary focus:border-theme-border rounded-full border bg-transparent px-3 py-1 text-sm focus:outline-none"
+                class="glass border-theme-card-border text-theme-text-primary focus:border-theme-accent-primary/60 rounded-full border bg-transparent px-3 py-1 text-sm focus:outline-none"
               >
                 <option value="all" class="bg-theme-card text-theme-primary">
                   All Roles
@@ -556,13 +556,13 @@ export default component$(() => {
             </div>
             {/* Sort By */}
             <div class="flex items-center gap-2">
-              <ArrowUpDown class="text-theme-accent h-4 w-4" />{" "}
+              <ArrowUpDown class="text-theme-accent-primary h-4 w-4" />{" "}
               <select
                 value={sortBy.value}
                 onChange$={(e) => {
                   sortBy.value = (e.target as HTMLSelectElement).value;
                 }}
-                class="glass border-theme-card-border text-theme-primary focus:border-theme-border rounded-full border bg-transparent px-3 py-1 text-sm focus:outline-none"
+                class="glass border-theme-card-border text-theme-text-primary focus:border-theme-accent-primary/60 rounded-full border bg-transparent px-3 py-1 text-sm focus:outline-none"
               >
                 <option
                   value="createdAt"
@@ -595,7 +595,7 @@ export default component$(() => {
               onClick$={() => {
                 sortOrder.value = sortOrder.value === "asc" ? "desc" : "asc";
               }}
-              class="glass border-theme-card-border text-theme-primary hover:border-theme-border rounded-full border bg-transparent px-3 py-1 text-sm transition-all duration-300 focus:outline-none"
+              class="glass border-theme-card-border text-theme-text-primary hover:border-theme-accent-primary/40 rounded-full border bg-transparent px-3 py-1 text-sm transition-all duration-300 focus:outline-none"
             >
               {sortOrder.value === "asc" ? "↑ Ascending" : "↓ Descending"}
             </button>{" "}
@@ -613,7 +613,7 @@ export default component$(() => {
                   sortBy.value = "createdAt";
                   sortOrder.value = "desc";
                 }}
-                class="bg-gradient-theme-error border-theme-error text-theme-error hover:bg-gradient-theme-error-hover rounded-full border px-3 py-1 text-sm font-medium transition-all duration-300"
+                class="bg-bg-gradient-to-br from-theme-deny to-theme-deny-hover border-theme-error text-theme-error hover:bg-bg-gradient-to-br from-theme-deny to-theme-deny-hover-hover rounded-full border px-3 py-1 text-sm font-medium transition-all duration-300"
               >
                 🗑️ Clear Filters
               </button>
@@ -621,7 +621,9 @@ export default component$(() => {
           </div>
           {/* Quick Filter Buttons */}{" "}
           <div class="flex flex-wrap gap-2 text-xs">
-            <span class="text-theme-accent font-medium">Quick filters:</span>
+            <span class="text-theme-accent-primary font-medium">
+              Quick filters:
+            </span>
             <button
               onClick$={() => {
                 approvalFilter.value = "pending";
@@ -629,7 +631,7 @@ export default component$(() => {
                 sortBy.value = "createdAt";
                 sortOrder.value = "asc";
               }}
-              class="glass border-theme-card-border text-theme-accent hover:border-theme-border rounded-full border px-2 py-1 text-xs transition-all duration-300"
+              class="glass border-theme-card-border text-theme-accent-primary hover:border-theme-accent-primary/40 rounded-full border px-2 py-1 text-xs transition-all duration-300"
             >
               ⏳ Pending Approval
             </button>{" "}
@@ -640,7 +642,7 @@ export default component$(() => {
                 sortBy.value = "uploads";
                 sortOrder.value = "desc";
               }}
-              class="glass border-theme-card-border text-theme-accent hover:border-theme-border rounded-full border px-2 py-1 text-xs transition-all duration-300"
+              class="glass border-theme-card-border text-theme-accent-primary hover:border-theme-accent-primary/40 rounded-full border px-2 py-1 text-xs transition-all duration-300"
             >
               📈 Most Active
             </button>
@@ -651,7 +653,7 @@ export default component$(() => {
                 sortBy.value = "storageUsed";
                 sortOrder.value = "desc";
               }}
-              class="glass border-theme-card-border text-theme-accent hover:border-theme-border rounded-full border px-2 py-1 text-xs transition-all duration-300"
+              class="glass border-theme-card-border text-theme-accent-primary hover:border-theme-accent-primary/40 rounded-full border px-2 py-1 text-xs transition-all duration-300"
             >
               💾 Storage Usage
             </button>
@@ -662,7 +664,7 @@ export default component$(() => {
                 sortBy.value = "createdAt";
                 sortOrder.value = "desc";
               }}
-              class="glass border-theme-card-border text-theme-accent hover:border-theme-border rounded-full border px-2 py-1 text-xs transition-all duration-300"
+              class="glass border-theme-card-border text-theme-accent-primary hover:border-theme-accent-primary/40 rounded-full border px-2 py-1 text-xs transition-all duration-300"
             >
               👑 Admins Only
             </button>
@@ -675,22 +677,22 @@ export default component$(() => {
                 <div class="glass mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full sm:h-16 sm:w-16">
                   <div class="text-xl sm:text-2xl">👥</div>
                 </div>
-                <h3 class="text-theme-primary mb-2 text-base font-medium sm:text-lg">
+                <h3 class="text-theme-text-primary mb-2 text-base font-medium sm:text-lg">
                   No Users Yet! ✨
                 </h3>
-                <p class="text-theme-secondary px-4 text-sm sm:text-base">
+                <p class="text-theme-text-secondary px-4 text-sm sm:text-base">
                   Waiting for the first twinks to join~ (◕‿◕)♡
                 </p>
               </div>
             ) : filteredUsers.value.length === 0 ? (
               <div class="py-8 text-center sm:py-12">
                 <div class="glass mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full sm:h-16 sm:w-16">
-                  <Search class="text-theme-accent h-6 w-6" />
+                  <Search class="text-theme-accent-primary h-6 w-6" />
                 </div>
-                <h3 class="text-theme-primary mb-2 text-base font-medium sm:text-lg">
+                <h3 class="text-theme-text-primary mb-2 text-base font-medium sm:text-lg">
                   No Results Found! 🔍
                 </h3>
-                <p class="text-theme-secondary px-4 text-sm sm:text-base">
+                <p class="text-theme-text-secondary px-4 text-sm sm:text-base">
                   Try adjusting your filters or search terms~ (◕‿◕)♡
                 </p>
               </div>
@@ -699,7 +701,7 @@ export default component$(() => {
                 {filteredUsers.value.map((user: any) => (
                   <div
                     key={user.id}
-                    class="glass border-theme-card-border hover:border-theme-border rounded-2xl p-3 transition-all duration-300 sm:p-4"
+                    class="glass border-theme-card-border hover:border-theme-accent-primary/40 rounded-2xl p-3 transition-all duration-300 sm:p-4"
                   >
                     <div class="flex flex-col gap-3 sm:gap-4 lg:flex-row lg:items-center lg:justify-between">
                       {/* User Info */}
@@ -714,22 +716,22 @@ export default component$(() => {
                           />
                         )}{" "}
                         <div class="min-w-0 flex-1">
-                          <div class="text-theme-primary truncate text-sm font-medium sm:text-base">
+                          <div class="text-theme-text-primary truncate text-sm font-medium sm:text-base">
                             {user.name || "Anonymous Cutie"}
                           </div>
-                          <div class="text-theme-secondary truncate text-xs sm:text-sm">
+                          <div class="text-theme-text-secondary truncate text-xs sm:text-sm">
                             {user.email}
                           </div>
                           {user.accounts?.[0]?.providerAccountId && (
-                            <div class="text-theme-accent truncate text-xs">
+                            <div class="text-theme-accent-primary truncate text-xs">
                               Discord ID: {user.accounts[0].providerAccountId}
                             </div>
                           )}
-                          <div class="text-theme-accent mt-1 text-xs">
+                          <div class="text-theme-accent-primary mt-1 text-xs">
                             Joined{" "}
                             {new Date(user.createdAt).toLocaleDateString()}
                           </div>
-                          <div class="text-theme-accent mt-1 text-xs">
+                          <div class="text-theme-accent-primary mt-1 text-xs">
                             {user.id}
                           </div>
                         </div>
@@ -743,14 +745,14 @@ export default component$(() => {
                           <span
                             class={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
                               user.isApproved
-                                ? "bg-gradient-theme-success border-theme-success text-theme-success"
-                                : "bg-gradient-theme-warning border-theme-warning text-theme-warning"
+                                ? "bg-bg-gradient-to-br from-theme-confirm to-theme-confirm-hover border-theme-success text-theme-success"
+                                : "bg-bg-gradient-to-br from-theme-[#f59e0b] to-theme-[#d97706] border-theme-warning text-theme-warning"
                             }`}
                           >
                             {user.isApproved ? "✅ Approved" : "⏳ Pending"}
                           </span>{" "}
                           {user.approvedAt && (
-                            <div class="text-theme-accent mt-1 text-xs">
+                            <div class="text-theme-accent-primary mt-1 text-xs">
                               by {user.approvedBy?.name || "Admin"}
                             </div>
                           )}
@@ -759,21 +761,21 @@ export default component$(() => {
                         <span
                           class={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
                             user.isAdmin
-                              ? "bg-gradient-theme-accent-secondary border-theme-border text-theme-primary border"
-                              : "bg-gradient-theme-muted border-theme-card-border text-theme-secondary border"
+                              ? "from-theme-accent-secondary to-theme-accent-tertiary border-theme-accent-primary/40 text-theme-text-primary border bg-gradient-to-br"
+                              : "from-theme-accent-secondary/60 to-theme-accent-tertiary/60 border-theme-card-border text-theme-text-secondary border bg-gradient-to-br"
                           }`}
                         >
                           {user.isAdmin ? "👑 Admin" : "🌸 User"}
                         </span>
                         {/* Activity & Storage Stats */}
-                        <div class="text-theme-secondary space-y-1 text-xs">
+                        <div class="text-theme-text-secondary space-y-1 text-xs">
                           <div>📁 {user._count.uploads} uploads</div>
                           <div>🔑 {user._count.apiKeys} API keys</div>
                           <div>
                             💾 {formatBytes(user.storageUsed)} /{" "}
                             {formatBytes(getEffectiveStorageLimit(user))}
                           </div>
-                          <div class="text-theme-accent text-xs">
+                          <div class="text-theme-accent-primary text-xs">
                             {user.maxStorageLimit
                               ? "Custom limit"
                               : "Default limit"}
@@ -804,7 +806,7 @@ export default component$(() => {
                                 isApproved: false,
                               });
                             }}
-                            class="bg-gradient-theme-error border-theme-error text-theme-error hover:bg-gradient-theme-error-hover rounded-full border px-3 py-1 text-xs font-medium transition-all duration-300 sm:text-sm"
+                            class="bg-bg-gradient-to-br from-theme-deny to-theme-deny-hover border-theme-error text-theme-error hover:bg-bg-gradient-to-br from-theme-deny to-theme-deny-hover-hover rounded-full border px-3 py-1 text-xs font-medium transition-all duration-300 sm:text-sm"
                           >
                             ❌ Revoke
                           </button>
@@ -818,8 +820,8 @@ export default component$(() => {
                           }}
                           class={`rounded-full px-3 py-1 text-xs font-medium transition-all duration-300 sm:text-sm ${
                             user.isAdmin
-                              ? "bg-gradient-theme-error border-theme-error text-theme-error hover:bg-gradient-theme-error-hover border"
-                              : "bg-gradient-theme-accent-secondary border-theme-border text-theme-primary hover:bg-gradient-theme-accent border"
+                              ? "bg-bg-gradient-to-br from-theme-deny to-theme-deny-hover border-theme-error text-theme-error hover:bg-bg-gradient-to-br from-theme-deny to-theme-deny-hover-hover border"
+                              : "from-theme-accent-secondary to-theme-accent-tertiary border-theme-accent-primary/40 text-theme-text-primary hover:from-theme-accent-primary/20 hover:to-theme-accent-secondary/20 border bg-gradient-to-br hover:bg-gradient-to-br"
                           }`}
                         >
                           {user.isAdmin
@@ -831,7 +833,7 @@ export default component$(() => {
                     {/* Expandable Limits Editor */}
                     <details class="group mt-3">
                       {" "}
-                      <summary class="text-theme-accent hover:text-theme-primary flex cursor-pointer items-center gap-1 text-xs font-medium">
+                      <summary class="text-theme-accent-primary hover:text-theme-text-primary flex cursor-pointer items-center gap-1 text-xs font-medium">
                         <span class="transition-transform group-open:rotate-90">
                           ▶
                         </span>
@@ -857,34 +859,34 @@ export default component$(() => {
                         >
                           {" "}
                           <div>
-                            <label class="text-theme-secondary mb-1 block text-xs font-medium">
+                            <label class="text-theme-text-secondary mb-1 block text-xs font-medium">
                               Max Uploads
                             </label>
                             <input
                               type="number"
                               name="maxUploads"
                               value={user.maxUploads}
-                              class="glass border-theme-card-border text-theme-primary focus:border-theme-border w-full rounded border bg-transparent px-2 py-1 text-xs focus:outline-none"
+                              class="glass border-theme-card-border text-theme-text-primary focus:border-theme-accent-primary/60 w-full rounded border bg-transparent px-2 py-1 text-xs focus:outline-none"
                               min="1"
                             />
                           </div>
                           <div>
-                            <label class="text-theme-secondary mb-1 block text-xs font-medium">
+                            <label class="text-theme-text-secondary mb-1 block text-xs font-medium">
                               Max File Size (bytes)
                             </label>
                             <input
                               type="number"
                               name="maxFileSize"
                               value={user.maxFileSize}
-                              class="glass border-theme-card-border text-theme-primary focus:border-theme-border w-full rounded border bg-transparent px-2 py-1 text-xs focus:outline-none"
+                              class="glass border-theme-card-border text-theme-text-primary focus:border-theme-accent-primary/60 w-full rounded border bg-transparent px-2 py-1 text-xs focus:outline-none"
                               min="1"
                             />
-                            <div class="text-theme-accent mt-1 text-xs">
+                            <div class="text-theme-accent-primary mt-1 text-xs">
                               Current: {formatBytes(user.maxFileSize)}
                             </div>
                           </div>
                           <div>
-                            <label class="text-theme-secondary mb-1 block text-xs font-medium">
+                            <label class="text-theme-text-secondary mb-1 block text-xs font-medium">
                               Storage Limit (bytes)
                             </label>
                             <input
@@ -892,10 +894,10 @@ export default component$(() => {
                               name="maxStorageLimit"
                               value={user.maxStorageLimit || ""}
                               placeholder={`Default: ${formatBytes(userData.value?.config.BASE_STORAGE_LIMIT || 10737418240)}`}
-                              class="glass border-theme-card-border text-theme-primary focus:border-theme-border w-full rounded border bg-transparent px-2 py-1 text-xs focus:outline-none"
+                              class="glass border-theme-card-border text-theme-text-primary focus:border-theme-accent-primary/60 w-full rounded border bg-transparent px-2 py-1 text-xs focus:outline-none"
                               min="1"
                             />
-                            <div class="text-theme-accent mt-1 text-xs">
+                            <div class="text-theme-accent-primary mt-1 text-xs">
                               {user.maxStorageLimit
                                 ? `Custom: ${formatBytes(user.maxStorageLimit)}`
                                 : `Using default: ${formatBytes(userData.value?.config.BASE_STORAGE_LIMIT || 10737418240)}`}
@@ -916,7 +918,7 @@ export default component$(() => {
                                   maxStorageLimit: "",
                                 });
                               }}
-                              class="bg-gradient-theme-muted border-theme-card-border text-theme-secondary hover:bg-gradient-theme-accent rounded-full border px-3 py-1 text-xs font-medium transition-all duration-300"
+                              class="from-theme-accent-secondary/60 to-theme-accent-tertiary/60 border-theme-card-border text-theme-text-secondary hover:from-theme-accent-primary/20 hover:to-theme-accent-secondary/20 rounded-full border bg-gradient-to-br px-3 py-1 text-xs font-medium transition-all duration-300 hover:bg-gradient-to-br"
                             >
                               🔄 Reset to Default
                             </button>

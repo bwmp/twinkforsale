@@ -389,18 +389,18 @@ export default component$(() => {
   ) => {
     if (sortBy.value !== column) {
       return (
-        <ArrowUpDown class="text-theme-muted ml-1 inline h-3 w-3 opacity-50" />
+        <ArrowUpDown class="text-theme-text-muted ml-1 inline h-3 w-3 opacity-50" />
       );
     }
     return sortOrder.value === "asc" ? (
-      <ArrowUp class="text-theme-muted ml-1 inline h-3 w-3" />
+      <ArrowUp class="text-theme-text-muted ml-1 inline h-3 w-3" />
     ) : (
-      <ArrowDown class="text-theme-muted ml-1 inline h-3 w-3" />
+      <ArrowDown class="text-theme-text-muted ml-1 inline h-3 w-3" />
     );
   }; // Mini analytics chart component for grid view
   const MiniChart = component$(({ data }: { data: any[] }) => {
     if (!data || data.length === 0)
-      return <div class="text-theme-muted text-xs">No data</div>;
+      return <div class="text-theme-text-muted text-xs">No data</div>;
 
     const maxViews = Math.max(...data.map((d) => d.totalViews), 1);
     const points = data
@@ -430,7 +430,7 @@ export default component$(() => {
         <h1 class="text-gradient-cute mb-3 flex flex-wrap items-center justify-center gap-2 text-3xl font-bold sm:text-4xl">
           My Files~
         </h1>
-        <p class="text-theme-secondary px-4 text-base sm:text-lg">
+        <p class="text-theme-text-secondary px-4 text-base sm:text-lg">
           Manage your files with expiration dates and view limits! (◕‿◕)♡
         </p>
       </div>
@@ -439,15 +439,15 @@ export default component$(() => {
       <div class="mb-6 grid grid-cols-2 gap-3 sm:mb-8 sm:gap-6 md:grid-cols-4">
         <div class="card-cute pulse-soft rounded-3xl p-4 sm:p-6">
           <div class="flex items-center">
-            <div class="bg-gradient-theme-primary-secondary rounded-full p-2 sm:p-3">
-              <Folder class="text-theme-primary h-4 w-4 sm:h-6 sm:w-6" />
+            <div class="from-theme-accent-primary to-theme-accent-secondary rounded-full bg-gradient-to-br p-2 sm:p-3">
+              <Folder class="text-theme-text-primary h-4 w-4 sm:h-6 sm:w-6" />
             </div>
             <div class="ml-3 sm:ml-4">
-              <p class="text-theme-secondary flex items-center gap-1 text-xs font-medium sm:text-sm">
+              <p class="text-theme-text-secondary flex items-center gap-1 text-xs font-medium sm:text-sm">
                 {searchQuery.value.trim() ? "Filtered Files~" : "Total Files~"}
                 <Sparkle class="h-3 w-3 sm:h-4 sm:w-4" />
               </p>
-              <p class="text-theme-primary text-lg font-bold sm:text-2xl">
+              <p class="text-theme-text-primary text-lg font-bold sm:text-2xl">
                 {searchQuery.value.trim()
                   ? filteredAndSortedUploads.value.length
                   : userData.value.user.uploads.length}
@@ -457,15 +457,15 @@ export default component$(() => {
         </div>
         <div class="card-cute pulse-soft rounded-3xl p-4 sm:p-6">
           <div class="flex items-center">
-            <div class="bg-gradient-theme-secondary-tertiary rounded-full p-2 sm:p-3">
-              <Eye class="text-theme-primary h-4 w-4 sm:h-6 sm:w-6" />
+            <div class="from-theme-accent-secondary to-theme-accent-tertiary rounded-full bg-gradient-to-br p-2 sm:p-3">
+              <Eye class="text-theme-text-primary h-4 w-4 sm:h-6 sm:w-6" />
             </div>
             <div class="ml-3 sm:ml-4">
-              <p class="text-theme-secondary flex items-center gap-1 text-xs font-medium sm:text-sm">
+              <p class="text-theme-text-secondary flex items-center gap-1 text-xs font-medium sm:text-sm">
                 {searchQuery.value.trim() ? "Filtered Views~" : "Total Views~"}
                 <Sparkle class="h-3 w-3 sm:h-4 sm:w-4" />
               </p>
-              <p class="text-theme-primary text-lg font-bold sm:text-2xl">
+              <p class="text-theme-text-primary text-lg font-bold sm:text-2xl">
                 {searchQuery.value.trim()
                   ? filteredAndSortedUploads.value.reduce(
                       (sum, upload) => sum + upload.views,
@@ -481,17 +481,17 @@ export default component$(() => {
         </div>
         <div class="card-cute pulse-soft rounded-3xl p-4 sm:p-6">
           <div class="flex items-center">
-            <div class="bg-gradient-theme-quaternary-primary rounded-full p-2 sm:p-3">
-              <TrendingUp class="text-theme-primary h-4 w-4 sm:h-6 sm:w-6" />
+            <div class="from-theme-accent-quaternary to-theme-accent-primary rounded-full bg-gradient-to-br p-2 sm:p-3">
+              <TrendingUp class="text-theme-text-primary h-4 w-4 sm:h-6 sm:w-6" />
             </div>
             <div class="ml-3 sm:ml-4">
-              <p class="text-theme-secondary flex items-center gap-1 text-xs font-medium sm:text-sm">
+              <p class="text-theme-text-secondary flex items-center gap-1 text-xs font-medium sm:text-sm">
                 {searchQuery.value.trim()
                   ? "Filtered Downloads~"
                   : "Total Downloads~"}
                 <Sparkle class="h-3 w-3 sm:h-4 sm:w-4" />
               </p>
-              <p class="text-theme-primary text-lg font-bold sm:text-2xl">
+              <p class="text-theme-text-primary text-lg font-bold sm:text-2xl">
                 {searchQuery.value.trim()
                   ? filteredAndSortedUploads.value.reduce(
                       (sum, upload) => sum + upload.downloads,
@@ -507,15 +507,15 @@ export default component$(() => {
         </div>
         <div class="card-cute pulse-soft rounded-3xl p-4 sm:p-6">
           <div class="flex items-center">
-            <div class="bg-gradient-theme-tertiary-quaternary rounded-full p-2 sm:p-3">
-              <HardDrive class="text-theme-primary h-4 w-4 sm:h-6 sm:w-6" />
+            <div class="from-theme-accent-tertiary to-theme-accent-quaternary rounded-full bg-gradient-to-br p-2 sm:p-3">
+              <HardDrive class="text-theme-text-primary h-4 w-4 sm:h-6 sm:w-6" />
             </div>
             <div class="ml-3 sm:ml-4">
-              <p class="text-theme-secondary flex items-center gap-1 text-xs font-medium sm:text-sm">
+              <p class="text-theme-text-secondary flex items-center gap-1 text-xs font-medium sm:text-sm">
                 Storage Used~
                 <Sparkle class="h-3 w-3 sm:h-4 sm:w-4" />
               </p>
-              <p class="text-theme-primary text-lg font-bold sm:text-xl">
+              <p class="text-theme-text-primary text-lg font-bold sm:text-xl">
                 {formatFileSize(userData.value.user.storageUsed)} /{" "}
                 {formatFileSize(userData.value.effectiveStorageLimit)}
               </p>
@@ -524,15 +524,15 @@ export default component$(() => {
         </div>
         <div class="card-cute pulse-soft rounded-3xl p-4 sm:p-6">
           <div class="flex items-center">
-            <div class="bg-gradient-theme-quaternary-primary rounded-full p-2 sm:p-3">
-              <Clock class="text-theme-primary h-4 w-4 sm:h-6 sm:w-6" />
+            <div class="from-theme-accent-quaternary to-theme-accent-primary rounded-full bg-gradient-to-br p-2 sm:p-3">
+              <Clock class="text-theme-text-primary h-4 w-4 sm:h-6 sm:w-6" />
             </div>
             <div class="ml-3 sm:ml-4">
-              <p class="text-theme-secondary flex items-center gap-1 text-xs font-medium sm:text-sm">
+              <p class="text-theme-text-secondary flex items-center gap-1 text-xs font-medium sm:text-sm">
                 Available Space~
                 <Sparkle class="h-3 w-3 sm:h-4 sm:w-4" />
               </p>
-              <p class="text-theme-primary text-lg font-bold sm:text-2xl">
+              <p class="text-theme-text-primary text-lg font-bold sm:text-2xl">
                 {formatFileSize(
                   userData.value.effectiveStorageLimit -
                     userData.value.user.storageUsed,
@@ -545,12 +545,12 @@ export default component$(() => {
 
       {/* Uploads Section */}
       <div class="card-cute overflow-hidden rounded-3xl">
-        <div class="border-theme-card border-b px-4 py-4 sm:px-6">
+        <div class="border-theme-card-border border-b px-4 py-4 sm:px-6">
           <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <h2 class="text-gradient-cute flex flex-wrap items-center text-lg font-bold sm:text-xl">
               All Files~ 📋 <span class="sparkle ml-2">✨</span>
               {searchQuery.value.trim() && (
-                <span class="text-theme-muted ml-2 text-sm font-normal">
+                <span class="text-theme-text-muted ml-2 text-sm font-normal">
                   ({filteredAndSortedUploads.value.length} of{" "}
                   {userData.value.user.uploads.length} files)
                 </span>
@@ -558,7 +558,7 @@ export default component$(() => {
             </h2>
             <div class="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
               {/* View Mode Toggle */}
-              <div class="bg-gradient-theme-toggle border-theme-card flex rounded-full border p-1">
+              <div class="bg-gradient-to-br from-theme-accent-primary/20 to-theme-accent-secondary/20 border-theme-card-border flex rounded-full border p-1">
                 <button
                   onClick$={() => {
                     viewMode.value = "list";
@@ -566,8 +566,8 @@ export default component$(() => {
                   }}
                   class={`flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium transition-all duration-300 ${
                     viewMode.value === "list"
-                      ? "text-theme-primary bg-gradient-theme-primary-secondary shadow-lg"
-                      : "text-theme-muted hover:text-theme-primary hover:bg-theme-tertiary/10"
+                      ? "text-theme-text-primary from-theme-accent-primary to-theme-accent-secondary bg-gradient-to-br shadow-lg"
+                      : "text-theme-text-muted hover:text-theme-text-primary hover:bg-theme-bg-tertiary/10"
                   }`}
                 >
                   <List class="h-4 w-4" />
@@ -580,8 +580,8 @@ export default component$(() => {
                   }}
                   class={`flex items-center gap-2 rounded-full px-3 py-2 text-sm font-medium transition-all duration-300 ${
                     viewMode.value === "grid"
-                      ? "text-theme-primary bg-gradient-theme-primary-secondary shadow-lg"
-                      : "text-theme-muted hover:text-theme-primary hover:bg-theme-tertiary/10"
+                      ? "text-theme-text-primary from-theme-accent-primary to-theme-accent-secondary bg-gradient-to-br shadow-lg"
+                      : "text-theme-text-muted hover:text-theme-text-primary hover:bg-theme-bg-tertiary/10"
                   }`}
                 >
                   <Grid class="h-4 w-4" />
@@ -591,7 +591,7 @@ export default component$(() => {
               {/* Search Input */}
               <div class="group relative w-full max-w-md sm:w-auto">
                 <div class="pointer-events-none absolute inset-y-0 left-0 z-10 flex items-center pl-3">
-                  <div class="icon-theme-accent-primary-glow">
+                  <div class="text-theme-accent-primary drop-shadow-md drop-shadow-theme-accent-primary">
                     <Search class="h-4 w-4 transition-colors duration-300" />
                   </div>
                 </div>
@@ -602,14 +602,14 @@ export default component$(() => {
                   onInput$={(e) => {
                     searchQuery.value = (e.target as HTMLInputElement).value;
                   }}
-                  class="border-theme-card text-theme-text-primary bg-gradient-theme-search w-full rounded-full border py-2 pr-4 pl-10 text-sm backdrop-blur-sm transition-all duration-500"
+                  class="border-theme-card-border text-theme-text-primary from-theme-accent-tertiary/10 via-theme-accent-primary/10 to-theme-accent-secondary/10 w-full rounded-full border bg-gradient-to-br py-2 pr-4 pl-10 text-sm backdrop-blur-sm transition-all duration-500"
                 />
-                <div class="bg-gradient-theme-quaternary-primary-5 pointer-events-none absolute inset-0 rounded-full opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
+                <div class="from-theme-accent-quaternary/5 via-theme-accent-tertiary/5 to-theme-accent-secondary/5 pointer-events-none absolute inset-0 rounded-full bg-linear-20 opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
               </div>
             </div>
           </div>
           {/* Bulk Selection Controls */}
-          <div class="border-theme-card border-t px-4 pt-3 sm:px-6">
+          <div class="border-theme-card-border border-t px-4 pt-3 sm:px-6">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div class="flex items-center gap-3">
                 <div
@@ -630,14 +630,14 @@ export default component$(() => {
               >
                 <button
                   onClick$={bulkCopyUrls}
-                  class="text-theme-action-copy flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-300 hover:bg-white/10"
+                  class="text-theme-accent-tertiary flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-300 hover:bg-white/10"
                 >
                   <Copy class="h-4 w-4" />
                   Copy URLs ({selectedFiles.value.size})
                 </button>
                 <button
                   onClick$={bulkDelete}
-                  class="text-theme-action-delete flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-300 hover:bg-white/10"
+                  class="text-theme-accent-primary flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-300 hover:bg-white/10"
                 >
                   <Trash2 class="h-4 w-4" />
                   Delete ({selectedFiles.value.size})
@@ -729,9 +729,9 @@ export default component$(() => {
                   {filteredAndSortedUploads.value.map((upload) => (
                     <tr
                       key={upload.id}
-                      class={`border-theme-card transition-all duration-300 hover:bg-white/5 ${
+                      class={`border-theme-card-border transition-all duration-300 hover:bg-white/5 ${
                         selectedFiles.value.has(upload.deletionKey)
-                          ? "bg-gradient-theme-quaternary-primary/10 border-theme-accent-primary/20"
+                          ? "from-theme-accent-quaternary/10 to-theme-accent-primary/10 border-theme-accent-primary/20 bg-gradient-to-br"
                           : ""
                       }`}
                     >
@@ -781,7 +781,7 @@ export default component$(() => {
                       <td class="text-theme-text-secondary px-3 py-4 text-sm sm:px-6">
                         <div class="flex items-center gap-2">
                           <span>{upload.views}</span>
-                          <div class="text-theme-trending">
+                          <div class="text-theme-accent-primary">
                             <TrendingUp class="h-4 w-4" />
                           </div>
                         </div>
@@ -789,7 +789,7 @@ export default component$(() => {
                       <td class="text-theme-text-secondary px-3 py-4 text-sm sm:px-6">
                         <div class="flex items-center gap-2">
                           <span>{upload.downloads}</span>
-                          <div class="text-theme-trending">
+                          <div class="text-theme-accent-primary">
                             <TrendingUp class="h-4 w-4" />
                           </div>
                         </div>
@@ -799,7 +799,7 @@ export default component$(() => {
                           <span class="text-theme-accent-primary font-bold">
                             {upload.weeklyViews || 0}
                           </span>
-                          <div class="text-theme-trending">
+                          <div class="text-theme-accent-primary">
                             <BarChart3 class="h-4 w-4" />
                           </div>
                         </div>
@@ -843,14 +843,14 @@ export default component$(() => {
                                 `${userData.value.origin}/f/${upload.shortCode}`,
                               )
                             }
-                            class="text-theme-action-copy rounded-full px-2 py-1 text-xs font-medium whitespace-nowrap transition-all duration-300 hover:bg-white/10 sm:px-2"
+                            class="text-theme-accent-tertiary rounded-full px-2 py-1 text-xs font-medium whitespace-nowrap transition-all duration-300 hover:bg-white/10 sm:px-2"
                           >
                             Copy <Copy class="inline h-3 w-3" />
                           </button>
                           <a
                             href={`/f/${upload.shortCode}`}
                             target="_blank"
-                            class="text-theme-action-view rounded-full px-2 py-1 text-center text-xs font-medium whitespace-nowrap transition-all duration-300 hover:bg-white/10 sm:px-2"
+                            class="text-theme-accent-secondary rounded-full px-2 py-1 text-center text-xs font-medium whitespace-nowrap transition-all duration-300 hover:bg-white/10 sm:px-2"
                           >
                             View <Eye class="inline h-3 w-3" />
                           </a>
@@ -862,7 +862,7 @@ export default component$(() => {
                           </a>
                           <button
                             onClick$={() => deleteUpload(upload.deletionKey)}
-                            class="text-theme-action-delete rounded-full px-2 py-1 text-xs font-medium whitespace-nowrap transition-all duration-300 hover:bg-white/10 sm:px-2"
+                            class="text-theme-accent-primary rounded-full px-2 py-1 text-xs font-medium whitespace-nowrap transition-all duration-300 hover:bg-white/10 sm:px-2"
                           >
                             Delete <Trash2 class="inline h-3 w-3" />
                           </button>
@@ -882,7 +882,7 @@ export default component$(() => {
                     key={upload.id}
                     class={`card-cute group rounded-2xl p-4 transition-all duration-300 hover:scale-105 ${
                       selectedFiles.value.has(upload.deletionKey)
-                        ? "ring-theme-accent-primary bg-gradient-theme-quaternary-primary/10 ring-2"
+                        ? "ring-theme-accent-primary from-theme-accent-quaternary/10 to-theme-accent-primary/10 bg-gradient-to-br ring-2"
                         : ""
                     }`}
                   >
@@ -900,7 +900,7 @@ export default component$(() => {
                       </button>
                     </div>{" "}
                     {/* File Preview */}
-                    <div class="bg-gradient-grid-item mb-3 flex aspect-square items-center justify-center overflow-hidden rounded-xl">
+                    <div class="bg-gradient-to-br from-theme-accent-primary/20 to-theme-accent-secondary/20 mb-3 flex aspect-square items-center justify-center overflow-hidden rounded-xl">
                       <FileTypeIcon
                         upload={upload}
                         size="lg"
@@ -1001,7 +1001,7 @@ export default component$(() => {
                               `${userData.value.origin}/f/${upload.shortCode}`,
                             )
                           }
-                          class="text-theme-action-copy flex-1 rounded-lg px-2 py-1 text-xs font-medium transition-all duration-300 hover:bg-white/10"
+                          class="text-theme-accent-tertiary flex-1 rounded-lg px-2 py-1 text-xs font-medium transition-all duration-300 hover:bg-white/10"
                         >
                           <Copy class="mr-1 inline h-3 w-3" />
                           Copy
@@ -1009,7 +1009,7 @@ export default component$(() => {
                         <a
                           href={`/f/${upload.shortCode}`}
                           target="_blank"
-                          class="text-theme-action-view flex-1 rounded-lg px-2 py-1 text-center text-xs font-medium transition-all duration-300 hover:bg-white/10"
+                          class="text-theme-accent-secondary flex-1 rounded-lg px-2 py-1 text-center text-xs font-medium transition-all duration-300 hover:bg-white/10"
                         >
                           <Eye class="mr-1 inline h-3 w-3" />
                           View
@@ -1023,7 +1023,7 @@ export default component$(() => {
                         </a>
                         <button
                           onClick$={() => deleteUpload(upload.deletionKey)}
-                          class="text-theme-action-delete flex-1 rounded-lg px-2 py-1 text-xs font-medium transition-all duration-300 hover:bg-white/10"
+                          class="text-theme-accent-primary flex-1 rounded-lg px-2 py-1 text-xs font-medium transition-all duration-300 hover:bg-white/10"
                         >
                           <Trash2 class="mr-1 inline h-3 w-3" />
                           Delete
@@ -1089,14 +1089,14 @@ export default component$(() => {
             <div class="h-4 w-px bg-white/20"></div>
             <button
               onClick$={bulkCopyUrls}
-              class="text-theme-action-copy flex items-center gap-1 rounded-full px-3 py-2 text-sm font-medium transition-all duration-300 hover:bg-white/10"
+              class="text-theme-accent-tertiary flex items-center gap-1 rounded-full px-3 py-2 text-sm font-medium transition-all duration-300 hover:bg-white/10"
             >
               <Copy class="h-4 w-4" />
               Copy URLs
             </button>
             <button
               onClick$={bulkDelete}
-              class="text-theme-action-delete flex items-center gap-1 rounded-full px-3 py-2 text-sm font-medium transition-all duration-300 hover:bg-white/10"
+              class="text-theme-accent-primary flex items-center gap-1 rounded-full px-3 py-2 text-sm font-medium transition-all duration-300 hover:bg-white/10"
             >
               <Trash2 class="h-4 w-4" />
               Delete
@@ -1105,7 +1105,7 @@ export default component$(() => {
               onClick$={() => {
                 selectedFiles.value = new Set();
               }}
-              class="text-theme-muted hover:text-theme-text-secondary flex items-center gap-1 rounded-full px-3 py-2 text-sm font-medium transition-all duration-300 hover:bg-white/10"
+              class="text-theme-text-muted hover:text-theme-text-secondary flex items-center gap-1 rounded-full px-3 py-2 text-sm font-medium transition-all duration-300 hover:bg-white/10"
             >
               ✕ Clear
             </button>

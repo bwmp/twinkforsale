@@ -7,15 +7,15 @@ export default component$(() => {
   return (
     <div class="container mx-auto px-4 py-8">
       <div class="mx-auto max-w-4xl">
-        <h1 class="text-theme-primary mb-8 text-3xl font-bold">
+        <h1 class="text-theme-text-primary mb-8 text-3xl font-bold">
           🚨 Alert System Test
         </h1>
 
         <div class="glass border-theme-card-border mb-8 rounded-2xl border p-6">
-          <h2 class="text-theme-primary mb-4 text-xl font-semibold">
+          <h2 class="text-theme-text-primary mb-4 text-xl font-semibold">
             Test All Alert Types
           </h2>
-          <p class="text-theme-secondary mb-6">
+          <p class="text-theme-text-secondary mb-6">
             Click the buttons below to test different alert types with the
             current theme.
           </p>
@@ -26,7 +26,7 @@ export default component$(() => {
               onClick$={() =>
                 success("Success! 🎉", "Your operation completed successfully!")
               }
-              class="btn-cute bg-gradient-theme-success text-white transition-all duration-300 hover:scale-105"
+              class="btn-cute bg-gradient-to-br from-theme-confirm to-theme-confirm-hover text-white transition-all duration-300 hover:scale-105"
             >
               Show Success
             </button>
@@ -36,7 +36,7 @@ export default component$(() => {
               onClick$={() =>
                 error("Error! ❌", "Something went wrong. Please try again.")
               }
-              class="btn-cute bg-gradient-theme-error text-white transition-all duration-300 hover:scale-105"
+              class="btn-cute bg-bg-gradient-to-br from-theme-deny to-theme-deny-hover text-white transition-all duration-300 hover:scale-105"
             >
               Show Error
             </button>
@@ -49,7 +49,7 @@ export default component$(() => {
                   "Please review your settings before continuing.",
                 )
               }
-              class="btn-cute bg-gradient-theme-warning text-white transition-all duration-300 hover:scale-105"
+              class="btn-cute bg-bg-gradient-to-br from-theme-[#f59e0b] to-theme-[#d97706] text-white transition-all duration-300 hover:scale-105"
             >
               Show Warning
             </button>
@@ -59,7 +59,7 @@ export default component$(() => {
               onClick$={() =>
                 info("Info 💡", "Here's some helpful information for you.")
               }
-              class="btn-cute bg-gradient-theme-primary-secondary text-white transition-all duration-300 hover:scale-105"
+              class="btn-cute bg-gradient-to-br from-theme-accent-primary to-theme-accent-secondary text-white transition-all duration-300 hover:scale-105"
             >
               Show Info
             </button>
@@ -76,7 +76,7 @@ export default component$(() => {
                   "No, cancel",
                 )
               }
-              class="btn-cute bg-gradient-theme-tertiary-quaternary text-white transition-all duration-300 hover:scale-105"
+              class="btn-cute bg-gradient-to-br from-theme-accent-tertiary to-theme-accent-quaternary text-white transition-all duration-300 hover:scale-105"
             >
               Show Confirm
             </button>
@@ -100,7 +100,7 @@ export default component$(() => {
                   );
                 }
               }}
-              class="btn-cute bg-gradient-theme-accent text-white transition-all duration-300 hover:scale-105"
+              class="btn-cute bg-gradient-to-br from-theme-accent-primary/20 to-theme-accent-secondary/20 text-white transition-all duration-300 hover:scale-105"
             >
               Async Confirm
             </button>
@@ -109,7 +109,7 @@ export default component$(() => {
 
         {/* Long-duration alerts */}
         <div class="glass border-theme-card-border mb-8 rounded-2xl border p-6">
-          <h2 class="text-theme-primary mb-4 text-xl font-semibold">
+          <h2 class="text-theme-text-primary mb-4 text-xl font-semibold">
             Custom Duration Alerts
           </h2>
           <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -121,7 +121,7 @@ export default component$(() => {
                   1000,
                 )
               }
-              class="btn-cute bg-gradient-theme-success text-white transition-all duration-300 hover:scale-105"
+              class="btn-cute bg-bg-gradient-to-br from-theme-confirm to-theme-confirm-hover text-white transition-all duration-300 hover:scale-105"
             >
               1 Second Alert
             </button>
@@ -134,7 +134,7 @@ export default component$(() => {
                   10000,
                 )
               }
-              class="btn-cute bg-gradient-theme-primary-secondary text-white transition-all duration-300 hover:scale-105"
+              class="btn-cute bg-gradient-to-br from-theme-accent-primary to-theme-accent-secondary text-white transition-all duration-300 hover:scale-105"
             >
               10 Second Alert
             </button>
@@ -143,7 +143,7 @@ export default component$(() => {
 
         {/* Multiple alerts */}
         <div class="glass border-theme-card-border rounded-2xl border p-6">
-          <h2 class="text-theme-primary mb-4 text-xl font-semibold">
+          <h2 class="text-theme-text-primary mb-4 text-xl font-semibold">
             Multiple Alerts
           </h2>
           <button
@@ -160,14 +160,14 @@ export default component$(() => {
                 error("Fourth Alert! 4️⃣", "This is the fourth alert.");
               }, 1500);
             }}
-            class="btn-cute bg-gradient-theme-accent text-white transition-all duration-300 hover:scale-105"
+            class="btn-cute bg-gradient-to-br from-theme-accent-primary/20 to-theme-accent-secondary/20 text-white transition-all duration-300 hover:scale-105"
           >
             Show Multiple Alerts
           </button>
         </div>
 
         <div class="mt-8 text-center">
-          <p class="text-theme-muted text-sm">
+          <p class="text-theme-text-muted text-sm">
             💡 Tip: Try switching themes to see how alerts adapt to different
             color schemes!
           </p>

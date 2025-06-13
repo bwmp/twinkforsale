@@ -65,14 +65,14 @@ export const ImagePreview = component$<ImagePreviewProps>(
           {/* Header */}
           <div class="border-theme-card-border flex items-center justify-between border-b bg-slate-900/50 p-4">
             <div class="flex items-center space-x-3">
-              <div class="bg-gradient-theme-primary-secondary flex h-8 w-8 items-center justify-center rounded-full">
+              <div class="bg-gradient-to-br from-theme-accent-primary to-theme-accent-secondary flex h-8 w-8 items-center justify-center rounded-full">
                 <div class="text-sm">🖼️</div>
               </div>
               <div>
-                <h3 class="text-theme-primary max-w-[200px] truncate text-sm font-medium sm:max-w-[300px] sm:text-base">
+                <h3 class="text-theme-text-primary max-w-[200px] truncate text-sm font-medium sm:max-w-[300px] sm:text-base">
                   {imageName || "Image Preview"}
                 </h3>
-                <p class="text-theme-secondary text-xs">
+                <p class="text-theme-text-secondary text-xs">
                   Click outside to close
                 </p>
               </div>
@@ -82,14 +82,14 @@ export const ImagePreview = component$<ImagePreviewProps>(
             <div class="flex items-center space-x-2">
               <button
                 onClick$={handleDownload}
-                class="text-theme-accent hover:text-theme-primary hover:bg-theme-accent/20 rounded-full p-2 transition-all duration-300"
+                class="text-theme-accent-primary hover:text-theme-text-primary hover:bg-theme-accent-primary/20 rounded-full p-2 transition-all duration-300"
                 title="Download image"
               >
                 <Download class="h-4 w-4" />
               </button>
               <button
                 onClick$={handleExternalView}
-                class="text-theme-accent hover:text-theme-primary hover:bg-theme-accent/20 rounded-full p-2 transition-all duration-300"
+                class="text-theme-accent-primary hover:text-theme-text-primary hover:bg-theme-accent-primary/20 rounded-full p-2 transition-all duration-300"
                 title="Open in new tab"
               >
                 <ExternalLink class="h-4 w-4" />
@@ -111,7 +111,7 @@ export const ImagePreview = component$<ImagePreviewProps>(
                 {" "}
                 <div class="flex flex-col items-center space-y-3">
                   <div class="border-theme-accent h-8 w-8 animate-spin rounded-full border-2 border-t-transparent"></div>
-                  <p class="text-theme-secondary text-sm">Loading image...</p>
+                  <p class="text-theme-text-secondary text-sm">Loading image...</p>
                 </div>
               </div>
             )}            {/* Image */}
@@ -135,9 +135,9 @@ export const ImagePreview = component$<ImagePreviewProps>(
           {/* Footer */}
           <div class="border-theme-card-border border-t bg-slate-900/50 p-3">
             <div class="flex items-center justify-center text-center">
-              <p class="text-theme-secondary text-xs">
+              <p class="text-theme-text-secondary text-xs">
                 Press{" "}
-                <kbd class="bg-theme-accent/20 text-theme-accent rounded px-1 py-0.5">
+                <kbd class="bg-theme-accent-primary/20 text-theme-accent-primary rounded px-1 py-0.5">
                   ESC
                 </kbd>{" "}
                 to close

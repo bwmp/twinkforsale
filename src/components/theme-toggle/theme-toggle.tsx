@@ -143,9 +143,9 @@ export const ThemeToggle = component$<ThemeToggleProps>(
           class={`glass group rounded-full p-2 transition-all duration-300 hover:bg-white/20 ${className}`}
           title={`Current theme: ${currentThemeOption.label}. Click to cycle themes.`}
         >
-          <IconComponent class="text-theme-accent group-hover:text-theme-primary h-5 w-5 transition-colors" />
+          <IconComponent class="text-theme-accent-primary group-hover:text-theme-text-primary h-5 w-5 transition-colors" />
           {showLabel && (
-            <span class="text-theme-accent group-hover:text-theme-primary ml-2 text-sm">
+            <span class="text-theme-accent-primary group-hover:text-theme-text-primary ml-2 text-sm">
               {currentThemeOption.label}
             </span>
           )}
@@ -160,13 +160,13 @@ export const ThemeToggle = component$<ThemeToggleProps>(
           class="glass group relative z-50 flex items-center gap-2 rounded-full p-2 transition-all duration-300 hover:bg-white/20"
           title="Select theme"
         >
-          <currentThemeOption.icon class="text-theme-accent group-hover:text-theme-primary h-5 w-5 transition-colors" />
+          <currentThemeOption.icon class="text-theme-accent-primary group-hover:text-theme-text-primary h-5 w-5 transition-colors" />
           {(variant === "full" || showLabel) && (
-            <span class="text-theme-accent group-hover:text-theme-primary text-sm">
+            <span class="text-theme-accent-primary group-hover:text-theme-text-primary text-sm">
               {currentThemeOption.label}
             </span>
           )}
-          <Palette class="text-theme-accent group-hover:text-theme-primary ml-1 h-4 w-4 transition-colors" />
+          <Palette class="text-theme-accent-primary group-hover:text-theme-text-primary ml-1 h-4 w-4 transition-colors" />
         </button>
         {isOpen.value && (
           <div class="glass border-theme-card-border absolute top-full right-0 z-[99999] mt-2 w-64 rounded-2xl border p-2 shadow-2xl backdrop-blur-xl">
@@ -181,7 +181,7 @@ export const ThemeToggle = component$<ThemeToggleProps>(
                     onClick$={() => handleThemeChange(option.value)}
                     class={`flex w-full items-center gap-3 rounded-xl p-3 text-left transition-all duration-300 ${
                       isActive
-                        ? "bg-gradient-theme-primary-secondary border-theme-border border"
+                        ? "bg-gradient-to-br from-theme-accent-primary to-theme-accent-secondary border-theme-accent-primary/40 border"
                         : "hover:bg-white/10"
                     }`}
                   >
@@ -191,13 +191,13 @@ export const ThemeToggle = component$<ThemeToggleProps>(
                       <IconComponent class="h-4 w-4 text-white" />
                     </div>
                     <div class="flex-1">
-                      <div class="text-theme-primary text-sm font-medium">
+                      <div class="text-theme-text-primary text-sm font-medium">
                         {option.label}
                         {isActive && (
-                          <span class="text-theme-accent ml-2 text-xs">✓</span>
+                          <span class="text-theme-accent-primary ml-2 text-xs">✓</span>
                         )}
                       </div>
-                      <div class="text-theme-muted text-xs">
+                      <div class="text-theme-text-muted text-xs">
                         {option.description}
                       </div>
                     </div>
@@ -206,7 +206,7 @@ export const ThemeToggle = component$<ThemeToggleProps>(
               })}
             </div>
             <div class="border-theme-card-border mt-3 border-t pt-3">
-              <p class="text-theme-muted text-center text-xs">
+              <p class="text-theme-text-muted text-center text-xs">
                 Theme preference saved automatically~ ✨
               </p>
             </div>

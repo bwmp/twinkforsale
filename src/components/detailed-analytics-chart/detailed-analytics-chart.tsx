@@ -99,7 +99,7 @@ export const DetailedAnalyticsChart = component$<DetailedAnalyticsChartProps>(
         default:
           return {
             stroke: "stroke-theme-primary",
-            fill: "fill-theme-primary",
+            fill: "fill-theme-text-primary",
             gradientId: "gradient-primary",
           };
       }

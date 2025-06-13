@@ -114,12 +114,12 @@ export default component$(() => {
       <div class="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
         <div class="card-cute rounded-2xl p-4">
           <div class="flex items-center gap-3">
-            <div class="bg-gradient-theme-primary-secondary rounded-full p-2">
-              <FileText class="text-theme-primary h-5 w-5" />
+            <div class="bg-gradient-to-br from-theme-accent-primary to-theme-accent-secondary rounded-full p-2">
+              <FileText class="text-theme-text-primary h-5 w-5" />
             </div>
             <div>
               <p class="text-theme-text-secondary text-sm">Total Files</p>
-              <p class="text-theme-primary text-xl font-bold">
+              <p class="text-theme-text-primary text-xl font-bold">
                 {data.value.summary.totalFiles}
               </p>
             </div>
@@ -128,12 +128,12 @@ export default component$(() => {
 
         <div class="card-cute rounded-2xl p-4">
           <div class="flex items-center gap-3">
-            <div class="bg-gradient-theme-secondary-tertiary rounded-full p-2">
-              <Eye class="text-theme-primary h-5 w-5" />
+            <div class="bg-gradient-to-br from-theme-accent-secondary to-theme-accent-tertiary rounded-full p-2">
+              <Eye class="text-theme-text-primary h-5 w-5" />
             </div>
             <div>
               <p class="text-theme-text-secondary text-sm">Total Views</p>
-              <p class="text-theme-primary text-xl font-bold">
+              <p class="text-theme-text-primary text-xl font-bold">
                 {data.value.summary.totalViews.toLocaleString()}
               </p>
             </div>
@@ -142,12 +142,12 @@ export default component$(() => {
 
         <div class="card-cute rounded-2xl p-4">
           <div class="flex items-center gap-3">
-            <div class="bg-gradient-theme-accent-primary rounded-full p-2">
-              <Download class="text-theme-primary h-5 w-5" />
+            <div class="bg-gradient-to-br from-theme-accent-tertiary to-theme-accent-quaternary rounded-full p-2">
+              <Download class="text-theme-text-primary h-5 w-5" />
             </div>
             <div>
               <p class="text-theme-text-secondary text-sm">Total Downloads</p>
-              <p class="text-theme-primary text-xl font-bold">
+              <p class="text-theme-text-primary text-xl font-bold">
                 {data.value.summary.totalDownloads.toLocaleString()}
               </p>
             </div>
@@ -156,12 +156,12 @@ export default component$(() => {
 
         <div class="card-cute rounded-2xl p-4">
           <div class="flex items-center gap-3">
-            <div class="bg-gradient-theme-tertiary-quaternary rounded-full p-2">
-              <TrendingUp class="text-theme-primary h-5 w-5" />
+            <div class="bg-gradient-to-br from-theme-accent-quaternary to-theme-accent-primary rounded-full p-2">
+              <TrendingUp class="text-theme-text-primary h-5 w-5" />
             </div>
             <div>
               <p class="text-theme-text-secondary text-sm">Avg Views/File</p>
-              <p class="text-theme-primary text-xl font-bold">
+              <p class="text-theme-text-primary text-xl font-bold">
                 {data.value.summary.totalFiles > 0
                   ? Math.round(
                       data.value.summary.totalViews /
@@ -204,7 +204,7 @@ export default component$(() => {
               >
                 <div class="flex items-center justify-between">
                   <div class="flex min-w-0 flex-1 items-center gap-3">
-                    <div class="bg-gradient-theme-accent-primary text-theme-primary flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold">
+                    <div class="bg-gradient-to-br from-theme-accent-tertiary to-theme-accent-quaternary text-theme-text-primary flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold">
                       #{index + 1}
                     </div>
                     <div class="min-w-0 flex-1">
@@ -223,7 +223,7 @@ export default component$(() => {
 
                   <div class="flex items-center gap-6">
                     <div class="text-center">
-                      <div class="text-theme-accent-primary font-bold">
+                      <div class="text-theme-accent-primary-primary font-bold">
                         {upload.views}
                       </div>
                       <div class="text-theme-text-muted text-xs">
@@ -231,7 +231,7 @@ export default component$(() => {
                       </div>
                     </div>
                     <div class="text-center">
-                      <div class="text-theme-accent-secondary font-bold">
+                      <div class="text-theme-accent-primary-secondary font-bold">
                         {upload.weeklyViews}
                       </div>
                       <div class="text-theme-text-muted text-xs">
@@ -239,7 +239,7 @@ export default component$(() => {
                       </div>
                     </div>
                     <div class="text-center">
-                      <div class="text-theme-accent-tertiary font-bold">
+                      <div class="text-theme-accent-primary-tertiary font-bold">
                         {upload.downloads}
                       </div>
                       <div class="text-theme-text-muted text-xs">Downloads</div>

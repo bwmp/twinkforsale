@@ -477,7 +477,7 @@ export default component$(() => {
               <Clock class="h-6 w-6 sm:h-8 sm:w-8" />
               System Events Management
             </h1>
-            <p class="text-theme-secondary mt-2 text-sm sm:text-base">
+            <p class="text-theme-text-secondary mt-2 text-sm sm:text-base">
               Monitor and manage system events and alerts~ 🔔
             </p>
           </div>
@@ -486,7 +486,7 @@ export default component$(() => {
           <div class="block space-y-3 sm:hidden">
             <button
               onClick$={triggerSystemCheck}
-              class="bg-gradient-theme-primary-secondary flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium text-white shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl active:scale-95"
+              class="bg-gradient-to-br from-theme-accent-primary to-theme-accent-secondary flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium text-white shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl active:scale-95"
             >
               <Play class="h-4 w-4" />
               Trigger System Check
@@ -534,7 +534,7 @@ export default component$(() => {
           <div class="hidden items-center justify-end gap-3 sm:flex">
             <button
               onClick$={triggerSystemCheck}
-              class="bg-gradient-theme-primary-secondary flex items-center gap-2 rounded-2xl px-5 py-3 text-sm font-medium text-white shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl active:scale-95"
+              class="bg-gradient-to-br from-theme-accent-primary to-theme-accent-secondary flex items-center gap-2 rounded-2xl px-5 py-3 text-sm font-medium text-white shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl active:scale-95"
             >
               <Play class="h-4 w-4" />
               Trigger Check
@@ -673,7 +673,7 @@ export default component$(() => {
                           <span class="hidden sm:inline">{event.severity}</span>
                         </span>
                         <div class="min-w-0 flex-1">
-                          <div class="text-theme-primary text-sm font-medium break-words sm:text-base">
+                          <div class="text-theme-text-primary text-sm font-medium break-words sm:text-base">
                             {event.title}
                           </div>
                           <div class="text-theme-text-secondary mt-1 text-xs break-words sm:text-sm">
@@ -687,7 +687,7 @@ export default component$(() => {
                           )}
                           {event.metadata && (
                             <details class="mt-2">
-                              <summary class="text-theme-text-secondary hover:text-theme-primary cursor-pointer text-xs">
+                              <summary class="text-theme-text-secondary hover:text-theme-text-primary cursor-pointer text-xs">
                                 View metadata
                               </summary>
                               <pre class="mt-2 max-w-full overflow-x-auto rounded bg-gray-100 p-2 text-xs">
@@ -755,7 +755,7 @@ export default component$(() => {
             ) : (
               <div class="py-8 text-center sm:py-12">
                 <CheckCircle class="mx-auto h-8 w-8 text-green-500 sm:h-12 sm:w-12" />
-                <h3 class="text-theme-primary mt-4 text-base font-medium sm:text-lg">
+                <h3 class="text-theme-text-primary mt-4 text-base font-medium sm:text-lg">
                   No Events Found
                 </h3>
                 <p class="text-theme-text-secondary mt-2 text-sm sm:text-base">

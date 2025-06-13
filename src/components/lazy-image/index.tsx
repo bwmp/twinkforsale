@@ -56,21 +56,21 @@ export const LazyImage = component$<LazyImageProps>(
       >
         {/* Placeholder while loading */}
         {!isLoaded.value && (
-          <div class="bg-gradient-theme-card absolute inset-0 flex items-center justify-center">
+          <div class="bg-gradient-to-br from-theme-accent-primary/10 via-theme-accent-secondary to-theme-accent-tertiary/10 absolute inset-0 flex items-center justify-center">
             {placeholder ? (
               <div class="text-4xl">{placeholder}</div>
             ) : (
-              <div class="bg-gradient-theme-muted h-8 w-8 animate-pulse rounded"></div>
+              <div class="bg-gradient-to-br from-theme-accent-secondary/60 to-theme-accent-tertiary/60 h-8 w-8 animate-pulse rounded"></div>
             )}
           </div>
         )}
 
         {/* Error state */}
         {hasError.value && (
-          <div class="bg-gradient-theme-card absolute inset-0 flex items-center justify-center">
+          <div class="bg-gradient-to-br from-theme-accent-primary/10 via-theme-accent-secondary to-theme-accent-tertiary/10 absolute inset-0 flex items-center justify-center">
             <div class="text-center">
               <div class="text-2xl">❌</div>
-              <div class="text-theme-muted text-xs mt-1">Failed to load</div>
+              <div class="text-theme-text-muted text-xs mt-1">Failed to load</div>
             </div>
           </div>
         )}
@@ -147,16 +147,16 @@ export const FileTypeIcon = component$<{
   };
 
   const getGradientClass = () => {
-    if (upload.mimeType.startsWith("video/")) return "bg-gradient-video";
-    if (upload.mimeType.startsWith("audio/")) return "bg-gradient-audio";
-    if (upload.mimeType.includes("pdf")) return "bg-gradient-pdf";
+    if (upload.mimeType.startsWith("video/")) return "bg-gradient-to-br from-theme-accent-primary to-theme-accent-secondary";
+    if (upload.mimeType.startsWith("audio/")) return "bg-gradient-to-br from-theme-accent-secondary to-theme-accent-tertiary";
+    if (upload.mimeType.includes("pdf")) return "bg-gradient-to-br from-theme-accent-tertiary to-theme-accent-quaternary";
     if (
       upload.mimeType.includes("zip") ||
       upload.mimeType.includes("rar") ||
       upload.mimeType.includes("archive")
     )
-      return "bg-gradient-archive";
-    if (upload.mimeType.includes("text")) return "bg-gradient-text";
+      return "bg-gradient-to-br from-them-accent-quaternary to-theme-accent-primary";
+    if (upload.mimeType.includes("text")) return "bg-gradient-to-br from-theme-accent-primary to-theme-accent-tertiary";
     return "glass";
   };
 

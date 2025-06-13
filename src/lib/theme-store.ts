@@ -35,11 +35,16 @@ export interface ThemeColors {
   scrollbarTrack: string;
   scrollbarThumb: string;
   scrollbarThumbHover: string;
-
   // Button colors
   buttonGradientStart: string;
   buttonGradientEnd: string;
   buttonShadow: string;
+
+  // Action colors
+  confirm: string;
+  confirmHover: string;
+  deny: string;
+  denyHover: string;
 }
 
 export const themes: Record<ThemeName, ThemeColors> = {
@@ -67,6 +72,10 @@ export const themes: Record<ThemeName, ThemeColors> = {
     buttonGradientStart: '#ec4899',
     buttonGradientEnd: '#8b5cf6',
     buttonShadow: 'rgba(236, 72, 153, 0.3)',
+    confirm: '#10b981',
+    confirmHover: '#059669',
+    deny: '#ef4444',
+    denyHover: '#dc2626',
   }, light: {
     bgPrimary: '#ffffff',
     bgSecondary: '#f8fafc',
@@ -91,6 +100,10 @@ export const themes: Record<ThemeName, ThemeColors> = {
     buttonGradientStart: '#ec4899',
     buttonGradientEnd: '#8b5cf6',
     buttonShadow: 'rgba(236, 72, 153, 0.3)',
+    confirm: '#059669',
+    confirmHover: '#047857',
+    deny: '#dc2626',
+    denyHover: '#b91c1c',
   }, pastel: {
     bgPrimary: '#fef7ff',
     bgSecondary: '#fdf4ff',
@@ -115,6 +128,10 @@ export const themes: Record<ThemeName, ThemeColors> = {
     buttonGradientStart: '#f0abfc',
     buttonGradientEnd: '#c026d3',
     buttonShadow: 'rgba(240, 171, 252, 0.4)',
+    confirm: '#34d399',
+    confirmHover: '#10b981',
+    deny: '#f87171',
+    denyHover: '#ef4444',
   },
   neon: {
     bgPrimary: '#000000',
@@ -140,6 +157,10 @@ export const themes: Record<ThemeName, ThemeColors> = {
     buttonGradientStart: '#ff0080',
     buttonGradientEnd: '#8000ff',
     buttonShadow: 'rgba(255, 0, 128, 0.5)',
+    confirm: '#00ff80',
+    confirmHover: '#00cc66',
+    deny: '#ff4080',
+    denyHover: '#ff0066',
   }, valentine: {
     bgPrimary: '#fdf2f8',
     bgSecondary: '#fce7f3',
@@ -164,6 +185,10 @@ export const themes: Record<ThemeName, ThemeColors> = {
     buttonGradientStart: '#f472b6',
     buttonGradientEnd: '#dc2626',
     buttonShadow: 'rgba(244, 114, 182, 0.4)',
+    confirm: '#fb7185',
+    confirmHover: '#f43f5e',
+    deny: '#be123c',
+    denyHover: '#9f1239',
   },
   auto: {
     bgPrimary: '#0f172a',
@@ -189,6 +214,10 @@ export const themes: Record<ThemeName, ThemeColors> = {
     buttonGradientStart: '#ec4899',
     buttonGradientEnd: '#8b5cf6',
     buttonShadow: 'rgba(236, 72, 153, 0.3)',
+    confirm: '#10b981',
+    confirmHover: '#059669',
+    deny: '#ef4444',
+    denyHover: '#dc2626',
   },
 };
 

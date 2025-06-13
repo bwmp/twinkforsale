@@ -127,7 +127,7 @@ export default component$(() => {
   const footerValue = useSignal(userData.value.user.embedFooter || ""); // Initialize preview code with user data (non-reactive)
   const user = userData.value.user;
   const inputClasses =
-    "w-full px-3 sm:px-4 py-2 sm:py-3 glass rounded-full placeholder-theme-muted focus:outline-none focus:ring-2 focus:ring-theme-accent-primary/50 transition-all duration-300 text-sm sm:text-base text-theme-primary";
+    "w-full px-3 sm:px-4 py-2 sm:py-3 glass rounded-full placeholder:theme-text-muted focus:outline-none focus:ring-2 focus:ring-theme-accent-primary/50 transition-all duration-300 text-sm sm:text-base text-theme-primary";
   const toggleClasses =
     "flex gap-2 items-center p-3 glass rounded-full hover:bg-theme-accent-primary/10 transition-all duration-300 cursor-pointer";
   // Use useTask$ to set initial preview without violating Qwik's reactivity rules
@@ -255,7 +255,7 @@ export default component$(() => {
         <h1 class="text-gradient-cute mb-3 flex flex-wrap items-center justify-center gap-2 text-3xl font-bold sm:text-4xl">
           Discord Embed Settings~
         </h1>
-        <p class="text-theme-secondary px-4 text-base sm:text-lg">
+        <p class="text-theme-text-secondary px-4 text-base sm:text-lg">
           Customize how your cute uploads appear when shared on Discord and
           other platforms! (◕‿◕)♡
         </p>
@@ -270,7 +270,7 @@ export default component$(() => {
             <div class="space-y-4 sm:space-y-6">
               {" "}
               <div>
-                <label class="text-theme-secondary mb-2 block text-xs font-medium sm:text-sm">
+                <label class="text-theme-text-secondary mb-2 block text-xs font-medium sm:text-sm">
                   Embed Title~ 💝
                 </label>
                 <input
@@ -284,14 +284,14 @@ export default component$(() => {
                     generatePreview();
                   }}
                 />
-                <p class="text-theme-muted mt-2 pl-3 text-xs sm:pl-4">
+                <p class="text-theme-text-muted mt-2 pl-3 text-xs sm:pl-4">
                   Use placeholders: {"{filename}"}, {"{filesize}"},{" "}
                   {"{filetype}"}, {"{uploaddate}"}, {"{views}"}, {"{username}"},{" "}
                   {"{totalfiles}"}, {"{totalstorage}"}, {"{totalviews}"}~ ✨
                 </p>
               </div>{" "}
               <div>
-                <label class="text-theme-secondary mb-2 block text-xs font-medium sm:text-sm">
+                <label class="text-theme-text-secondary mb-2 block text-xs font-medium sm:text-sm">
                   Description~ 📝
                 </label>
                 <textarea
@@ -299,7 +299,7 @@ export default component$(() => {
                   value={descriptionValue.value}
                   placeholder="Uploaded via twink.forsale~ (◕‿◕)♡"
                   rows={3}
-                  class="glass placeholder-theme-muted focus:ring-theme-accent-primary/50 text-theme-primary w-full resize-none rounded-2xl px-3 py-2 text-sm transition-all duration-300 focus:ring-2 focus:outline-none sm:px-4 sm:py-3 sm:text-base"
+                  class="glass placeholder:theme-text-muted focus:ring-theme-accent-primary/50 text-theme-text-primary w-full resize-none rounded-2xl px-3 py-2 text-sm transition-all duration-300 focus:ring-2 focus:outline-none sm:px-4 sm:py-3 sm:text-base"
                   onInput$={(event) => {
                     descriptionValue.value = (
                       event.target as HTMLTextAreaElement
@@ -307,14 +307,14 @@ export default component$(() => {
                     generatePreview();
                   }}
                 />
-                <p class="text-theme-muted mt-2 pl-3 text-xs sm:pl-4">
+                <p class="text-theme-text-muted mt-2 pl-3 text-xs sm:pl-4">
                   Use placeholders: {"{filename}"}, {"{filesize}"},{" "}
                   {"{filetype}"}, {"{uploaddate}"}, {"{views}"}, {"{username}"},{" "}
                   {"{totalfiles}"}, {"{totalstorage}"}, {"{totalviews}"}~ ✨
                 </p>
               </div>{" "}
               <div>
-                <label class="text-theme-secondary mb-2 block text-xs font-medium sm:text-sm">
+                <label class="text-theme-text-secondary mb-2 block text-xs font-medium sm:text-sm">
                   Embed Color~ 🎨
                 </label>
                 <ColorPicker
@@ -328,7 +328,7 @@ export default component$(() => {
                 />
               </div>
               <div>
-                <label class="text-theme-secondary mb-2 block text-xs font-medium sm:text-sm">
+                <label class="text-theme-text-secondary mb-2 block text-xs font-medium sm:text-sm">
                   Author Name~ ✏️
                 </label>
                 <input
@@ -346,7 +346,7 @@ export default component$(() => {
                 />
               </div>{" "}
               <div>
-                <label class="text-theme-secondary mb-2 block text-xs font-medium sm:text-sm">
+                <label class="text-theme-text-secondary mb-2 block text-xs font-medium sm:text-sm">
                   Footer Text~ 📄
                 </label>
                 <input
@@ -364,7 +364,7 @@ export default component$(() => {
                 />
               </div>
               <div>
-                <label class="text-theme-secondary mb-2 block text-xs font-medium sm:text-sm">
+                <label class="text-theme-text-secondary mb-2 block text-xs font-medium sm:text-sm">
                   Custom Domain (Optional)~ 🌐
                 </label>
                 <input
@@ -374,7 +374,7 @@ export default component$(() => {
                   placeholder="your-domain.com"
                   class={inputClasses}
                 />
-                <p class="text-theme-muted mt-2 pl-3 text-xs sm:pl-4">
+                <p class="text-theme-text-muted mt-2 pl-3 text-xs sm:pl-4">
                   Override the domain shown in embeds (for custom domains)~ ✨
                 </p>              </div>
               <div class="space-y-3 sm:space-y-4">
@@ -388,7 +388,7 @@ export default component$(() => {
                       generatePreview();
                     }}
                   />
-                  <span class="text-theme-secondary text-xs sm:text-sm">
+                  <span class="text-theme-text-secondary text-xs sm:text-sm">
                     Show file information (name, size, type)~ 📊
                   </span>
                 </label>
@@ -402,7 +402,7 @@ export default component$(() => {
                       generatePreview();
                     }}
                   />
-                  <span class="text-theme-secondary text-xs sm:text-sm">
+                  <span class="text-theme-text-secondary text-xs sm:text-sm">
                     Show upload date~ 📅
                   </span>
                 </label>
@@ -416,7 +416,7 @@ export default component$(() => {
                       generatePreview();
                     }}
                   />
-                  <span class="text-theme-secondary text-xs sm:text-sm">
+                  <span class="text-theme-text-secondary text-xs sm:text-sm">
                     Show user statistics (files uploaded, storage used, total
                     views)~ 📊
                   </span>
@@ -431,18 +431,18 @@ export default component$(() => {
                       generatePreview();
                     }}
                   />
-                  <span class="text-theme-secondary text-xs sm:text-sm">
+                  <span class="text-theme-text-secondary text-xs sm:text-sm">
                     Use cute words for file URLs~ 💕
                   </span>
                 </label>
-                <p class="text-theme-muted -mt-2 ml-8 text-xs">
+                <p class="text-theme-text-muted -mt-2 ml-8 text-xs">
                   Generate adorable URLs like "bunny-sparkle-123" instead of
                   random characters~ (◕‿◕)♡
                 </p>
               </div>{" "}
               <button
                 type="submit"
-                class="btn-cute text-theme-primary w-full rounded-full px-4 py-2 text-sm font-medium transition-all duration-300 sm:px-6 sm:py-3 sm:text-base"
+                class="btn-cute text-theme-text-primary w-full rounded-full px-4 py-2 text-sm font-medium transition-all duration-300 sm:px-6 sm:py-3 sm:text-base"
               >
                 Save Settings~ 💾✨
               </button>
@@ -450,7 +450,7 @@ export default component$(() => {
           </Form>
 
           {updateAction.value?.success && (
-            <div class="bg-gradient-theme-secondary-tertiary/20 border-theme-accent-secondary/30 glass mt-4 rounded-2xl border p-3 sm:mt-6 sm:p-4">
+            <div class="bg-gradient-to-br from-theme-accent-secondary/20 to-theme-accent-tertiary/20 border-theme-accent-secondary/30 glass mt-4 rounded-2xl border p-3 sm:mt-6 sm:p-4">
               <p class="text-theme-accent-secondary flex items-center text-xs sm:text-sm">
                 ✅ {updateAction.value.message}~ ✨
               </p>
@@ -458,7 +458,7 @@ export default component$(() => {
           )}
 
           {updateAction.value?.failed && (
-            <div class="bg-gradient-theme-primary-secondary/20 border-theme-accent-primary/30 glass mt-4 rounded-2xl border p-3 sm:mt-6 sm:p-4">
+            <div class="bg-gradient-to-br from-theme-accent-primary/20 to-theme-accent-secondary/20 border-theme-accent-primary/30 glass mt-4 rounded-2xl border p-3 sm:mt-6 sm:p-4">
               <p class="text-theme-accent-primary flex items-center text-xs sm:text-sm">
                 ❌ {updateAction.value.message}~ 💔
               </p>
@@ -471,11 +471,11 @@ export default component$(() => {
           <h2 class="text-gradient-cute mb-4 flex items-center text-lg font-bold sm:mb-6 sm:text-xl">
             Discord Embed Preview~<span class="sparkle ml-2">✨</span>
           </h2>{" "}
-          <div class="glass border-gradient-theme-primary-secondary rounded-2xl border-l-4 p-3 sm:p-4">
-            <div class="text-theme-muted mb-3 flex items-center text-xs">
+          <div class="glass rounded-2xl border-l-4 p-3 sm:p-4">
+            <div class="text-theme-text-muted mb-3 flex items-center text-xs">
               Example embed structure~ 📋 <span class="ml-1">💕</span>
             </div>
-            <pre class="text-theme-secondary bg-theme-tertiary/20 overflow-x-auto rounded-lg p-3 font-mono text-xs whitespace-pre-wrap">
+            <pre class="text-theme-text-secondary bg-theme-bg-tertiary/20 overflow-x-auto rounded-lg p-3 font-mono text-xs whitespace-pre-wrap">
               {previewCode.value}
             </pre>
           </div>
@@ -483,7 +483,7 @@ export default component$(() => {
             <h3 class="text-theme-accent-quaternary mb-3 flex items-center text-sm font-medium">
               How it works~ ⚙️ <span class="ml-2">✨</span>
             </h3>
-            <ul class="text-theme-secondary space-y-2 text-xs">
+            <ul class="text-theme-text-secondary space-y-2 text-xs">
               <li class="flex items-center">
                 • Discord bots/crawlers see the embed metadata~ 🤖
               </li>

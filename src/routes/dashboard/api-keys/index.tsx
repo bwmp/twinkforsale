@@ -162,17 +162,17 @@ export default component$(() => {
         <h1 class="text-gradient-cute mb-3 flex flex-wrap items-center justify-center gap-2 text-3xl font-bold sm:text-4xl">
           API Keys Manager
         </h1>
-        <p class="text-theme-secondary px-4 text-base sm:text-lg">
+        <p class="text-theme-text-secondary px-4 text-base sm:text-lg">
           Create and manage API keys for ShareX integration~ Keep them safe and
           secure! (◕‿◕)♡
         </p>
       </div>
       {/* Account Status Check */}
       {!apiKeysData.value.user.isApproved && (
-        <div class="bg-theme-secondary/10 border-theme-accent-secondary text-theme-primary mb-6 rounded-xl border p-4 sm:mb-8 sm:p-6">
+        <div class="bg-theme-secondary/10 border-theme-accent-secondary text-theme-text-primary mb-6 rounded-xl border p-4 sm:mb-8 sm:p-6">
           <div class="text-center">
             <h3 class="mb-2 text-lg font-semibold">Account Pending Approval</h3>
-            <p class="text-theme-secondary text-sm">
+            <p class="text-theme-text-secondary text-sm">
               You cannot create API keys until your account is approved by an
               administrator. Please wait for approval before proceeding.
             </p>
@@ -190,7 +190,7 @@ export default component$(() => {
             <input
               type="text"
               placeholder="API Key Name (e.g., ShareX, Development) uwu"
-              class="glass text-theme-primary placeholder-theme-muted focus:ring-theme-accent-primary/50 flex-1 rounded-full px-4 py-3 text-sm transition-all duration-300 focus:ring-2 focus:outline-none sm:px-6 sm:text-base"
+              class="glass text-theme-text-primary placeholder:theme-text-muted focus:ring-theme-accent-primary/50 flex-1 rounded-full px-4 py-3 text-sm transition-all duration-300 focus:ring-2 focus:outline-none sm:px-6 sm:text-base"
               value={newKeyName.value}
               onInput$={(e) => {
                 newKeyName.value = (e.target as HTMLInputElement).value;
@@ -204,7 +204,7 @@ export default component$(() => {
             <button
               onClick$={handleCreateApiKey}
               disabled={!newKeyName.value.trim() || isCreating.value}
-              class="btn-cute text-theme-primary w-full rounded-full px-4 py-3 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:px-6 sm:text-base"
+              class="btn-cute text-theme-text-primary w-full rounded-full px-4 py-3 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:px-6 sm:text-base"
             >
               {isCreating.value ? "Creating... ⏳" : "Create API Key 🚀"}
             </button>
@@ -213,27 +213,27 @@ export default component$(() => {
       )}
       {/* New Key Display */}
       {showNewKey.value && (
-        <div class="bg-gradient-theme-secondary-tertiary/20 border-theme-accent-secondary/30 glass mb-6 rounded-3xl border p-4 sm:mb-8 sm:p-6">
+        <div class="bg-gradient-to-br from-theme-accent-secondary/20 to-theme-accent-tertiary/20 border-theme-accent-secondary/30 glass mb-6 rounded-3xl border p-4 sm:mb-8 sm:p-6">
           <h3 class="text-theme-accent-secondary mb-2 flex flex-wrap items-center text-base font-bold sm:text-lg">
             API Key Created! 🎉 <span class="sparkle ml-2">✨</span>
           </h3>
-          <p class="text-theme-secondary mb-4 text-sm sm:text-base">
+          <p class="text-theme-text-secondary mb-4 text-sm sm:text-base">
             Save this API key now~ For security reasons, it won't be shown
             again! (◕‿◕)♡
           </p>
           <div class="glass rounded-2xl p-3 sm:p-4">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div class="min-w-0 flex-1">
-                <p class="text-theme-secondary mb-1 text-xs sm:text-sm">
+                <p class="text-theme-text-secondary mb-1 text-xs sm:text-sm">
                   Name: {showNewKey.value.name}
                 </p>
-                <p class="text-theme-primary bg-theme-tertiary/20 rounded-lg p-2 font-mono text-xs break-all sm:text-sm">
+                <p class="text-theme-text-primary bg-theme-bg-tertiary/20 rounded-lg p-2 font-mono text-xs break-all sm:text-sm">
                   {showNewKey.value.key}
                 </p>
               </div>
               <button
                 onClick$={() => copyToClipboard(showNewKey.value!.key)}
-                class="btn-cute text-theme-primary w-full rounded-full px-3 py-2 text-xs sm:w-auto sm:px-4 sm:text-sm"
+                class="btn-cute text-theme-text-primary w-full rounded-full px-3 py-2 text-xs sm:w-auto sm:px-4 sm:text-sm"
               >
                 {" "}
                 Copy 📋
@@ -242,7 +242,7 @@ export default component$(() => {
           </div>
           <button
             onClick$={() => (showNewKey.value = null)}
-            class="text-theme-accent-tertiary hover:text-theme-primary mt-4 text-sm underline"
+            class="text-theme-accent-tertiary hover:text-theme-text-primary mt-4 text-sm underline"
           >
             I've saved it safely ✓
           </button>
@@ -259,10 +259,10 @@ export default component$(() => {
             <div class="glass mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full sm:h-16 sm:w-16">
               <div class="text-xl sm:text-2xl">🔑</div>
             </div>{" "}
-            <h3 class="text-theme-primary mb-2 text-base font-medium sm:text-lg">
+            <h3 class="text-theme-text-primary mb-2 text-base font-medium sm:text-lg">
               No API Keys Yet! ✨
             </h3>
-            <p class="text-theme-secondary px-4 text-sm sm:text-base">
+            <p class="text-theme-text-secondary px-4 text-sm sm:text-base">
               Create your first API key to start using the API or configure
               ShareX~ (◕‿◕)♡
             </p>
@@ -277,10 +277,10 @@ export default component$(() => {
               >
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
                   <div class="min-w-0 flex-1">
-                    <h3 class="text-theme-primary mb-1 flex items-center text-base font-medium sm:text-lg">
+                    <h3 class="text-theme-text-primary mb-1 flex items-center text-base font-medium sm:text-lg">
                       🔐 <span class="ml-1 truncate">{apiKey.name}</span>
                     </h3>
-                    <div class="text-theme-secondary flex flex-col gap-2 text-xs sm:flex-row sm:items-center sm:gap-4 sm:text-sm">
+                    <div class="text-theme-text-secondary flex flex-col gap-2 text-xs sm:flex-row sm:items-center sm:gap-4 sm:text-sm">
                       <span>
                         Created:{" "}
                         {new Date(apiKey.createdAt).toLocaleDateString()}
@@ -293,16 +293,16 @@ export default component$(() => {
                       )}
                     </div>
                     <div class="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center">
-                      <span class="text-theme-secondary text-xs sm:text-sm">
+                      <span class="text-theme-text-secondary text-xs sm:text-sm">
                         Key:
                       </span>
-                      <code class="bg-theme-tertiary/30 text-theme-accent-tertiary rounded-full px-2 py-1 font-mono text-xs break-all sm:px-3 sm:text-sm">
+                      <code class="bg-theme-bg-tertiary/30 text-theme-accent-tertiary rounded-full px-2 py-1 font-mono text-xs break-all sm:px-3 sm:text-sm">
                         {apiKey.key.substring(0, 8)}...
                         {apiKey.key.substring(apiKey.key.length - 4)}
                       </code>
                       <button
                         onClick$={() => copyToClipboard(apiKey.key)}
-                        class="text-theme-action-copy hover:text-theme-accent-tertiary hover:bg-theme-accent-primary/20 w-full rounded-full px-2 py-1 text-center text-xs transition-all duration-300 sm:w-auto sm:px-3 sm:text-sm"
+                        class="text-theme-accent-tertiary hover:text-theme-accent-tertiary hover:bg-theme-accent-primary/20 w-full rounded-full px-2 py-1 text-center text-xs transition-all duration-300 sm:w-auto sm:px-3 sm:text-sm"
                       >
                         Copy Full Key 📋
                       </button>
@@ -310,7 +310,7 @@ export default component$(() => {
                   </div>
                   <button
                     onClick$={() => handleDeleteApiKey(apiKey.id, apiKey.name)}
-                    class="text-theme-action-delete hover:text-theme-accent-primary hover:bg-theme-accent-primary/20 self-end rounded-full p-2 transition-all duration-300 sm:self-auto sm:p-3"
+                    class="text-theme-accent-primary hover:text-theme-accent-primary hover:bg-theme-accent-primary/20 self-end rounded-full p-2 transition-all duration-300 sm:self-auto sm:p-3"
                     title="Delete API Key"
                   >
                     🗑️
@@ -323,11 +323,11 @@ export default component$(() => {
       </div>{" "}
       {/* ShareX Integration Info */}
       {apiKeysData.value.user.isApproved && (
-        <div class="bg-gradient-theme-tertiary-quaternary/20 border-theme-accent-tertiary/30 glass mt-6 rounded-3xl border p-4 sm:mt-8 sm:p-6">
+        <div class="bg-gradient-to-br from-theme-accent-tertiary/20 to-theme-accent-quaternary/20 border-theme-accent-tertiary/30 glass mt-6 rounded-3xl border p-4 sm:mt-8 sm:p-6">
           <h3 class="text-theme-accent-tertiary mb-2 flex flex-wrap items-center text-base font-bold sm:text-lg">
             ShareX Integration
           </h3>
-          <p class="text-theme-secondary mb-4 text-sm sm:text-base">
+          <p class="text-theme-text-secondary mb-4 text-sm sm:text-base">
             Use your API key to configure ShareX for automatic uploads~ Visit
             the{" "}
             <a
@@ -339,7 +339,7 @@ export default component$(() => {
             to download ShareX configuration files! (◕‿◕)♡
           </p>
           <div class="glass border-theme-accent-quaternary/20 rounded-2xl border p-3 sm:p-4">
-            <p class="text-theme-secondary mb-2 text-xs sm:text-sm">
+            <p class="text-theme-text-secondary mb-2 text-xs sm:text-sm">
               API Endpoint:
             </p>
             <code class="text-theme-accent-quaternary font-mono text-xs break-all sm:text-sm">

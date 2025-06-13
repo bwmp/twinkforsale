@@ -303,7 +303,7 @@ export default component$(() => {
               <Activity class="h-6 w-6 sm:h-8 sm:w-8" />
               Health Dashboard
             </h1>
-            <p class="text-theme-secondary mt-2 text-sm sm:text-base">
+            <p class="text-theme-text-secondary mt-2 text-sm sm:text-base">
               Real-time system monitoring and performance metrics~ 📊
             </p>
           </div>
@@ -314,7 +314,7 @@ export default component$(() => {
               onClick$={() => (autoRefresh.value = !autoRefresh.value)}
               class={`flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-300 hover:scale-105 active:scale-95 ${
                 autoRefresh.value
-                  ? "bg-gradient-theme-success text-white shadow-lg shadow-green-500/20"
+                  ? "bg-bg-gradient-to-br from-theme-confirm to-theme-confirm-hover text-white shadow-lg shadow-green-500/20"
                   : "card-cute hover:shadow-md"
               }`}
             >
@@ -344,7 +344,7 @@ export default component$(() => {
               </button>
               <button
                 onClick$={() => window.location.reload()}
-                class="bg-gradient-theme-primary-secondary flex items-center justify-center gap-2 rounded-2xl px-3 py-3 text-xs font-medium text-white shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl active:scale-95"
+                class="bg-gradient-to-br from-theme-accent-primary to-theme-accent-secondary flex items-center justify-center gap-2 rounded-2xl px-3 py-3 text-xs font-medium text-white shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl active:scale-95"
               >
                 <RefreshCw class="h-4 w-4" />
                 Refresh
@@ -358,7 +358,7 @@ export default component$(() => {
               onClick$={() => (autoRefresh.value = !autoRefresh.value)}
               class={`flex items-center gap-2 rounded-2xl px-5 py-3 text-sm font-medium transition-all duration-300 hover:scale-105 active:scale-95 ${
                 autoRefresh.value
-                  ? "bg-gradient-theme-success text-white shadow-lg shadow-green-500/20"
+                  ? "bg-bg-gradient-to-br from-theme-confirm to-theme-confirm-hover text-white shadow-lg shadow-green-500/20"
                   : "card-cute hover:shadow-md"
               }`}
             >
@@ -386,7 +386,7 @@ export default component$(() => {
             </button>
             <button
               onClick$={() => window.location.reload()}
-              class="bg-gradient-theme-primary-secondary flex items-center gap-2 rounded-2xl px-5 py-3 text-sm font-medium text-white shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl active:scale-95"
+              class="bg-gradient-to-br from-theme-accent-primary to-theme-accent-secondary flex items-center gap-2 rounded-2xl px-5 py-3 text-sm font-medium text-white shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl active:scale-95"
             >
               <RefreshCw class="h-4 w-4" />
               Refresh Now
@@ -489,7 +489,7 @@ export default component$(() => {
               </div>
               <div class="bg-theme-card-border h-2 overflow-hidden rounded-full">
                 <div
-                  class="bg-gradient-theme-primary-secondary h-full transition-all duration-500"
+                  class="bg-gradient-to-br from-theme-accent-primary to-theme-accent-secondary h-full transition-all duration-500"
                   style={{
                     width: `${
                       data.system?.memory.used && data.system?.memory.total
@@ -529,10 +529,10 @@ export default component$(() => {
             </h3>
             <div class="grid grid-cols-3 gap-3 sm:gap-4">
               <div class="text-center">
-                <div class="bg-gradient-theme-primary-secondary mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full sm:h-12 sm:w-12">
+                <div class="bg-gradient-to-br from-theme-accent-primary to-theme-accent-secondary mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full sm:h-12 sm:w-12">
                   <FileText class="h-5 w-5 text-white sm:h-6 sm:w-6" />
                 </div>
-                <div class="text-theme-primary text-lg font-bold sm:text-2xl">
+                <div class="text-theme-text-primary text-lg font-bold sm:text-2xl">
                   {data.activity?.uploads24h || 0}
                 </div>
                 <div class="text-theme-text-secondary text-xs sm:text-sm">
@@ -540,10 +540,10 @@ export default component$(() => {
                 </div>
               </div>
               <div class="text-center">
-                <div class="bg-gradient-theme-secondary-tertiary mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full sm:h-12 sm:w-12">
+                <div class="bg-gradient-to-br from-theme-accent-secondary to-theme-accent-tertiary mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full sm:h-12 sm:w-12">
                   <Eye class="h-5 w-5 text-white sm:h-6 sm:w-6" />
                 </div>
-                <div class="text-theme-primary text-lg font-bold sm:text-2xl">
+                <div class="text-theme-text-primary text-lg font-bold sm:text-2xl">
                   {data.activity?.views24h || 0}
                 </div>
                 <div class="text-theme-text-secondary text-xs sm:text-sm">
@@ -551,10 +551,10 @@ export default component$(() => {
                 </div>
               </div>
               <div class="text-center">
-                <div class="bg-gradient-theme-tertiary-quaternary mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full sm:h-12 sm:w-12">
+                <div class="bg-gradient-to-br from-theme-accent-tertiary to-theme-accent-quaternary mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full sm:h-12 sm:w-12">
                   <Download class="h-5 w-5 text-white sm:h-6 sm:w-6" />
                 </div>
-                <div class="text-theme-primary text-lg font-bold sm:text-2xl">
+                <div class="text-theme-text-primary text-lg font-bold sm:text-2xl">
                   {data.activity?.downloads24h || 0}
                 </div>
                 <div class="text-theme-text-secondary text-xs sm:text-sm">
@@ -687,7 +687,7 @@ export default component$(() => {
               </div>
               <div class="bg-theme-card-border h-2 overflow-hidden rounded-full">
                 <div
-                  class="bg-gradient-theme-success h-full transition-all duration-500"
+                  class="bg-bg-gradient-to-br from-theme-confirm to-theme-confirm-hover h-full transition-all duration-500"
                   style={{
                     width: `${
                       data.users?.total && data.users?.approved
@@ -742,7 +742,7 @@ export default component$(() => {
                             </div>
                           </div>
                         </td>
-                        <td class="text-theme-primary text-right text-sm font-medium sm:text-base">
+                        <td class="text-theme-text-primary text-right text-sm font-medium sm:text-base">
                           {user.uploadsLast7Days}
                         </td>
                         <td class="text-theme-text-secondary hidden text-right text-sm sm:table-cell sm:text-base">

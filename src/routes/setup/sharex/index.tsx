@@ -120,7 +120,7 @@ export default component$(() => {
             ShareX Setup~
             <Camera class="h-6 w-6 sm:h-8 sm:w-8 md:h-10 md:w-10" />
           </h1>{" "}
-          <p class="text-theme-secondary px-2 text-lg sm:text-xl">
+          <p class="text-theme-text-secondary px-2 text-lg sm:text-xl">
             Configure ShareX to work with twink.forsale in just a few clicks!
             (◕‿◕)♡
           </p>
@@ -129,7 +129,7 @@ export default component$(() => {
         <div class="card-cute mb-6 rounded-2xl p-4 sm:mb-8 sm:rounded-3xl sm:p-6 md:p-8">
           <div class="flex flex-col items-start gap-4 sm:flex-row">
             {" "}
-            <div class="bg-gradient-theme-primary-secondary text-theme-primary pulse-soft flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold sm:h-10 sm:w-10 sm:text-base">
+            <div class="bg-gradient-to-br from-theme-accent-primary to-theme-accent-secondary text-theme-text-primary pulse-soft flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold sm:h-10 sm:w-10 sm:text-base">
               1
             </div>
             <div class="w-full flex-1">
@@ -146,15 +146,15 @@ export default component$(() => {
                   {userData.value.user.apiKeys.map((apiKey) => (
                     <div
                       key={apiKey.id}
-                      class="glass border-theme-card-border hover:border-theme-border flex flex-col items-start justify-between gap-3 rounded-xl border p-3 transition-all duration-300 sm:flex-row sm:items-center sm:gap-4 sm:rounded-2xl sm:p-4"
+                      class="glass border-theme-card-border hover:border-theme-accent-primary/40 flex flex-col items-start justify-between gap-3 rounded-xl border p-3 transition-all duration-300 sm:flex-row sm:items-center sm:gap-4 sm:rounded-2xl sm:p-4"
                     >
                       <div class="min-w-0 flex-1">
                         {" "}
-                        <p class="text-theme-primary flex items-center gap-2 text-sm font-medium sm:text-base">
+                        <p class="text-theme-text-primary flex items-center gap-2 text-sm font-medium sm:text-base">
                           <Shield class="h-3 w-3 flex-shrink-0 sm:h-4 sm:w-4" />
                           <span class="truncate">{apiKey.name}</span>
                         </p>
-                        <p class="text-theme-secondary mt-1 rounded bg-black/20 px-2 py-1 font-mono text-xs break-all sm:text-sm">
+                        <p class="text-theme-text-secondary mt-1 rounded bg-black/20 px-2 py-1 font-mono text-xs break-all sm:text-sm">
                           {apiKey.key}
                         </p>
                       </div>
@@ -172,13 +172,13 @@ export default component$(() => {
                   <div class="glass mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full sm:mb-4 sm:h-16 sm:w-16">
                     <div class="text-2xl sm:text-3xl">🔑</div>
                   </div>{" "}
-                  <p class="text-theme-secondary mb-3 px-2 text-sm sm:mb-4 sm:text-base">
+                  <p class="text-theme-text-secondary mb-3 px-2 text-sm sm:mb-4 sm:text-base">
                     You need an API key to use ShareX with twink.forsale~ ✨
                   </p>
                   {/* Create API Key Form */}
                   <button
                     onClick$={handleCreateApiKey}
-                    class="btn-cute text-theme-primary w-full rounded-full px-4 py-3 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:px-6 sm:text-base"
+                    class="btn-cute text-theme-text-primary w-full rounded-full px-4 py-3 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:px-6 sm:text-base"
                   >
                     Create API Key 🚀
                   </button>
@@ -191,7 +191,7 @@ export default component$(() => {
         <div class="card-cute mb-6 rounded-2xl p-4 sm:mb-8 sm:rounded-3xl sm:p-6 md:p-8">
           <div class="flex flex-col items-start gap-4 sm:flex-row">
             {" "}
-            <div class="bg-gradient-theme-secondary-accent text-theme-primary pulse-soft flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold sm:h-10 sm:w-10 sm:text-base">
+            <div class="bg-gradient-to-br from-theme-accent-secondary to-theme-accent-primary text-theme-text-primary pulse-soft flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold sm:h-10 sm:w-10 sm:text-base">
               2
             </div>
             <div class="w-full flex-1">
@@ -202,14 +202,14 @@ export default component$(() => {
                   <span class="sparkle ml-1 text-sm sm:text-base">✨</span>
                 </div>
               </h2>{" "}
-              <p class="text-theme-secondary mb-3 text-sm sm:mb-4 sm:text-base">
+              <p class="text-theme-text-secondary mb-3 text-sm sm:mb-4 sm:text-base">
                 If you don't have ShareX installed, download it from the
                 official website~ (◕‿◕)♡
               </p>{" "}
               <a
                 href="https://getsharex.com/"
                 target="_blank"
-                class="glass text-theme-primary hover:bg-theme-accent/20 border-theme-card-border hover:border-theme-border inline-block rounded-full border px-4 py-2 text-sm transition-all duration-300 sm:px-6 sm:py-3 sm:text-base"
+                class="glass text-theme-text-primary hover:bg-theme-accent-primary/20 border-theme-card-border hover:border-theme-accent-primary/40 inline-block rounded-full border px-4 py-2 text-sm transition-all duration-300 sm:px-6 sm:py-3 sm:text-base"
               >
                 Download ShareX~ 📥
               </a>
@@ -220,7 +220,7 @@ export default component$(() => {
         <div class="card-cute mb-6 rounded-2xl p-4 sm:mb-8 sm:rounded-3xl sm:p-6 md:p-8">
           <div class="flex flex-col items-start gap-4 sm:flex-row">
             {" "}
-            <div class="bg-gradient-theme-accent-secondary text-theme-primary pulse-soft flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold sm:h-10 sm:w-10 sm:text-base">
+            <div class="bg-gradient-to-br from-theme-accent-secondary to-theme-accent-tertiary text-theme-text-primary pulse-soft flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold sm:h-10 sm:w-10 sm:text-base">
               3
             </div>
             <div class="w-full flex-1">
@@ -233,16 +233,16 @@ export default component$(() => {
               </h2>
               <div class="space-y-3 sm:space-y-4">
                 {" "}
-                <div class="text-theme-secondary flex flex-col items-start gap-2 text-sm sm:flex-row sm:gap-3 sm:text-base">
-                  <span class="bg-gradient-theme-primary-secondary text-theme-primary flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold sm:h-8 sm:w-8 sm:text-sm">
+                <div class="text-theme-text-secondary flex flex-col items-start gap-2 text-sm sm:flex-row sm:gap-3 sm:text-base">
+                  <span class="bg-gradient-to-br from-theme-accent-primary to-theme-accent-secondary text-theme-text-primary flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold sm:h-8 sm:w-8 sm:text-sm">
                     1
                   </span>
                   <span>
                     Download your configuration file using the button above~ 📥
                   </span>
                 </div>
-                <div class="text-theme-secondary flex flex-col items-start gap-2 text-sm sm:flex-row sm:gap-3 sm:text-base">
-                  <span class="bg-gradient-theme-primary-secondary text-theme-primary flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold sm:h-8 sm:w-8 sm:text-sm">
+                <div class="text-theme-text-secondary flex flex-col items-start gap-2 text-sm sm:flex-row sm:gap-3 sm:text-base">
+                  <span class="bg-gradient-to-br from-theme-accent-primary to-theme-accent-secondary text-theme-text-primary flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold sm:h-8 sm:w-8 sm:text-sm">
                     2
                   </span>
                   <span>
@@ -250,8 +250,8 @@ export default component$(() => {
                     ShareX~ 🖱️
                   </span>
                 </div>
-                <div class="text-theme-secondary flex flex-col items-start gap-2 text-sm sm:flex-row sm:gap-3 sm:text-base">
-                  <span class="bg-gradient-theme-primary-secondary text-theme-primary flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold sm:h-8 sm:w-8 sm:text-sm">
+                <div class="text-theme-text-secondary flex flex-col items-start gap-2 text-sm sm:flex-row sm:gap-3 sm:text-base">
+                  <span class="bg-gradient-to-br from-theme-accent-primary to-theme-accent-secondary text-theme-text-primary flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold sm:h-8 sm:w-8 sm:text-sm">
                     3
                   </span>
                   <span>
@@ -267,7 +267,7 @@ export default component$(() => {
         <div class="card-cute rounded-2xl p-4 sm:rounded-3xl sm:p-6 md:p-8">
           <div class="flex flex-col items-start gap-4 sm:flex-row">
             {" "}
-            <div class="bg-gradient-theme-secondary-primary text-theme-primary pulse-soft flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold sm:h-10 sm:w-10 sm:text-base">
+            <div class="bg-gradient-theme-secondary-primary text-theme-text-primary pulse-soft flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold sm:h-10 sm:w-10 sm:text-base">
               4
             </div>
             <div class="w-full flex-1">
@@ -278,19 +278,19 @@ export default component$(() => {
                   <span class="sparkle ml-1 text-sm sm:text-base">✨</span>
                 </div>
               </h2>{" "}
-              <p class="text-theme-secondary mb-3 text-sm sm:mb-4 sm:text-base">
+              <p class="text-theme-text-secondary mb-3 text-sm sm:mb-4 sm:text-base">
                 You're all set! Use ShareX's capture tools or drag files to
                 upload them to twink.forsale~ (◕‿◕)♡
               </p>{" "}
               <div class="glass border-theme-card-border rounded-xl border p-3 sm:rounded-2xl sm:p-4">
-                <h3 class="text-theme-accent mb-2 flex flex-col items-start gap-2 text-sm font-semibold sm:mb-3 sm:flex-row sm:items-center sm:text-base">
+                <h3 class="text-theme-accent-primary mb-2 flex flex-col items-start gap-2 text-sm font-semibold sm:mb-3 sm:flex-row sm:items-center sm:text-base">
                   <span>Quick Tips~</span>
                   <div class="flex items-center gap-1">
                     <span class="text-sm sm:text-base">💡</span>
                     <span class="ml-1 text-xs sm:text-sm">✨</span>
                   </div>
                 </h3>
-                <ul class="text-theme-secondary space-y-1 text-xs sm:space-y-2 sm:text-sm">
+                <ul class="text-theme-text-secondary space-y-1 text-xs sm:space-y-2 sm:text-sm">
                   <li class="flex items-start gap-2">
                     <span class="mt-0.5">•</span>
                     <span>

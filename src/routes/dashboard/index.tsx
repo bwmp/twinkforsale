@@ -21,7 +21,6 @@ import { getUserAnalytics } from "~/lib/analytics";
 export const useUserData = routeLoader$(async (requestEvent) => {
   // Import server-side dependencies inside the loader
 
-
   const session = requestEvent.sharedMap.get("session");
 
   if (!session?.user?.email) {
@@ -118,20 +117,20 @@ export default component$(() => {
         <h1 class="text-gradient-cute mb-3 flex flex-wrap items-center justify-center gap-2 text-3xl font-bold sm:gap-3 sm:text-4xl">
           Welcome back, {userData.value.user.name || "cutie"}!
         </h1>
-        <p class="text-theme-secondary px-4 text-base sm:text-lg">
+        <p class="text-theme-text-secondary px-4 text-base sm:text-lg">
           Your cute dashboard is ready~ Manage uploads, API keys, and more!
           (◕‿◕)♡
         </p>
       </div>{" "}
       {/* Account Status Banner */}
       {!userData.value.user.isApproved && (
-        <div class="border-theme-accent-secondary bg-theme-secondary/10 text-theme-primary mb-6 rounded-xl border p-4 sm:mb-8 sm:p-6">
+        <div class="border-theme-accent-secondary bg-theme-secondary/10 text-theme-text-primary mb-6 rounded-xl border p-4 sm:mb-8 sm:p-6">
           <div class="flex items-center justify-center text-center">
             <div>
               <h3 class="mb-2 text-lg font-semibold">
                 Account Pending Approval
               </h3>
-              <p class="text-theme-secondary text-sm">
+              <p class="text-theme-text-secondary text-sm">
                 Your account is awaiting admin approval. You'll be able to
                 upload files and create API keys once approved.
               </p>
@@ -144,7 +143,7 @@ export default component$(() => {
         <div class="mb-6 text-center sm:mb-8">
           <Link
             href="/admin"
-            class="bg-gradient-theme-tertiary-quaternary text-theme-primary hover:bg-theme-accent-tertiary inline-flex items-center rounded-lg px-4 py-2 font-medium transition-colors"
+            class="from-theme-accent-tertiary to-theme-accent-quaternary text-theme-text-primary hover:bg-theme-accent-tertiary inline-flex items-center rounded-lg bg-gradient-to-br px-4 py-2 font-medium transition-colors"
           >
             <Settings class="mr-2 h-4 w-4" />
             Admin Dashboard
@@ -156,14 +155,14 @@ export default component$(() => {
         {" "}
         <div class="card-cute rounded-3xl p-4 sm:p-6">
           <div class="flex items-center">
-            <div class="bg-gradient-theme-primary-secondary rounded-full p-2 sm:p-3">
-              <Folder class="text-theme-primary h-4 w-4 sm:h-6 sm:w-6" />
+            <div class="from-theme-accent-primary to-theme-accent-secondary rounded-full bg-gradient-to-br p-2 sm:p-3">
+              <Folder class="text-theme-text-primary h-4 w-4 sm:h-6 sm:w-6" />
             </div>
             <div class="ml-3 sm:ml-4">
-              <p class="text-theme-secondary text-xs font-medium sm:text-sm">
+              <p class="text-theme-text-secondary text-xs font-medium sm:text-sm">
                 Total Uploads
               </p>
-              <p class="text-theme-primary text-lg font-bold sm:text-2xl">
+              <p class="text-theme-text-primary text-lg font-bold sm:text-2xl">
                 {userData.value.stats.totalUploads}
               </p>
             </div>
@@ -171,14 +170,14 @@ export default component$(() => {
         </div>
         <div class="card-cute rounded-3xl p-4 sm:p-6">
           <div class="flex items-center">
-            <div class="pulse-soft bg-gradient-theme-secondary-tertiary animation-delay-200 rounded-full p-2 sm:p-3">
-              <Eye class="text-theme-primary h-4 w-4 sm:h-6 sm:w-6" />
+            <div class="pulse-soft from-theme-accent-secondary to-theme-accent-tertiary animation-delay-200 rounded-full bg-gradient-to-br p-2 sm:p-3">
+              <Eye class="text-theme-text-primary h-4 w-4 sm:h-6 sm:w-6" />
             </div>
             <div class="ml-3 sm:ml-4">
-              <p class="text-theme-secondary text-xs font-medium sm:text-sm">
+              <p class="text-theme-text-secondary text-xs font-medium sm:text-sm">
                 Total Views
               </p>
-              <p class="text-theme-primary text-lg font-bold sm:text-2xl">
+              <p class="text-theme-text-primary text-lg font-bold sm:text-2xl">
                 {userData.value.stats.totalViews}
               </p>
             </div>
@@ -186,14 +185,14 @@ export default component$(() => {
         </div>
         <div class="card-cute rounded-3xl p-4 sm:p-6">
           <div class="flex items-center">
-            <div class="pulse-soft bg-gradient-theme-tertiary-quaternary animation-delay-400 rounded-full p-2 sm:p-3">
-              <HardDrive class="text-theme-primary h-4 w-4 sm:h-6 sm:w-6" />
+            <div class="pulse-soft from-theme-accent-tertiary to-theme-accent-quaternary animation-delay-400 rounded-full bg-gradient-to-br p-2 sm:p-3">
+              <HardDrive class="text-theme-text-primary h-4 w-4 sm:h-6 sm:w-6" />
             </div>
             <div class="ml-3 sm:ml-4">
-              <p class="text-theme-secondary text-xs font-medium sm:text-sm">
+              <p class="text-theme-text-secondary text-xs font-medium sm:text-sm">
                 Storage Used
               </p>
-              <p class="text-theme-primary text-lg font-bold sm:text-2xl">
+              <p class="text-theme-text-primary text-lg font-bold sm:text-2xl">
                 {formatFileSize(userData.value.stats.storageUsed)}
               </p>
             </div>
@@ -201,14 +200,14 @@ export default component$(() => {
         </div>
         <div class="card-cute rounded-3xl p-4 sm:p-6">
           <div class="flex items-center">
-            <div class="pulse-soft bg-gradient-theme-quaternary-primary animation-delay-600 rounded-full p-2 sm:p-3">
-              <Key class="text-theme-primary h-4 w-4 sm:h-6 sm:w-6" />
+            <div class="pulse-soft from-theme-accent-quaternary to-theme-accent-primary animation-delay-600 rounded-full bg-gradient-to-br p-2 sm:p-3">
+              <Key class="text-theme-text-primary h-4 w-4 sm:h-6 sm:w-6" />
             </div>
             <div class="ml-3 sm:ml-4">
-              <p class="text-theme-secondary text-xs font-medium sm:text-sm">
+              <p class="text-theme-text-secondary text-xs font-medium sm:text-sm">
                 API Keys
               </p>
-              <p class="text-theme-primary text-lg font-bold sm:text-2xl">
+              <p class="text-theme-text-primary text-lg font-bold sm:text-2xl">
                 {userData.value.user.apiKeys.length}
               </p>
             </div>
@@ -218,7 +217,7 @@ export default component$(() => {
       {/* Analytics Section */}
       <div class="mb-6 sm:mb-8">
         <h2 class="text-gradient-cute mb-4 flex items-center justify-center gap-2 text-center text-xl font-bold sm:mb-6 sm:text-2xl">
-          <TrendingUp class="text-theme-trending h-5 w-5" />
+          <TrendingUp class="text-theme-accent-primary h-5 w-5" />
           Your Analytics - Last 7 Days
         </h2>
         <div class="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-3">
@@ -254,14 +253,14 @@ export default component$(() => {
             class="card-cute group rounded-3xl p-4 sm:p-6"
           >
             <div class="mb-3 flex items-center sm:mb-4">
-              <div class="pulse-soft bg-gradient-theme-quaternary-primary rounded-full p-2 sm:p-3">
-                <Upload class="text-theme-primary h-5 w-5 sm:h-6 sm:w-6" />
+              <div class="pulse-soft from-theme-accent-quaternary to-theme-accent-primary rounded-full bg-gradient-to-br p-2 sm:p-3">
+                <Upload class="text-theme-text-primary h-5 w-5 sm:h-6 sm:w-6" />
               </div>
-              <h3 class="group-hover:text-gradient-cute text-theme-primary ml-2 text-base font-medium transition-all duration-300 sm:ml-3 sm:text-lg">
+              <h3 class="group-hover:text-gradient-cute text-theme-text-primary ml-2 text-base font-medium transition-all duration-300 sm:ml-3 sm:text-lg">
                 Manage Files
               </h3>
             </div>
-            <p class="text-theme-secondary text-xs sm:text-sm">
+            <p class="text-theme-text-secondary text-xs sm:text-sm">
               View and manage your uploaded files with expiration and view
               limits~ (◕‿◕)♡
             </p>
@@ -271,14 +270,14 @@ export default component$(() => {
             class="card-cute group rounded-3xl p-4 sm:p-6"
           >
             <div class="mb-3 flex items-center sm:mb-4">
-              <div class="pulse-soft bg-gradient-theme-secondary-tertiary animation-delay-200 rounded-full p-2 sm:p-3">
-                <Key class="text-theme-primary h-5 w-5 sm:h-6 sm:w-6" />
+              <div class="pulse-soft from-theme-accent-secondary to-theme-accent-tertiary animation-delay-200 rounded-full bg-gradient-to-br p-2 sm:p-3">
+                <Key class="text-theme-text-primary h-5 w-5 sm:h-6 sm:w-6" />
               </div>
-              <h3 class="group-hover:text-gradient-cute text-theme-primary ml-2 text-base font-medium transition-all duration-300 sm:ml-3 sm:text-lg">
+              <h3 class="group-hover:text-gradient-cute text-theme-text-primary ml-2 text-base font-medium transition-all duration-300 sm:ml-3 sm:text-lg">
                 API Keys
               </h3>
             </div>
-            <p class="text-theme-secondary text-xs sm:text-sm">
+            <p class="text-theme-text-secondary text-xs sm:text-sm">
               Create and manage API keys for ShareX integration~ Keep them safe!
               (◡ ‿ ◡) ♡
             </p>
@@ -288,14 +287,14 @@ export default component$(() => {
             class="card-cute group rounded-3xl p-4 sm:p-6"
           >
             <div class="mb-3 flex items-center sm:mb-4">
-              <div class="pulse-soft bg-gradient-theme-tertiary-quaternary animation-delay-400 rounded-full p-2 sm:p-3">
-                <Share class="text-theme-primary h-5 w-5 sm:h-6 sm:w-6" />
+              <div class="pulse-soft from-theme-accent-tertiary to-theme-accent-quaternary animation-delay-400 rounded-full bg-gradient-to-br p-2 sm:p-3">
+                <Share class="text-theme-text-primary h-5 w-5 sm:h-6 sm:w-6" />
               </div>
-              <h3 class="group-hover:text-gradient-cute text-theme-primary ml-2 text-base font-medium transition-all duration-300 sm:ml-3 sm:text-lg">
+              <h3 class="group-hover:text-gradient-cute text-theme-text-primary ml-2 text-base font-medium transition-all duration-300 sm:ml-3 sm:text-lg">
                 Discord Embeds
               </h3>
             </div>{" "}
-            <p class="text-theme-secondary text-xs sm:text-sm">
+            <p class="text-theme-text-secondary text-xs sm:text-sm">
               Customize how your uploads appear on Discord and social media~
               Make them extra cute! uwu
             </p>
@@ -305,14 +304,14 @@ export default component$(() => {
             class="card-cute group rounded-3xl p-4 sm:p-6"
           >
             <div class="mb-3 flex items-center sm:mb-4">
-              <div class="pulse-soft bg-gradient-theme-quaternary-primary animation-delay-600 rounded-full p-2 sm:p-3">
-                <TrendingUp class="text-theme-primary h-5 w-5 sm:h-6 sm:w-6" />
+              <div class="pulse-soft from-theme-accent-quaternary to-theme-accent-primary animation-delay-600 rounded-full bg-gradient-to-br p-2 sm:p-3">
+                <TrendingUp class="text-theme-text-primary h-5 w-5 sm:h-6 sm:w-6" />
               </div>
-              <h3 class="group-hover:text-gradient-cute text-theme-primary ml-2 text-base font-medium transition-all duration-300 sm:ml-3 sm:text-lg">
+              <h3 class="group-hover:text-gradient-cute text-theme-text-primary ml-2 text-base font-medium transition-all duration-300 sm:ml-3 sm:text-lg">
                 Detailed Analytics
               </h3>
             </div>
-            <p class="text-theme-secondary text-xs sm:text-sm">
+            <p class="text-theme-text-secondary text-xs sm:text-sm">
               Deep dive into your file analytics with detailed insights and
               charts~ 📊
             </p>
@@ -322,14 +321,14 @@ export default component$(() => {
             class="card-cute group rounded-3xl p-4 sm:p-6"
           >
             <div class="mb-3 flex items-center sm:mb-4">
-              <div class="pulse-soft bg-gradient-theme-quaternary-primary animation-delay-600 rounded-full p-2 sm:p-3">
-                <Sliders class="text-theme-primary h-5 w-5 sm:h-6 sm:w-6" />
+              <div class="pulse-soft from-theme-accent-quaternary to-theme-accent-primary animation-delay-600 rounded-full bg-gradient-to-br p-2 sm:p-3">
+                <Sliders class="text-theme-text-primary h-5 w-5 sm:h-6 sm:w-6" />
               </div>
-              <h3 class="group-hover:text-gradient-cute text-theme-primary ml-2 text-base font-medium transition-all duration-300 sm:ml-3 sm:text-lg">
+              <h3 class="group-hover:text-gradient-cute text-theme-text-primary ml-2 text-base font-medium transition-all duration-300 sm:ml-3 sm:text-lg">
                 Settings
               </h3>
             </div>
-            <p class="text-theme-secondary text-xs sm:text-sm">
+            <p class="text-theme-text-secondary text-xs sm:text-sm">
               Configure upload domains, themes, and personalize your experience~
               (◕‿◕)♡
             </p>
@@ -339,14 +338,14 @@ export default component$(() => {
             class="card-cute group rounded-3xl p-4 sm:p-6"
           >
             <div class="mb-3 flex items-center sm:mb-4">
-              <div class="pulse-soft bg-gradient-theme-quaternary-primary animation-delay-800 rounded-full p-2 sm:p-3">
-                <Settings class="text-theme-primary h-5 w-5 sm:h-6 sm:w-6" />
+              <div class="pulse-soft from-theme-accent-quaternary to-theme-accent-primary animation-delay-800 rounded-full bg-gradient-to-br p-2 sm:p-3">
+                <Settings class="text-theme-text-primary h-5 w-5 sm:h-6 sm:w-6" />
               </div>
-              <h3 class="group-hover:text-gradient-cute text-theme-primary ml-2 text-base font-medium transition-all duration-300 sm:ml-3 sm:text-lg">
+              <h3 class="group-hover:text-gradient-cute text-theme-text-primary ml-2 text-base font-medium transition-all duration-300 sm:ml-3 sm:text-lg">
                 ShareX Setup
               </h3>
             </div>
-            <p class="text-theme-secondary text-xs sm:text-sm">
+            <p class="text-theme-text-secondary text-xs sm:text-sm">
               Download your personalized ShareX configuration~ So easy even a
               sleepy catboy could do it! (=^･ω･^=)
             </p>
@@ -386,38 +385,38 @@ export default component$(() => {
                         />
                       </div>
                     ) : upload.mimeType.startsWith("video/") ? (
-                      <div class="pulse-soft bg-gradient-video flex h-12 w-12 items-center justify-center rounded-xl">
+                      <div class="pulse-soft from-theme-accent-primary to-theme-accent-secondary flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br">
                         <div class="text-lg">🎬</div>
                       </div>
                     ) : upload.mimeType.startsWith("audio/") ? (
-                      <div class="pulse-soft bg-gradient-audio flex h-12 w-12 items-center justify-center rounded-xl">
+                      <div class="pulse-soft from-theme-accent-secondary to-theme-accent-tertiary flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br">
                         <div class="text-lg">🎵</div>
                       </div>
                     ) : upload.mimeType.includes("pdf") ? (
-                      <div class="pulse-soft bg-gradient-pdf flex h-12 w-12 items-center justify-center rounded-xl">
+                      <div class="pulse-soft from-theme-accent-tertiary to-theme-accent-quaternary flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br">
                         <div class="text-lg">📄</div>
                       </div>
                     ) : upload.mimeType.includes("zip") ||
                       upload.mimeType.includes("rar") ||
                       upload.mimeType.includes("archive") ? (
-                      <div class="pulse-soft bg-gradient-archive flex h-12 w-12 items-center justify-center rounded-xl">
+                      <div class="pulse-soft from-theme-accent-quaternary to-theme-accent-primary flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br">
                         <div class="text-lg">📦</div>
                       </div>
                     ) : upload.mimeType.includes("text") ? (
-                      <div class="pulse-soft bg-gradient-text flex h-12 w-12 items-center justify-center rounded-xl">
+                      <div class="pulse-soft from-theme-accent-primary to-theme-accent-tertiary flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br">
                         <div class="text-lg">📝</div>
                       </div>
                     ) : (
-                      <div class="pulse-soft bg-gradient-theme-primary-secondary flex h-12 w-12 items-center justify-center rounded-xl">
+                      <div class="pulse-soft from-theme-accent-primary to-theme-accent-secondary flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br">
                         <div class="text-lg">📄</div>
                       </div>
                     )}
                   </div>
                   <div>
-                    <p class="text-theme-primary font-medium">
+                    <p class="text-theme-text-primary font-medium">
                       {upload.originalName}
                     </p>
-                    <p class="text-theme-secondary text-sm">
+                    <p class="text-theme-text-secondary text-sm">
                       {upload.views} views •{" "}
                       {new Date(upload.createdAt).toLocaleDateString()}
                     </p>
@@ -427,13 +426,13 @@ export default component$(() => {
                   <a
                     href={`/f/${upload.shortCode}`}
                     target="_blank"
-                    class="text-theme-action-view hover:bg-theme-tertiary/20 hover:text-theme-accent-secondary rounded-full px-3 py-1 text-center text-sm transition-all duration-300"
+                    class="text-theme-accent-secondary hover:bg-theme-bg-tertiary/20 hover:text-theme-accent-secondary rounded-full px-3 py-1 text-center text-sm transition-all duration-300"
                   >
                     View <Eye class="inline h-4 w-4" />
                   </a>
                   <button
                     onClick$={() => copyToClipboard(upload.shortCode)}
-                    class="text-theme-action-copy hover:bg-theme-tertiary/20 hover:text-theme-primary rounded-full px-3 py-1 text-sm transition-all duration-300"
+                    class="text-theme-accent-tertiary hover:bg-theme-bg-tertiary/20 hover:text-theme-text-primary rounded-full px-3 py-1 text-sm transition-all duration-300"
                   >
                     Copy URL <File class="inline h-4 w-4" />
                   </button>
@@ -444,12 +443,12 @@ export default component$(() => {
         ) : (
           <div class="py-12 text-center">
             <div class="sparkle mb-4 text-6xl">🌸</div>{" "}
-            <p class="text-theme-secondary mb-6 text-lg">
+            <p class="text-theme-text-secondary mb-6 text-lg">
               No files yet~ Upload via ShareX or API!
             </p>
             <a
               href="/setup/sharex"
-              class="btn-cute text-theme-primary inline-block rounded-full px-6 py-3 font-medium"
+              class="btn-cute text-theme-text-primary inline-block rounded-full px-6 py-3 font-medium"
             >
               Setup ShareX to get started 🚀
             </a>

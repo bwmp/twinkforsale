@@ -70,7 +70,7 @@ export const UserAnalytics = component$<UserAnalyticsProps>(
       <details class="group mt-3" open={isExpanded.value}>
         {" "}
         <summary
-          class="text-theme-accent hover:text-theme-primary flex cursor-pointer items-center gap-1 text-xs font-medium"
+          class="text-theme-accent-primary hover:text-theme-text-primary flex cursor-pointer items-center gap-1 text-xs font-medium"
           onClick$={() => {
             isExpanded.value = !isExpanded.value;
           }}
@@ -83,7 +83,7 @@ export const UserAnalytics = component$<UserAnalyticsProps>(
           {isLoading.value ? (
             <div class="py-4 text-center">
               <div class="border-theme-accent mx-auto mb-2 h-4 w-4 animate-spin rounded-full border-2 border-t-transparent"></div>
-              <p class="text-theme-secondary text-xs">Loading analytics...</p>
+              <p class="text-theme-text-secondary text-xs">Loading analytics...</p>
             </div>
           ) : analyticsData.value.length > 0 ? (
             <div class="space-y-3">
@@ -92,7 +92,7 @@ export const UserAnalytics = component$<UserAnalyticsProps>(
                 {" "}
                 {/* Views Chart */}
                 <div class="text-center">
-                  <div class="text-theme-accent mb-1 text-xs">Views</div>
+                  <div class="text-theme-accent-primary mb-1 text-xs">Views</div>
                   <svg
                     width={chartWidth}
                     height={chartHeight}
@@ -130,14 +130,14 @@ export const UserAnalytics = component$<UserAnalyticsProps>(
                       );
                     })}
                   </svg>
-                  <div class="text-theme-primary text-xs font-medium">
+                  <div class="text-theme-text-primary text-xs font-medium">
                     {analyticsData.value[analyticsData.value.length - 1]
                       ?.totalViews || 0}
                   </div>
                 </div>
                 {/* Unique Views Chart */}
                 <div class="text-center">
-                  <div class="text-theme-accent mb-1 text-xs">Unique</div>
+                  <div class="text-theme-accent-primary mb-1 text-xs">Unique</div>
                   <svg
                     width={chartWidth}
                     height={chartHeight}
@@ -175,14 +175,14 @@ export const UserAnalytics = component$<UserAnalyticsProps>(
                       );
                     })}
                   </svg>
-                  <div class="text-theme-primary text-xs font-medium">
+                  <div class="text-theme-text-primary text-xs font-medium">
                     {analyticsData.value[analyticsData.value.length - 1]
                       ?.uniqueViews || 0}
                   </div>
                 </div>
                 {/* Uploads Chart */}
                 <div class="text-center">
-                  <div class="text-theme-accent mb-1 text-xs">Uploads</div>
+                  <div class="text-theme-accent-primary mb-1 text-xs">Uploads</div>
                   <svg
                     width={chartWidth}
                     height={chartHeight}
@@ -221,7 +221,7 @@ export const UserAnalytics = component$<UserAnalyticsProps>(
                       );
                     })}
                   </svg>
-                  <div class="text-theme-primary text-xs font-medium">
+                  <div class="text-theme-text-primary text-xs font-medium">
                     {analyticsData.value[analyticsData.value.length - 1]
                       ?.uploadsCount || 0}
                   </div>
@@ -231,8 +231,8 @@ export const UserAnalytics = component$<UserAnalyticsProps>(
               <div class="border-theme-card-border border-t pt-2">
                 <div class="grid grid-cols-3 gap-2 text-xs">
                   <div class="text-center">
-                    <div class="text-theme-accent">Total (7d)</div>
-                    <div class="text-theme-primary font-medium">
+                    <div class="text-theme-accent-primary">Total (7d)</div>
+                    <div class="text-theme-text-primary font-medium">
                       {analyticsData.value.reduce(
                         (sum, d) => sum + d.totalViews,
                         0,
@@ -241,8 +241,8 @@ export const UserAnalytics = component$<UserAnalyticsProps>(
                     </div>
                   </div>
                   <div class="text-center">
-                    <div class="text-theme-accent">Avg Daily</div>
-                    <div class="text-theme-primary font-medium">
+                    <div class="text-theme-accent-primary">Avg Daily</div>
+                    <div class="text-theme-text-primary font-medium">
                       {Math.round(
                         analyticsData.value.reduce(
                           (sum, d) => sum + d.totalViews,
@@ -253,8 +253,8 @@ export const UserAnalytics = component$<UserAnalyticsProps>(
                     </div>
                   </div>
                   <div class="text-center">
-                    <div class="text-theme-accent">Peak Day</div>
-                    <div class="text-theme-primary font-medium">
+                    <div class="text-theme-accent-primary">Peak Day</div>
+                    <div class="text-theme-text-primary font-medium">
                       {Math.max(
                         ...analyticsData.value.map((d) => d.totalViews),
                       )}{" "}
@@ -266,8 +266,8 @@ export const UserAnalytics = component$<UserAnalyticsProps>(
             </div>
           ) : (
             <div class="py-4 text-center">
-              <div class="text-theme-accent mb-2">📊</div>
-              <p class="text-theme-secondary text-xs">
+              <div class="text-theme-accent-primary mb-2">📊</div>
+              <p class="text-theme-text-secondary text-xs">
                 No recent activity for {userName}
               </p>
             </div>

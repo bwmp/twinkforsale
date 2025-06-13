@@ -216,7 +216,7 @@ export default component$(() => {
   ];
 
   const inputClasses =
-    "w-full px-3 sm:px-4 py-2 sm:py-3 glass rounded-full placeholder-theme-muted focus:outline-none focus:ring-2 focus:ring-theme-accent-primary/50 transition-all duration-300 text-sm sm:text-base text-theme-primary";
+    "w-full px-3 sm:px-4 py-2 sm:py-3 glass rounded-full placeholder:theme-text-muted focus:outline-none focus:ring-2 focus:ring-theme-accent-primary/50 transition-all duration-300 text-sm sm:text-base text-theme-primary";
 
   const getCurrentDomainPreview = () => {
     const selectedDomain = uploadDomains.value.find(
@@ -236,7 +236,7 @@ export default component$(() => {
         <h1 class="text-gradient-cute mb-3 flex flex-wrap items-center justify-center gap-2 text-3xl font-bold sm:text-4xl">
           Settings~
         </h1>
-        <p class="text-theme-secondary px-4 text-base sm:text-lg">
+        <p class="text-theme-text-secondary px-4 text-base sm:text-lg">
           Configure your upload preferences, domain settings, and themes! (◕‿◕)♡
         </p>
       </div>
@@ -250,7 +250,7 @@ export default component$(() => {
         <Form action={updateAction}>
           <div class="space-y-4 sm:space-y-6">
             <div>
-              <label class="text-theme-secondary mb-2 block text-xs font-medium sm:text-sm">
+              <label class="text-theme-text-secondary mb-2 block text-xs font-medium sm:text-sm">
                 Upload Domain~ 🌍
               </label>{" "}
               <select
@@ -272,13 +272,13 @@ export default component$(() => {
                   </option>
                 ))}
               </select>
-              <p class="text-theme-muted mt-2 pl-3 text-xs sm:pl-4">
+              <p class="text-theme-text-muted mt-2 pl-3 text-xs sm:pl-4">
                 Choose the base domain for your file uploads~ ✨
               </p>
             </div>
 
             <div>
-              <label class="text-theme-secondary mb-2 block text-xs font-medium sm:text-sm">
+              <label class="text-theme-text-secondary mb-2 block text-xs font-medium sm:text-sm">
                 Custom Subdomain (Optional)~ 🎀
               </label>
               <input
@@ -293,7 +293,7 @@ export default component$(() => {
                   ).value;
                 }}
               />
-              <p class="text-theme-muted mt-2 pl-3 text-xs sm:pl-4">
+              <p class="text-theme-text-muted mt-2 pl-3 text-xs sm:pl-4">
                 Add a custom subdomain to your uploads (e.g., "files" →
                 files.domain.com)~ 💕
               </p>
@@ -301,7 +301,7 @@ export default component$(() => {
 
             {/* File Expiration Settings */}
             <div>
-              <label class="text-theme-secondary mb-2 block text-xs font-medium sm:text-sm">
+              <label class="text-theme-text-secondary mb-2 block text-xs font-medium sm:text-sm">
                 Default File Expiration (Days)~ ⏰
               </label>
               <input
@@ -318,7 +318,7 @@ export default component$(() => {
                   ).value;
                 }}
               />
-              <p class="text-theme-muted mt-2 pl-3 text-xs sm:pl-4">
+              <p class="text-theme-text-muted mt-2 pl-3 text-xs sm:pl-4">
                 Files will automatically delete after this many days. Leave
                 empty for no expiration~ 🕐
               </p>
@@ -326,7 +326,7 @@ export default component$(() => {
 
             {/* View Limits Settings */}
             <div>
-              <label class="text-theme-secondary mb-2 block text-xs font-medium sm:text-sm">
+              <label class="text-theme-text-secondary mb-2 block text-xs font-medium sm:text-sm">
                 Default Max Views~ 👁️
               </label>
               <input
@@ -342,7 +342,7 @@ export default component$(() => {
                   ).value;
                 }}
               />
-              <p class="text-theme-muted mt-2 pl-3 text-xs sm:pl-4">
+              <p class="text-theme-text-muted mt-2 pl-3 text-xs sm:pl-4">
                 Files will automatically delete after this many views. Leave
                 empty for unlimited views~ 👀✨
               </p>
@@ -353,17 +353,17 @@ export default component$(() => {
               <h3 class="text-theme-accent-quaternary mb-3 flex items-center text-sm font-medium">
                 Upload URL Preview~ 👀 <span class="ml-2">✨</span>
               </h3>
-              <div class="text-theme-primary bg-theme-tertiary/20 rounded-lg p-3 font-mono text-sm">
+              <div class="text-theme-text-primary bg-theme-bg-tertiary/20 rounded-lg p-3 font-mono text-sm">
                 {getCurrentDomainPreview()}/f/cute-filename-123
               </div>
-              <p class="text-theme-muted mt-2 text-xs">
+              <p class="text-theme-text-muted mt-2 text-xs">
                 This is how your upload URLs will look~ (◕‿◕)♡
               </p>
             </div>
 
             <button
               type="submit"
-              class="btn-cute text-theme-primary w-full rounded-full px-4 py-2 text-sm font-medium transition-all duration-300 sm:px-6 sm:py-3 sm:text-base"
+              class="btn-cute text-theme-text-primary w-full rounded-full px-4 py-2 text-sm font-medium transition-all duration-300 sm:px-6 sm:py-3 sm:text-base"
             >
               Save Settings~ 💾✨
             </button>
@@ -371,7 +371,7 @@ export default component$(() => {
         </Form>
 
         {updateAction.value?.success && (
-          <div class="bg-gradient-theme-secondary-tertiary/20 border-theme-accent-secondary/30 glass mt-4 rounded-2xl border p-3 sm:mt-6 sm:p-4">
+          <div class="bg-gradient-to-br from-theme-accent-secondary/20 to-theme-accent-tertiary/20 border-theme-accent-secondary/30 glass mt-4 rounded-2xl border p-3 sm:mt-6 sm:p-4">
             <p class="text-theme-accent-secondary flex items-center text-xs sm:text-sm">
               ✅ {updateAction.value.message}~ ✨
             </p>
@@ -379,7 +379,7 @@ export default component$(() => {
         )}
 
         {updateAction.value?.failed && (
-          <div class="bg-gradient-theme-primary-secondary/20 border-theme-accent-primary/30 glass mt-4 rounded-2xl border p-3 sm:mt-6 sm:p-4">
+          <div class="bg-gradient-to-br from-theme-accent-primary/20 to-theme-accent-secondary/20 border-theme-accent-primary/30 glass mt-4 rounded-2xl border p-3 sm:mt-6 sm:p-4">
             <p class="text-theme-accent-primary flex items-center text-xs sm:text-sm">
               ❌ {updateAction.value.message}~ 💔
             </p>
@@ -396,7 +396,7 @@ export default component$(() => {
 
         {/* Theme Gallery */}
         <div>
-          <h3 class="text-theme-primary mb-4 flex items-center gap-2 text-base font-medium sm:text-lg">
+          <h3 class="text-theme-text-primary mb-4 flex items-center gap-2 text-base font-medium sm:text-lg">
             <Eye class="h-4 w-4" />
             Theme Gallery
           </h3>
@@ -411,7 +411,7 @@ export default component$(() => {
                   key={option.name}
                   class={`glass group cursor-pointer rounded-xl border-2 p-4 transition-all duration-300 ${
                     isActive
-                      ? "border-theme-accent-primary/60 bg-gradient-theme-primary-secondary/20"
+                      ? "border-theme-accent-primary/60 bg-gradient-to-br from-theme-accent-primary/20 to-theme-accent-secondary/20"
                       : "border-theme-card-border hover:border-theme-accent-primary/40"
                   }`}
                   onClick$={() => {
@@ -452,19 +452,19 @@ export default component$(() => {
                     </div>
                     <div class="min-w-0 flex-1">
                       <div class="mb-2 flex items-center gap-2">
-                        <h4 class="text-theme-primary text-sm font-medium">
+                        <h4 class="text-theme-text-primary text-sm font-medium">
                           {option.label}
                         </h4>
                         {isActive && (
-                          <span class="bg-gradient-theme-primary-secondary text-theme-primary rounded-full px-2 py-1 text-xs">
+                          <span class="bg-gradient-to-br from-theme-accent-primary to-theme-accent-secondary text-theme-text-primary rounded-full px-2 py-1 text-xs">
                             Active
                           </span>
                         )}
                       </div>
-                      <p class="text-theme-secondary mb-2 text-xs">
+                      <p class="text-theme-text-secondary mb-2 text-xs">
                         {option.description}
                       </p>
-                      <div class="text-theme-muted text-xs italic">
+                      <div class="text-theme-text-muted text-xs italic">
                         {option.preview}
                       </div>
                     </div>
@@ -502,7 +502,7 @@ export default component$(() => {
               <h4 class="text-theme-accent-tertiary mb-1 text-sm font-medium">
                 Theme Tips
               </h4>
-              <ul class="text-theme-secondary space-y-1 text-xs">
+              <ul class="text-theme-text-secondary space-y-1 text-xs">
                 <li>
                   • Your theme preference is saved automatically and syncs
                   across devices

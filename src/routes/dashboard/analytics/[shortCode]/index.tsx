@@ -273,12 +273,12 @@ export default component$(() => {
       <div class="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
         <div class="card-cute rounded-2xl p-4">
           <div class="flex items-center gap-3">
-            <div class="bg-gradient-theme-primary-secondary rounded-full p-2">
-              <Eye class="text-theme-primary h-5 w-5" />
+            <div class="bg-gradient-to-br from-theme-accent-primary to-theme-accent-secondary rounded-full p-2">
+              <Eye class="text-theme-text-primary h-5 w-5" />
             </div>
             <div>
               <p class="text-theme-text-secondary text-sm">Total Views</p>
-              <p class="text-theme-primary text-xl font-bold">
+              <p class="text-theme-text-primary text-xl font-bold">
                 {data.value.totalViews}
               </p>
             </div>
@@ -286,12 +286,12 @@ export default component$(() => {
         </div>
         <div class="card-cute rounded-2xl p-4">
           <div class="flex items-center gap-3">
-            <div class="bg-gradient-theme-secondary-tertiary rounded-full p-2">
-              <Download class="text-theme-primary h-5 w-5" />
+            <div class="bg-gradient-to-br from-theme-accent-secondary to-theme-accent-tertiary rounded-full p-2">
+              <Download class="text-theme-text-primary h-5 w-5" />
             </div>
             <div>
               <p class="text-theme-text-secondary text-sm">Downloads</p>
-              <p class="text-theme-primary text-xl font-bold">
+              <p class="text-theme-text-primary text-xl font-bold">
                 {data.value.totalDownloads}
               </p>
             </div>
@@ -299,12 +299,12 @@ export default component$(() => {
         </div>
         <div class="card-cute rounded-2xl p-4">
           <div class="flex items-center gap-3">
-            <div class="bg-gradient-theme-quaternary-primary rounded-full p-2">
-              <TrendingUp class="text-theme-primary h-5 w-5" />
+            <div class="bg-gradient-to-br from-theme-accent-quaternary to-theme-accent-primary rounded-full p-2">
+              <TrendingUp class="text-theme-text-primary h-5 w-5" />
             </div>
             <div>
               <p class="text-theme-text-secondary text-sm">Unique Visitors</p>
-              <p class="text-theme-primary text-xl font-bold">
+              <p class="text-theme-text-primary text-xl font-bold">
                 {
                   new Set(
                     data.value.viewLogs
@@ -318,12 +318,12 @@ export default component$(() => {
         </div>{" "}
         <div class="card-cute rounded-2xl p-4">
           <div class="flex items-center gap-3">
-            <div class="bg-gradient-theme-quaternary-primary rounded-full p-2">
-              <TrendingUp class="text-theme-primary h-5 w-5" />
+            <div class="bg-gradient-to-br from-theme-accent-quaternary to-theme-accent-primary rounded-full p-2">
+              <TrendingUp class="text-theme-text-primary h-5 w-5" />
             </div>
             <div>
               <p class="text-theme-text-secondary text-sm">Download Rate</p>
-              <p class="text-theme-primary text-xl font-bold">
+              <p class="text-theme-text-primary text-xl font-bold">
                 {data.value.totalViews > 0
                   ? Math.round(
                       (data.value.totalDownloads / data.value.totalViews) * 100,
@@ -416,7 +416,7 @@ export default component$(() => {
                       }}
                     />
                   </div>
-                  <span class="text-theme-primary min-w-[2rem] text-right text-sm font-medium">
+                  <span class="text-theme-text-primary min-w-[2rem] text-right text-sm font-medium">
                     {item.count}
                   </span>
                 </div>
@@ -451,7 +451,7 @@ export default component$(() => {
                         }}
                       />
                     </div>
-                    <span class="text-theme-primary min-w-[2rem] text-right text-sm font-bold">
+                    <span class="text-theme-text-primary min-w-[2rem] text-right text-sm font-bold">
                       {count}
                     </span>
                   </div>
@@ -489,7 +489,7 @@ export default component$(() => {
                         }}
                       />
                     </div>
-                    <span class="text-theme-primary min-w-[2rem] text-right text-sm font-bold">
+                    <span class="text-theme-text-primary min-w-[2rem] text-right text-sm font-bold">
                       {count}
                     </span>
                   </div>
