@@ -4,7 +4,7 @@
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
-import diskusage from 'diskusage';
+import * as diskusage from 'diskusage';
 
 /**
  * Get free space available in the uploads directory
