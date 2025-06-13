@@ -8,7 +8,8 @@ export const getEnvConfig = () => {
     ALLOWED_MIME_TYPES: (process.env.ALLOWED_MIME_TYPES ||
       'image/png,image/jpeg,image/gif,image/webp,text/plain,application/pdf'
     ).split(','),
-    NODE_ENV: process.env.NODE_ENV || 'development'
+    NODE_ENV: process.env.NODE_ENV || 'development',
+    DISCORD_WEBHOOK_URL: process.env.DISCORD_WEBHOOK_URL || ''
   };
 };
 

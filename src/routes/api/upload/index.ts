@@ -2,6 +2,7 @@ import type { RequestHandler } from "@builder.io/qwik-city";
 import { db } from "~/lib/db";
 import { generateShortCode, saveFile, validateFile } from "~/lib/upload";
 import { getEnvConfig } from "~/lib/env";
+import { monitorUploadEvent, monitorFailedUpload } from "~/lib/system-monitoring";
 import { nanoid } from "nanoid";
 
 export const onPost: RequestHandler = async ({ request, json }) => {
@@ -38,10 +39,15 @@ export const onPost: RequestHandler = async ({ request, json }) => {
 
   if (!file) {
     throw json(400, { error: "No file provided" });
-  }
-  // Validate file
+  }  // Validate file
   const validation = validateFile(file);
   if (!validation.isValid) {
+    // Monitor failed upload
+    await monitorFailedUpload(userId || null, validation.error || "File validation failed", {
+      fileName: file.name,
+      fileSize: file.size,
+      mimeType: file.type
+    });
     throw json(400, { error: validation.error });
   }
   // Check user limits if authenticated
@@ -145,7 +151,6 @@ export const onPost: RequestHandler = async ({ request, json }) => {
       maxViews: finalMaxViews
     }
   });
-
   // Update user storage if authenticated
   if (userId) {
     await db.user.update({
@@ -156,6 +161,9 @@ export const onPost: RequestHandler = async ({ request, json }) => {
         }
       }
     });
+
+    // Monitor upload event for potential alerts
+    await monitorUploadEvent(userId, file.size);
   }
   // Return ShareX-compatible response
   const response: any = {

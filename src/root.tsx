@@ -2,6 +2,8 @@ import { component$, isDev } from "@builder.io/qwik";
 import { QwikCityProvider, RouterOutlet } from "@builder.io/qwik-city";
 import { RouterHead } from "./components/router-head/router-head";
 import { useThemeProvider } from "./lib/theme-store";
+import { useAlertProvider } from "./lib/alert-store";
+import { AlertContainer } from "./components/alert";
 
 import "./global.css";
 
@@ -15,6 +17,9 @@ export default component$(() => {
 
   // Initialize theme provider
   useThemeProvider();
+  
+  // Initialize alert provider
+  useAlertProvider();
 
   return (
     <QwikCityProvider>
@@ -30,6 +35,7 @@ export default component$(() => {
       </head>
       <body lang="en" style="background-color: var(--theme-bg-primary); color: var(--theme-text-primary);">
         <RouterOutlet />
+        <AlertContainer />
       </body>
     </QwikCityProvider>
   );

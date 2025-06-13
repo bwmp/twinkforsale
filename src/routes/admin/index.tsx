@@ -8,6 +8,8 @@ import {
   Filter,
   ArrowUpDown,
   Globe,
+  Activity,
+  Bell,
 } from "lucide-icons-qwik";
 import { AnalyticsChart } from "~/components/analytics-chart/analytics-chart";
 import { UserAnalytics } from "~/components/user-analytics/user-analytics";
@@ -409,8 +411,7 @@ export default component$(() => {
       <div class="mb-6 sm:mb-8">
         <h2 class="text-gradient-cute mb-4 flex items-center justify-center gap-2 text-center text-xl font-bold sm:mb-6 sm:text-2xl">
           Admin Actions~ ⚙️
-        </h2>
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        </h2>        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <Link
             href="/admin/domains"
             class="card-cute group rounded-3xl p-4 sm:p-6"
@@ -427,6 +428,44 @@ export default component$(() => {
             </div>
             <p class="text-theme-secondary text-xs sm:text-sm">
               Manage available upload domains for users~ Add cute domains! (◕‿◕)♡
+            </p>
+          </Link>
+          
+          <Link
+            href="/admin/health"
+            class="card-cute group rounded-3xl p-4 sm:p-6"
+          >
+            <div class="mb-3 flex items-center sm:mb-4">
+              <div class="pulse-soft bg-gradient-theme-secondary-tertiary animation-delay-200 rounded-full p-2 sm:p-3">
+                <Activity class="text-theme-primary h-5 w-5 sm:h-6 sm:w-6" />
+              </div>
+            </div>
+            <div class="mb-2">
+              <h3 class="group-hover:text-gradient-cute text-theme-primary text-base font-medium transition-all duration-300 sm:text-lg">
+                Health Dashboard
+              </h3>
+            </div>
+            <p class="text-theme-secondary text-xs sm:text-sm">
+              Monitor server performance, system metrics, and health status~ 📊✨
+            </p>
+          </Link>
+
+          <Link
+            href="/admin/events"
+            class="card-cute group rounded-3xl p-4 sm:p-6"
+          >
+            <div class="mb-3 flex items-center sm:mb-4">
+              <div class="pulse-soft bg-gradient-theme-tertiary-quaternary animation-delay-400 rounded-full p-2 sm:p-3">
+                <Bell class="text-theme-primary h-5 w-5 sm:h-6 sm:w-6" />
+              </div>
+            </div>
+            <div class="mb-2">
+              <h3 class="group-hover:text-gradient-cute text-theme-primary text-base font-medium transition-all duration-300 sm:text-lg">
+                System Events
+              </h3>
+            </div>
+            <p class="text-theme-secondary text-xs sm:text-sm">
+              Monitor system alerts, user warnings, and automated events~ 🔔⚡
             </p>
           </Link>
         </div>

@@ -103,6 +103,7 @@ model User {
   // App relations
   uploads  Upload[]
   apiKeys  ApiKey[]
+  systemEvents SystemEvent[]
   
   @@map("users")
 }
@@ -217,4 +218,53 @@ model UploadDomain {
   users       User[]
   
   @@map("upload_domains")
+}
+
+model SystemEvent {
+  id          String   @id @default(cuid())
+  type        String   // e.g., "USER_STORAGE_WARNING", "SYSTEM_STORAGE_WARNING", "HIGH_CPU_USAGE"
+  severity    String   // "INFO", "WARNING", "ERROR", "CRITICAL"
+  title       String
+  message     String
+  metadata    Json?    // Additional event data
+  
+  // User association (nullable for system-wide events)
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  
+  // System metrics at time of event
+  cpuUsage    Float?
+  memoryUsage Float?
+  diskUsage   Float?
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([type])
+  @@index([severity])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("system_events")
+}
+
+model SystemAlert {
+  id          String   @id @default(cuid())
+  eventType   String   // Type of event to monitor
+  threshold   Float    // Threshold value (percentage, count, etc.)
+  isActive    Boolean  @default(true)
+  
+  // Alert configuration
+  name        String
+  description String?
+  cooldownMinutes Int @default(60) // Cooldown period to prevent spam
+  
+  // Notification settings
+  notifyAdmins Boolean @default(true)
+  notifyUser   Boolean @default(false) // For user-specific alerts
+  
+  lastTriggered DateTime?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("system_alerts")
 }

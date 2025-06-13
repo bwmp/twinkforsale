@@ -112,6 +112,9 @@ server.on("error", (err) => {
 // Handle graceful shutdown
 process.on("SIGTERM", () => {
   console.log("SIGTERM signal received: closing HTTP server");
+  import("./lib/system-monitoring").then(({ stopSystemMonitoring }) => {
+    stopSystemMonitoring();
+  }).catch(() => {});
   server.close(() => {
     console.log("HTTP server closed");
   });
@@ -119,6 +122,9 @@ process.on("SIGTERM", () => {
 
 process.on("SIGINT", () => {
   console.log("SIGINT signal received: closing HTTP server");
+  import("./lib/system-monitoring").then(({ stopSystemMonitoring }) => {
+    stopSystemMonitoring();
+  }).catch(() => {});
   server.close(() => {
     console.log("HTTP server closed");
   });
@@ -127,4 +133,22 @@ process.on("SIGINT", () => {
 server.listen(Number(PORT), "0.0.0.0", () => {
   console.log(`Node server listening on http://0.0.0.0:${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
+  
+  // Start system monitoring service
+  if (process.env.NODE_ENV === "production") {
+    import("./lib/system-monitoring").then(({ startSystemMonitoring }) => {
+      startSystemMonitoring();
+      console.log("System monitoring service started");
+    }).catch(err => {
+      console.error("Failed to start system monitoring:", err);
+    });
+
+    // Initialize system alerts configuration
+    import("./lib/system-events").then(({ initializeSystemAlerts }) => {
+      initializeSystemAlerts();
+      console.log("System alerts initialized");
+    }).catch(err => {
+      console.error("Failed to initialize system alerts:", err);
+    });
+  }
 });
