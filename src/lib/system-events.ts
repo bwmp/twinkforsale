@@ -1,5 +1,5 @@
 import { db } from './db';
-import { getDiskUsage } from './utils';
+import { getDiskUsage } from './server-utils';
 import { sendCriticalEventNotification } from './discord-notifications';
 import os from 'os';
 

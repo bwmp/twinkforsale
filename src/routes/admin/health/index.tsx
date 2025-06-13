@@ -88,7 +88,7 @@ export const useHealthData = routeLoader$(async () => {
   const { db } = await import("~/lib/db");
   const { getEnvConfig } = await import("~/lib/env");
   const { getAnalyticsData } = await import("~/lib/analytics");
-  const { getDiskUsage, getFreeSpace } = await import("~/lib/utils");
+  const { getDiskUsage, getFreeSpace } = await import("~/lib/server-utils");
   const { getRecentSystemEvents, getSystemEventsStats } = await import(
     "~/lib/system-events"
   );
