@@ -613,7 +613,7 @@ export default component$(() => {
                   sortBy.value = "createdAt";
                   sortOrder.value = "desc";
                 }}
-                class="bg-bg-gradient-to-br from-theme-deny to-theme-deny-hover border-theme-error text-theme-error hover:bg-bg-gradient-to-br from-theme-deny to-theme-deny-hover-hover rounded-full border px-3 py-1 text-sm font-medium transition-all duration-300"
+                class="bg-gradient-to-br from-theme-deny to-theme-deny-hover border-theme-error text-theme-error hover:bg-gradient-to-br from-theme-deny to-theme-deny-hover-hover rounded-full border px-3 py-1 text-sm font-medium transition-all duration-300"
               >
                 🗑️ Clear Filters
               </button>
@@ -745,8 +745,8 @@ export default component$(() => {
                           <span
                             class={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
                               user.isApproved
-                                ? "bg-bg-gradient-to-br from-theme-confirm to-theme-confirm-hover border-theme-success text-theme-success"
-                                : "bg-bg-gradient-to-br from-theme-[#f59e0b] to-theme-[#d97706] border-theme-warning text-theme-warning"
+                                ? "bg-gradient-to-br from-theme-confirm to-theme-confirm-hover border-theme-success text-theme-success"
+                                : "bg-gradient-to-br from-theme-[#f59e0b] to-theme-[#d97706] border-theme-warning text-theme-warning"
                             }`}
                           >
                             {user.isApproved ? "✅ Approved" : "⏳ Pending"}
@@ -806,7 +806,7 @@ export default component$(() => {
                                 isApproved: false,
                               });
                             }}
-                            class="bg-bg-gradient-to-br from-theme-deny to-theme-deny-hover border-theme-error text-theme-error hover:bg-bg-gradient-to-br from-theme-deny to-theme-deny-hover-hover rounded-full border px-3 py-1 text-xs font-medium transition-all duration-300 sm:text-sm"
+                            class="bg-gradient-to-br from-theme-deny to-theme-deny-hover border-theme-error text-theme-error hover:bg-gradient-to-br from-theme-deny to-theme-deny-hover-hover rounded-full border px-3 py-1 text-xs font-medium transition-all duration-300 sm:text-sm"
                           >
                             ❌ Revoke
                           </button>
@@ -820,7 +820,7 @@ export default component$(() => {
                           }}
                           class={`rounded-full px-3 py-1 text-xs font-medium transition-all duration-300 sm:text-sm ${
                             user.isAdmin
-                              ? "bg-bg-gradient-to-br from-theme-deny to-theme-deny-hover border-theme-error text-theme-error hover:bg-bg-gradient-to-br from-theme-deny to-theme-deny-hover-hover border"
+                              ? "bg-gradient-to-br from-theme-deny to-theme-deny-hover border-theme-error text-theme-error hover:bg-gradient-to-br from-theme-deny to-theme-deny-hover-hover border"
                               : "from-theme-accent-secondary to-theme-accent-tertiary border-theme-accent-primary/40 text-theme-text-primary hover:from-theme-accent-primary/20 hover:to-theme-accent-secondary/20 border bg-gradient-to-br hover:bg-gradient-to-br"
                           }`}
                         >

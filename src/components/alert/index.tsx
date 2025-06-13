@@ -57,7 +57,7 @@ export const AlertItem = component$<AlertItemProps>(({ alert }) => {
     switch (alert.type) {
       case "success":
         return {
-          container: "bg-bg-gradient-to-br from-theme-confirm to-theme-confirm-hover border-theme-success",
+          container: "bg-gradient-to-br from-theme-confirm to-theme-confirm-hover border-theme-success",
           icon: "text-theme-success",
           title: "text-theme-success",
           message: "text-theme-success",
@@ -65,7 +65,7 @@ export const AlertItem = component$<AlertItemProps>(({ alert }) => {
         };
       case "error":
         return {
-          container: "bg-bg-gradient-to-br from-theme-deny to-theme-deny-hover border-theme-error",
+          container: "bg-gradient-to-br from-theme-deny to-theme-deny-hover border-theme-error",
           icon: "text-theme-error",
           title: "text-theme-error",
           message: "text-theme-error",
@@ -73,7 +73,7 @@ export const AlertItem = component$<AlertItemProps>(({ alert }) => {
         };
       case "warning":
         return {
-          container: "bg-bg-gradient-to-br from-theme-[#f59e0b] to-theme-[#d97706] border-theme-warning",
+          container: "bg-gradient-to-br from-theme-[#f59e0b] to-theme-[#d97706] border-theme-warning",
           icon: "text-theme-warning",
           title: "text-theme-warning",
           message: "text-theme-warning",

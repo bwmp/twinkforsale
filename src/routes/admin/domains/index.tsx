@@ -405,7 +405,7 @@ export default component$(() => {
                             </span>
                           )}
                           {!domain.isActive && (
-                            <span class="bg-bg-gradient-to-br from-theme-deny to-theme-deny-hover text-theme-error rounded-full px-2 py-1 text-xs">
+                            <span class="bg-gradient-to-br from-theme-deny to-theme-deny-hover text-theme-error rounded-full px-2 py-1 text-xs">
                               Inactive
                             </span>
                           )}

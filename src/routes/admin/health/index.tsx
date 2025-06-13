@@ -314,7 +314,7 @@ export default component$(() => {
               onClick$={() => (autoRefresh.value = !autoRefresh.value)}
               class={`flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-300 hover:scale-105 active:scale-95 ${
                 autoRefresh.value
-                  ? "bg-bg-gradient-to-br from-theme-confirm to-theme-confirm-hover text-white shadow-lg shadow-green-500/20"
+                  ? "bg-gradient-to-br from-theme-confirm to-theme-confirm-hover text-white shadow-lg shadow-green-500/20"
                   : "card-cute hover:shadow-md"
               }`}
             >
@@ -356,10 +356,10 @@ export default component$(() => {
           <div class="hidden items-center justify-end gap-3 sm:flex">
             <button
               onClick$={() => (autoRefresh.value = !autoRefresh.value)}
-              class={`flex items-center gap-2 rounded-2xl px-5 py-3 text-sm font-medium transition-all duration-300 hover:scale-105 active:scale-95 ${
+              class={`card-cute flex items-center gap-2 rounded-2xl px-5 py-3 text-sm font-medium transition-all duration-300 hover:scale-105 active:scale-95 ${
                 autoRefresh.value
-                  ? "bg-bg-gradient-to-br from-theme-confirm to-theme-confirm-hover text-white shadow-lg shadow-green-500/20"
-                  : "card-cute hover:shadow-md"
+                  ? "card-cute !bg-gradient-to-br from-theme-confirm to-theme-confirm-hover text-white"
+                  : ""
               }`}
             >
               <RefreshCw
@@ -687,7 +687,7 @@ export default component$(() => {
               </div>
               <div class="bg-theme-card-border h-2 overflow-hidden rounded-full">
                 <div
-                  class="bg-bg-gradient-to-br from-theme-confirm to-theme-confirm-hover h-full transition-all duration-500"
+                  class="bg-gradient-to-br from-theme-confirm to-theme-confirm-hover h-full transition-all duration-500"
                   style={{
                     width: `${
                       data.users?.total && data.users?.approved
