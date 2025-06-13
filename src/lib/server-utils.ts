@@ -4,7 +4,6 @@
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
-import * as diskusage from 'diskusage';
 
 /**
  * Get free space available in the uploads directory
@@ -22,7 +21,8 @@ export async function getFreeSpace(uploadsPath: string = './uploads'): Promise<n
       fs.mkdirSync(absolutePath, { recursive: true });
     }
 
-    // Use diskusage to get disk space information
+    // Use dynamic import to load diskusage only on server side
+    const diskusage = await import('diskusage');
     const info = await diskusage.check(absolutePath);
     return info.free;
     
@@ -52,7 +52,8 @@ export async function getDiskUsage(uploadsPath: string = './uploads'): Promise<{
       fs.mkdirSync(absolutePath, { recursive: true });
     }
 
-    // Use diskusage to get disk space information
+    // Use dynamic import to load diskusage only on server side
+    const diskusage = await import('diskusage');
     const info = await diskusage.check(absolutePath);
     const { total, free } = info;
     const used = total - free;
