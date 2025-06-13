@@ -14,11 +14,9 @@ import {
   FileDown,
 } from "lucide-icons-qwik";
 import { DetailedAnalyticsChart } from "~/components/detailed-analytics-chart/detailed-analytics-chart";
-
+import { db } from "~/lib/db";
+import { getUploadAnalytics } from "~/lib/analytics";
 export const useFileAnalytics = routeLoader$(async (requestEvent) => {
-  const { db } = await import("~/lib/db");
-  const { getUploadAnalytics } = await import("~/lib/analytics");
-
   const session = requestEvent.sharedMap.get("session");
   const shortCode = requestEvent.params.shortCode;
 

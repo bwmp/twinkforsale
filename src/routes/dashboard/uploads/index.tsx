@@ -35,11 +35,12 @@ import {
 } from "lucide-icons-qwik";
 import { ImagePreviewContext } from "~/lib/image-preview-store";
 import { FileTypeIcon } from "~/components/lazy-image";
-
+import { db } from "~/lib/db";
+import { getEnvConfig } from "~/lib/env";
+import { getUploadAnalytics } from "~/lib/analytics";
+import { getServerUploadsViewMode } from "~/lib/cookie-utils";
 export const useDeleteUpload = routeAction$(async (data, requestEvent) => {
   // Import server-side dependencies inside the action
-  const { db } = await import("~/lib/db");
-  const { getEnvConfig } = await import("~/lib/env");
 
   const session = requestEvent.sharedMap.get("session");
 
@@ -137,9 +138,6 @@ export const useDeleteUpload = routeAction$(async (data, requestEvent) => {
 
 export const useUserUploads = routeLoader$(async (requestEvent) => {
   // Import server-side dependencies inside the loader
-  const { db } = await import("~/lib/db");
-  const { getEnvConfig } = await import("~/lib/env");
-  const { getUploadAnalytics } = await import("~/lib/analytics");
 
   const session = requestEvent.sharedMap.get("session");
 
@@ -199,7 +197,6 @@ export const useUserUploads = routeLoader$(async (requestEvent) => {
       };
     }),
   ); // Get view mode preference from cookies server-side
-  const { getServerUploadsViewMode } = await import("~/lib/cookie-utils");
   const cookieHeader = requestEvent.request.headers.get("cookie");
   const savedViewMode =
     getServerUploadsViewMode(cookieHeader || undefined) || "list";
@@ -220,9 +217,10 @@ export default component$(() => {
   const deleteUploadAction = useDeleteUpload();
   const imagePreview = useContext(ImagePreviewContext);
 
-  const searchQuery = useSignal("");  const sortBy = useSignal<"name" | "size" | "views" | "downloads" | "date" | "weeklyViews">(
-    "date",
-  );
+  const searchQuery = useSignal("");
+  const sortBy = useSignal<
+    "name" | "size" | "views" | "downloads" | "date" | "weeklyViews"
+  >("date");
   const sortOrder = useSignal<"asc" | "desc">("desc");
   // Initialize viewMode from server-side data
   const viewMode = useSignal<"grid" | "list">(
@@ -279,7 +277,8 @@ export default component$(() => {
           break;
         case "views":
           comparison = a.views - b.views;
-          break;        case "downloads":
+          break;
+        case "downloads":
           comparison = a.downloads - b.downloads;
           break;
         case "weeklyViews":
@@ -372,7 +371,9 @@ export default component$(() => {
     return isNegative ? `-${formattedSize}` : formattedSize;
   };
   const handleSort = $(
-    (column: "name" | "size" | "views" | "downloads" | "date" | "weeklyViews") => {
+    (
+      column: "name" | "size" | "views" | "downloads" | "date" | "weeklyViews",
+    ) => {
       if (sortBy.value === column) {
         // Toggle sort order if clicking the same column
         sortOrder.value = sortOrder.value === "asc" ? "desc" : "asc";
@@ -382,7 +383,8 @@ export default component$(() => {
         sortOrder.value = "desc";
       }
     },
-  );  const getSortIcon = (
+  );
+  const getSortIcon = (
     column: "name" | "size" | "views" | "downloads" | "date" | "weeklyViews",
   ) => {
     if (sortBy.value !== column) {
@@ -395,7 +397,7 @@ export default component$(() => {
     ) : (
       <ArrowDown class="text-theme-muted ml-1 inline h-3 w-3" />
     );
-  };// Mini analytics chart component for grid view
+  }; // Mini analytics chart component for grid view
   const MiniChart = component$(({ data }: { data: any[] }) => {
     if (!data || data.length === 0)
       return <div class="text-theme-muted text-xs">No data</div>;
@@ -693,7 +695,8 @@ export default component$(() => {
                     >
                       Views~ <Eye class="inline h-4 w-4" />
                       {getSortIcon("views")}
-                    </th>                    <th
+                    </th>{" "}
+                    <th
                       class="text-theme-text-muted hover:text-theme-text-secondary cursor-pointer px-3 py-3 text-left text-xs font-medium tracking-wider uppercase transition-colors sm:px-6"
                       onClick$={() => handleSort("downloads")}
                     >
@@ -745,7 +748,8 @@ export default component$(() => {
                             <Square class="h-4 w-4" />
                           )}
                         </button>
-                      </td>                      <td class="px-3 py-4 sm:px-6">
+                      </td>{" "}
+                      <td class="px-3 py-4 sm:px-6">
                         <div class="flex items-center space-x-2 sm:space-x-3">
                           <div class="flex-shrink-0">
                             <FileTypeIcon
@@ -781,7 +785,8 @@ export default component$(() => {
                             <TrendingUp class="h-4 w-4" />
                           </div>
                         </div>
-                      </td>                      <td class="text-theme-text-secondary px-3 py-4 text-sm sm:px-6">
+                      </td>{" "}
+                      <td class="text-theme-text-secondary px-3 py-4 text-sm sm:px-6">
                         <div class="flex items-center gap-2">
                           <span>{upload.downloads}</span>
                           <div class="text-theme-trending">
@@ -791,7 +796,9 @@ export default component$(() => {
                       </td>
                       <td class="text-theme-text-secondary px-3 py-4 text-sm sm:px-6">
                         <div class="flex items-center gap-2">
-                          <span class="text-theme-accent-primary font-bold">{upload.weeklyViews || 0}</span>
+                          <span class="text-theme-accent-primary font-bold">
+                            {upload.weeklyViews || 0}
+                          </span>
                           <div class="text-theme-trending">
                             <BarChart3 class="h-4 w-4" />
                           </div>
@@ -827,7 +834,8 @@ export default component$(() => {
                             </span>
                           )}
                         </div>
-                      </td>                      <td class="px-3 py-4 sm:px-6">
+                      </td>{" "}
+                      <td class="px-3 py-4 sm:px-6">
                         <div class="flex flex-col space-y-1 sm:flex-row sm:space-y-0 sm:space-x-1">
                           <button
                             onClick$={() =>
@@ -890,7 +898,8 @@ export default component$(() => {
                           <Square class="h-5 w-5" />
                         )}
                       </button>
-                    </div>                    {/* File Preview */}
+                    </div>{" "}
+                    {/* File Preview */}
                     <div class="bg-gradient-grid-item mb-3 flex aspect-square items-center justify-center overflow-hidden rounded-xl">
                       <FileTypeIcon
                         upload={upload}
@@ -996,7 +1005,8 @@ export default component$(() => {
                         >
                           <Copy class="mr-1 inline h-3 w-3" />
                           Copy
-                        </button>                        <a
+                        </button>{" "}
+                        <a
                           href={`/f/${upload.shortCode}`}
                           target="_blank"
                           class="text-theme-action-view flex-1 rounded-lg px-2 py-1 text-center text-xs font-medium transition-all duration-300 hover:bg-white/10"

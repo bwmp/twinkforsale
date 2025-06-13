@@ -1,5 +1,6 @@
 import { getDiskUsage } from './server-utils';
 import { sendCriticalEventNotification } from './discord-notifications';
+import { db } from './db';
 import os from 'os';
 
 export type EventType =
@@ -83,7 +84,6 @@ export async function createSystemEvent(
     includeMetrics?: boolean;
   } = {}
 ) {
-  const { db } = await import('./db');
   const { userId, metadata, includeMetrics = true } = options;
 
   let metrics: Partial<SystemMetrics> = {};
@@ -153,8 +153,6 @@ export async function createSystemEvent(
  * Check user storage usage and create alerts if needed
  */
 export async function checkUserStorageAlerts(userId: string) {
-  const { db } = await import('./db');
-
   try {
     const user = await db.user.findUnique({
       where: { id: userId },
@@ -266,8 +264,6 @@ export async function checkUserStorageAlerts(userId: string) {
  * Check system-wide alerts
  */
 export async function checkSystemAlerts() {
-  const { db } = await import('./db');
-
   try {
     const metrics = await getSystemMetrics();
 
@@ -343,11 +339,8 @@ export async function checkSystemAlerts() {
  */
 export async function getRecentSystemEvents(
   limit: number = 50,
-  severity?: EventSeverity,
-  userId?: string
+  severity?: EventSeverity,  userId?: string
 ) {
-  const { db } = await import('./db');
-
   return await db.systemEvent.findMany({
     where: {
       ...(severity && { severity }),
@@ -370,8 +363,6 @@ export async function getRecentSystemEvents(
  * Get system events statistics
  */
 export async function getSystemEventsStats(hours: number = 24) {
-  const { db } = await import('./db');
-
   const since = new Date(Date.now() - hours * 60 * 60 * 1000);
 
   const stats = await db.systemEvent.groupBy({
@@ -394,8 +385,6 @@ export async function getSystemEventsStats(hours: number = 24) {
  * Clean up old system events (keep last 30 days)
  */
 export async function cleanupOldEvents() {
-  const { db } = await import('./db');
-
   const cutoffDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000); // 30 days ago
 
   const result = await db.systemEvent.deleteMany({
@@ -423,8 +412,6 @@ export async function cleanupOldEvents() {
  * Delete a specific system event by ID
  */
 export async function deleteSystemEvent(eventId: string): Promise<boolean> {
-  const { db } = await import('./db');
-
   try {
     await db.systemEvent.delete({
       where: { id: eventId }
@@ -440,8 +427,6 @@ export async function deleteSystemEvent(eventId: string): Promise<boolean> {
  * Clear all system events (with optional severity filter)
  */
 export async function clearAllSystemEvents(severityFilter?: EventSeverity): Promise<number> {
-  const { db } = await import('./db');
-
   const result = await db.systemEvent.deleteMany({
     where: severityFilter ? {
       severity: severityFilter
@@ -455,8 +440,6 @@ export async function clearAllSystemEvents(severityFilter?: EventSeverity): Prom
  * Clear non-critical events (INFO and WARNING)
  */
 export async function clearNonCriticalEvents(): Promise<number> {
-  const { db } = await import('./db');
-
   const result = await db.systemEvent.deleteMany({
     where: {
       severity: {
@@ -472,8 +455,6 @@ export async function clearNonCriticalEvents(): Promise<number> {
  * Initialize system alerts configuration
  */
 export async function initializeSystemAlerts() {
-  const { db } = await import('./db');
-
   // Default alert configurations
   const defaultAlerts = [
     {
@@ -521,8 +502,6 @@ export async function initializeSystemAlerts() {
  * Check if user is approaching limits and warn them
  */
 export async function checkUserLimits(userId: string) {
-  const { db } = await import('./db');
-
   try {
     const user = await db.user.findUnique({
       where: { id: userId },

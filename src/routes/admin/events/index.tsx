@@ -18,10 +18,20 @@ import {
 } from "lucide-icons-qwik";
 import { formatDate } from "~/lib/utils";
 import { useAlert } from "~/lib/use-alert";
-
+import { db } from "~/lib/db";
+import {
+  checkSystemAlerts,
+  checkUserStorageAlerts,
+  cleanupOldEvents,
+  deleteSystemEvent,
+  clearAllSystemEvents,
+  clearNonCriticalEvents,
+  getRecentSystemEvents,
+  getSystemEventsStats,
+} from "~/lib/system-events";
+import { sendAdminActionNotification } from "~/lib/discord-notifications";
+import { getMonitoringStatus } from "~/lib/system-monitoring";
 export const useAdminCheck = routeLoader$(async (requestEvent) => {
-  const { db } = await import("~/lib/db");
-
   const session = requestEvent.sharedMap.get("session");
 
   if (!session?.user?.email) {
@@ -42,14 +52,6 @@ export const useAdminCheck = routeLoader$(async (requestEvent) => {
 // Server action to trigger system checks
 export const useTriggerSystemCheck = routeAction$(
   async (data, requestEvent) => {
-    const { db } = await import("~/lib/db");
-    const { checkSystemAlerts, checkUserStorageAlerts } = await import(
-      "~/lib/system-events"
-    );
-    const { sendAdminActionNotification } = await import(
-      "~/lib/discord-notifications"
-    );
-
     const session = requestEvent.sharedMap.get("session");
     if (!session?.user?.email) {
       return { success: false, error: "Unauthorized" };
@@ -101,12 +103,6 @@ export const useTriggerSystemCheck = routeAction$(
 
 // Server action to cleanup old events
 export const useCleanupEvents = routeAction$(async (data, requestEvent) => {
-  const { db } = await import("~/lib/db");
-  const { cleanupOldEvents } = await import("~/lib/system-events");
-  const { sendAdminActionNotification } = await import(
-    "~/lib/discord-notifications"
-  );
-
   const session = requestEvent.sharedMap.get("session");
   if (!session?.user?.email) {
     return { success: false, error: "Unauthorized" };
@@ -147,12 +143,6 @@ export const useCleanupEvents = routeAction$(async (data, requestEvent) => {
 
 // Server action to delete a specific event
 export const useDeleteEvent = routeAction$(async (data, requestEvent) => {
-  const { deleteSystemEvent } = await import("~/lib/system-events");
-  const { sendAdminActionNotification } = await import(
-    "~/lib/discord-notifications"
-  );
-  const { db } = await import("~/lib/db");
-
   const session = requestEvent.sharedMap.get("session");
   if (!session?.user?.email) {
     return { success: false, error: "Unauthorized" };
@@ -204,12 +194,6 @@ export const useDeleteEvent = routeAction$(async (data, requestEvent) => {
 
 // Server action to clear all events
 export const useClearAllEvents = routeAction$(async (data, requestEvent) => {
-  const { clearAllSystemEvents } = await import("~/lib/system-events");
-  const { sendAdminActionNotification } = await import(
-    "~/lib/discord-notifications"
-  );
-  const { db } = await import("~/lib/db");
-
   const session = requestEvent.sharedMap.get("session");
   if (!session?.user?.email) {
     return { success: false, error: "Unauthorized" };
@@ -251,12 +235,6 @@ export const useClearAllEvents = routeAction$(async (data, requestEvent) => {
 // Server action to clear non-critical events
 export const useClearNonCriticalEvents = routeAction$(
   async (data, requestEvent) => {
-    const { clearNonCriticalEvents } = await import("~/lib/system-events");
-    const { sendAdminActionNotification } = await import(
-      "~/lib/discord-notifications"
-    );
-    const { db } = await import("~/lib/db");
-
     const session = requestEvent.sharedMap.get("session");
     if (!session?.user?.email) {
       return { success: false, error: "Unauthorized" };
@@ -297,11 +275,6 @@ export const useClearNonCriticalEvents = routeAction$(
 );
 
 export const useSystemEventsData = routeLoader$(async () => {
-  const { getRecentSystemEvents, getSystemEventsStats } = await import(
-    "~/lib/system-events"
-  );
-  const { getMonitoringStatus } = await import("~/lib/system-monitoring");
-
   try {
     const recentEvents = await getRecentSystemEvents(100); // Get more events for management
     const eventStats = await getSystemEventsStats(24);

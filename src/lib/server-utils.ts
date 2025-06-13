@@ -1,6 +1,11 @@
 // Server-only utilities that use Node.js modules
 // This file should only be imported on the server side
 
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
+import diskusage from 'diskusage';
+
 /**
  * Get free space available in the uploads directory
  * @param uploadsPath - Path to the uploads directory
@@ -8,10 +13,6 @@
  */
 export async function getFreeSpace(uploadsPath: string = './uploads'): Promise<number> {
   try {
-    const fs = await import('fs');
-    const path = await import('path');
-    const diskusage = await import('diskusage');
-
     // Resolve the absolute path
     const absolutePath = path.resolve(uploadsPath);
     
@@ -44,10 +45,6 @@ export async function getDiskUsage(uploadsPath: string = './uploads'): Promise<{
   usedPercentage: number;
 }> {
   try {
-    const fs = await import('fs');
-    const path = await import('path');
-    const diskusage = await import('diskusage');
-
     const absolutePath = path.resolve(uploadsPath);
     
     // Ensure the directory exists
@@ -89,8 +86,6 @@ export async function getDiskUsage(uploadsPath: string = './uploads'): Promise<{
  * Server-side only function
  */
 export async function getSystemMetrics() {  try {
-    const os = await import('os');
-    
     // CPU usage calculation
     const cpus = os.cpus();
     let totalIdle = 0;

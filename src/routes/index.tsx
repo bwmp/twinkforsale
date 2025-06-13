@@ -18,12 +18,9 @@ import {
   Palette,
 } from "lucide-icons-qwik";
 import { ThemeToggle } from "~/components/theme-toggle/theme-toggle";
-
+import { db } from "~/lib/db";
+import { getAnalyticsData } from "~/lib/analytics";
 export const usePublicStats = routeLoader$(async () => {
-  // Import server-side dependencies inside the loader
-  const { db } = await import("~/lib/db");
-  const { getAnalyticsData } = await import("~/lib/analytics");
-
   try {
     // Get total counts
     const totalUploads = await db.upload.count();

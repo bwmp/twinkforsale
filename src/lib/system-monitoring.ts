@@ -4,6 +4,7 @@ import {
   cleanupOldEvents,
   createSystemEvent 
 } from './system-events';
+import { db } from './db';
 
 let monitoringInterval: NodeJS.Timeout | null = null;
 
@@ -66,7 +67,6 @@ export function stopSystemMonitoring() {
  * Run all system checks
  */
 async function runSystemChecks() {
-  const { db } = await import('./db');
   console.log('Running system checks...');
 
   // Check system-wide alerts
@@ -95,7 +95,6 @@ export async function triggerSystemChecks() {
  * Monitor upload events for immediate alerts
  */
 export async function monitorUploadEvent(userId: string, fileSize: number) {
-  const { db } = await import('./db');
   try {
     // Check if user is approaching limits after this upload
     const user = await db.user.findUnique({

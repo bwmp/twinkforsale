@@ -14,11 +14,10 @@ import {
 } from "~/lib/image-preview-store";
 import Navigation from "~/components/navigation/navigation";
 import { HeartParticles } from "~/components/heart-particles/heart-particles";
+import { getServerThemePreference, getThemePreference } from "~/lib/cookie-utils";
+import { generateThemeCSS, themes } from "~/lib/theme-store";
 
 export const useServerTheme = routeLoader$(async (requestEvent) => {
-  const { getServerThemePreference } = await import("~/lib/cookie-utils");
-  const { generateThemeCSS } = await import("~/lib/theme-store");
-
   const cookieHeader = requestEvent.request.headers.get("cookie");
   const serverTheme = getServerThemePreference(cookieHeader || "") || "auto";
   const themeCSS = generateThemeCSS(serverTheme);
@@ -61,7 +60,6 @@ export default component$(() => {
       }
     }
   });
-
   // Ensure theme persistence across page navigations
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(async () => {
@@ -72,9 +70,6 @@ export default component$(() => {
       // If no theme is set or if we need to check cookies for user preference
       if (!currentThemeVariant || currentThemeVariant === "undefined") {
         try {
-          const { getThemePreference } = await import("~/lib/cookie-utils");
-          const { themes } = await import("~/lib/theme-store");
-          
           const savedTheme = await getThemePreference();
           if (savedTheme && themes[savedTheme]) {
             let effectiveTheme = savedTheme;

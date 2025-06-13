@@ -17,10 +17,9 @@ import {
   Eye,
   Settings as SettingsIcon,
 } from "lucide-icons-qwik";
-
+import { db } from "~/lib/db";
+import { setThemePreference } from "~/lib/cookie-utils";
 export const useUserLoader = routeLoader$(async (requestEvent) => {
-  const { db } = await import("~/lib/db");
-
   const session = requestEvent.sharedMap.get("session");
 
   if (!session?.user?.email) {
@@ -52,8 +51,6 @@ export const useUserLoader = routeLoader$(async (requestEvent) => {
 });
 
 export const useUploadDomainsLoader = routeLoader$(async () => {
-  const { db } = await import("~/lib/db");
-
   const domains = await db.uploadDomain.findMany({
     where: { isActive: true },
     orderBy: [{ isDefault: "desc" }, { name: "asc" }],
@@ -64,8 +61,6 @@ export const useUploadDomainsLoader = routeLoader$(async () => {
 
 export const useUpdateSettingsAction = routeAction$(
   async (values, requestEvent) => {
-    const { db } = await import("~/lib/db");
-
     const session = requestEvent.sharedMap.get("session");
 
     if (!session?.user?.email) {
@@ -91,7 +86,8 @@ export const useUpdateSettingsAction = routeAction$(
           message: "Invalid upload domain selected",
         });
       }
-    }    await db.user.update({
+    }
+    await db.user.update({
       where: { id: user.id },
       data: {
         uploadDomainId: values.uploadDomainId || null,
@@ -102,7 +98,8 @@ export const useUpdateSettingsAction = routeAction$(
     });
 
     return { success: true, message: "Settings updated successfully" };
-  },  zod$({
+  },
+  zod$({
     uploadDomainId: z.string().optional(),
     customSubdomain: z.string().optional(),
     defaultExpirationDays: z.number().min(1).max(365).optional(),
@@ -126,9 +123,12 @@ export default component$(() => {
       return defaultDomain.id;
     }
     return uploadDomains.value.length > 0 ? uploadDomains.value[0].id : "";
-  };  const selectedDomainId = useSignal(getDefaultDomainId());
+  };
+  const selectedDomainId = useSignal(getDefaultDomainId());
   const customSubdomain = useSignal(userData.value.user.customSubdomain || "");
-  const defaultExpirationDays = useSignal(userData.value.user.defaultExpirationDays || "");
+  const defaultExpirationDays = useSignal(
+    userData.value.user.defaultExpirationDays || "",
+  );
   const defaultMaxViews = useSignal(userData.value.user.defaultMaxViews || "");
   const currentThemeDisplay = useSignal<ThemeName>("dark");
 
@@ -319,7 +319,8 @@ export default component$(() => {
                 }}
               />
               <p class="text-theme-muted mt-2 pl-3 text-xs sm:pl-4">
-                Files will automatically delete after this many days. Leave empty for no expiration~ 🕐
+                Files will automatically delete after this many days. Leave
+                empty for no expiration~ 🕐
               </p>
             </div>
 
@@ -342,7 +343,8 @@ export default component$(() => {
                 }}
               />
               <p class="text-theme-muted mt-2 pl-3 text-xs sm:pl-4">
-                Files will automatically delete after this many views. Leave empty for unlimited views~ 👀✨
+                Files will automatically delete after this many views. Leave
+                empty for unlimited views~ 👀✨
               </p>
             </div>
 
@@ -416,15 +418,11 @@ export default component$(() => {
                     // Apply theme changes directly like the toggle
                     if (typeof document !== "undefined") {
                       (async () => {
-                        const cookieUtils = await import("~/lib/cookie-utils");
-                        const themeStore = await import("~/lib/theme-store");
-
                         // Save to cookie
-                        cookieUtils.setThemePreference(themeName);
+                        setThemePreference(themeName);
 
                         // Apply theme immediately
                         const root = document.documentElement;
-                        const themes = themeStore.themes;
                         let effectiveTheme = themeName;
                         if (themeName === "auto") {
                           effectiveTheme = window.matchMedia(

@@ -7,10 +7,8 @@ import {
   zod$,
 } from "@builder.io/qwik-city";
 import { Plus, Edit, Trash2, Globe } from "lucide-icons-qwik";
-
+import { db } from "~/lib/db";
 export const useAdminCheck = routeLoader$(async (requestEvent) => {
-  const { db } = await import("~/lib/db");
-
   const session = requestEvent.sharedMap.get("session");
 
   if (!session?.user?.email) {
@@ -30,18 +28,13 @@ export const useAdminCheck = routeLoader$(async (requestEvent) => {
 });
 
 export const useUploadDomainsLoader = routeLoader$(async () => {
-  const { db } = await import("~/lib/db");
-
   const domains = await db.uploadDomain.findMany({
-    orderBy: [
-      { isDefault: 'desc' },
-      { name: 'asc' }
-    ],
+    orderBy: [{ isDefault: "desc" }, { name: "asc" }],
     include: {
       _count: {
-        select: { users: true }
-      }
-    }
+        select: { users: true },
+      },
+    },
   });
 
   return domains;
@@ -49,8 +42,6 @@ export const useUploadDomainsLoader = routeLoader$(async () => {
 
 export const useCreateDomainAction = routeAction$(
   async (values, requestEvent) => {
-    const { db } = await import("~/lib/db");
-
     const session = requestEvent.sharedMap.get("session");
     if (!session?.user?.email) {
       return requestEvent.fail(401, { message: "Unauthorized" });
@@ -102,8 +93,6 @@ export const useCreateDomainAction = routeAction$(
 
 export const useUpdateDomainAction = routeAction$(
   async (values, requestEvent) => {
-    const { db } = await import("~/lib/db");
-
     const session = requestEvent.sharedMap.get("session");
     if (!session?.user?.email) {
       return requestEvent.fail(401, { message: "Unauthorized" });
@@ -149,8 +138,6 @@ export const useUpdateDomainAction = routeAction$(
 
 export const useDeleteDomainAction = routeAction$(
   async (values, requestEvent) => {
-    const { db } = await import("~/lib/db");
-
     const session = requestEvent.sharedMap.get("session");
     if (!session?.user?.email) {
       return requestEvent.fail(401, { message: "Unauthorized" });
@@ -172,8 +159,8 @@ export const useDeleteDomainAction = routeAction$(
     });
 
     if (domainWithUsers?._count.users && domainWithUsers._count.users > 0) {
-      return requestEvent.fail(400, { 
-        message: `Cannot delete domain: ${domainWithUsers._count.users} users are using this domain` 
+      return requestEvent.fail(400, {
+        message: `Cannot delete domain: ${domainWithUsers._count.users} users are using this domain`,
       });
     }
 
@@ -247,7 +234,8 @@ export default component$(() => {
                   required
                 />
                 <p class="text-theme-muted mt-2 pl-3 text-xs sm:pl-4">
-                  The top-level domain (e.g., "twink.forsale", "example.com")~ ✨
+                  The top-level domain (e.g., "twink.forsale", "example.com")~
+                  ✨
                 </p>
               </div>
 
@@ -272,9 +260,12 @@ export default component$(() => {
                   type="checkbox"
                   name="isDefault"
                   id="isDefault"
-                  class="glass rounded border-2 border-theme-accent-primary/30 checked:bg-theme-accent-primary checked:border-theme-accent-primary focus:ring-2 focus:ring-theme-accent-primary/50"
+                  class="glass border-theme-accent-primary/30 checked:bg-theme-accent-primary checked:border-theme-accent-primary focus:ring-theme-accent-primary/50 rounded border-2 focus:ring-2"
                 />
-                <label for="isDefault" class="text-theme-secondary text-xs sm:text-sm">
+                <label
+                  for="isDefault"
+                  class="text-theme-secondary text-xs sm:text-sm"
+                >
                   Set as default domain~ ⭐
                 </label>
               </div>
@@ -323,7 +314,10 @@ export default component$(() => {
 
         <div class="space-y-4">
           {domains.value.map((domain) => (
-            <div key={domain.id} class="glass border-theme-card-border rounded-2xl border p-4">
+            <div
+              key={domain.id}
+              class="glass border-theme-card-border rounded-2xl border p-4"
+            >
               {editingDomain.value === domain.id ? (
                 <Form action={updateAction}>
                   <input type="hidden" name="id" value={domain.id} />
@@ -360,18 +354,22 @@ export default component$(() => {
                           type="checkbox"
                           name="isActive"
                           checked={domain.isActive}
-                          class="glass rounded border-2 border-theme-accent-primary/30"
+                          class="glass border-theme-accent-primary/30 rounded border-2"
                         />
-                        <label class="text-theme-secondary text-xs">Active</label>
+                        <label class="text-theme-secondary text-xs">
+                          Active
+                        </label>
                       </div>
                       <div class="flex items-center gap-2">
                         <input
                           type="checkbox"
                           name="isDefault"
                           checked={domain.isDefault}
-                          class="glass rounded border-2 border-theme-accent-primary/30"
+                          class="glass border-theme-accent-primary/30 rounded border-2"
                         />
-                        <label class="text-theme-secondary text-xs">Default</label>
+                        <label class="text-theme-secondary text-xs">
+                          Default
+                        </label>
                       </div>
                     </div>
                     <div class="flex gap-2">
@@ -398,7 +396,9 @@ export default component$(() => {
                       <Globe class="text-theme-accent-primary h-5 w-5" />
                       <div>
                         <div class="flex items-center gap-2">
-                          <h3 class="text-theme-primary font-medium">{domain.name}</h3>
+                          <h3 class="text-theme-primary font-medium">
+                            {domain.name}
+                          </h3>
                           {domain.isDefault && (
                             <span class="bg-gradient-theme-accent-secondary text-theme-primary rounded-full px-2 py-1 text-xs">
                               Default
@@ -410,7 +410,9 @@ export default component$(() => {
                             </span>
                           )}
                         </div>
-                        <p class="text-theme-secondary text-sm">{domain.domain}</p>
+                        <p class="text-theme-secondary text-sm">
+                          {domain.domain}
+                        </p>
                         <p class="text-theme-muted text-xs">
                           {domain._count.users} users using this domain
                         </p>
@@ -430,7 +432,11 @@ export default component$(() => {
                         type="submit"
                         class="text-theme-error hover:bg-theme-error/20 hover:text-theme-error rounded-full p-2 transition-all duration-300"
                         onClick$={(e) => {
-                          if (!confirm(`Are you sure you want to delete ${domain.name}?`)) {
+                          if (
+                            !confirm(
+                              `Are you sure you want to delete ${domain.name}?`,
+                            )
+                          ) {
                             e.preventDefault();
                           }
                         }}
@@ -456,7 +462,8 @@ export default component$(() => {
         {(updateAction.value?.failed || deleteAction.value?.failed) && (
           <div class="bg-gradient-theme-primary-secondary/20 border-theme-accent-primary/30 glass mt-4 rounded-2xl border p-3 sm:mt-6 sm:p-4">
             <p class="text-theme-accent-primary flex items-center text-xs sm:text-sm">
-              ❌ {updateAction.value?.message || deleteAction.value?.message}~ 💔
+              ❌ {updateAction.value?.message || deleteAction.value?.message}~
+              💔
             </p>
           </div>
         )}

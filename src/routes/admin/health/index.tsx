@@ -22,10 +22,18 @@ import {
   Info,
 } from "lucide-icons-qwik";
 import { formatBytes } from "~/lib/utils";
-
+import { db } from "~/lib/db";
+import { getEnvConfig } from "~/lib/env";
+import { getAnalyticsData } from "~/lib/analytics";
+import { getDiskUsage, getFreeSpace } from "~/lib/server-utils";
+import {
+  getRecentSystemEvents,
+  getSystemEventsStats,
+  checkSystemAlerts,
+  checkUserStorageAlerts,
+} from "~/lib/system-events";
+import os from "os";
 export const useAdminCheck = routeLoader$(async (requestEvent) => {
-  const { db } = await import("~/lib/db");
-
   const session = requestEvent.sharedMap.get("session");
 
   if (!session?.user?.email) {
@@ -46,11 +54,6 @@ export const useAdminCheck = routeLoader$(async (requestEvent) => {
 // Server action to trigger system checks from health dashboard
 export const useTriggerSystemCheck = routeAction$(
   async (data, requestEvent) => {
-    const { db } = await import("~/lib/db");
-    const { checkSystemAlerts, checkUserStorageAlerts } = await import(
-      "~/lib/system-events"
-    );
-
     const session = requestEvent.sharedMap.get("session");
     if (!session?.user?.email) {
       return { success: false, error: "Unauthorized" };
@@ -85,15 +88,6 @@ export const useTriggerSystemCheck = routeAction$(
 );
 
 export const useHealthData = routeLoader$(async () => {
-  const { db } = await import("~/lib/db");
-  const { getEnvConfig } = await import("~/lib/env");
-  const { getAnalyticsData } = await import("~/lib/analytics");
-  const { getDiskUsage, getFreeSpace } = await import("~/lib/server-utils");
-  const { getRecentSystemEvents, getSystemEventsStats } = await import(
-    "~/lib/system-events"
-  );
-  const os = await import("os");
-
   const config = getEnvConfig();
 
   try {
@@ -300,10 +294,12 @@ export default component$(() => {
 
   return (
     <div class="min-h-screen p-4 sm:p-6">
-      <div class="mx-auto max-w-7xl">        {/* Header */}
+      <div class="mx-auto max-w-7xl">
+        {" "}
+        {/* Header */}
         <div class="mb-6">
           <div class="mb-4">
-            <h1 class="text-gradient-cute flex items-center gap-3 text-2xl sm:text-3xl font-bold">
+            <h1 class="text-gradient-cute flex items-center gap-3 text-2xl font-bold sm:text-3xl">
               <Activity class="h-6 w-6 sm:h-8 sm:w-8" />
               Health Dashboard
             </h1>
@@ -313,7 +309,7 @@ export default component$(() => {
           </div>
 
           {/* Mobile Action Buttons */}
-          <div class="block sm:hidden space-y-3">
+          <div class="block space-y-3 sm:hidden">
             <button
               onClick$={() => (autoRefresh.value = !autoRefresh.value)}
               class={`flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-medium transition-all duration-300 hover:scale-105 active:scale-95 ${
@@ -327,7 +323,7 @@ export default component$(() => {
               />
               Auto Refresh {autoRefresh.value ? "(ON)" : "(OFF)"}
             </button>
-            
+
             <div class="grid grid-cols-2 gap-2">
               <button
                 onClick$={async () => {
@@ -357,7 +353,7 @@ export default component$(() => {
           </div>
 
           {/* Desktop Action Buttons */}
-          <div class="hidden sm:flex items-center justify-end gap-3">
+          <div class="hidden items-center justify-end gap-3 sm:flex">
             <button
               onClick$={() => (autoRefresh.value = !autoRefresh.value)}
               class={`flex items-center gap-2 rounded-2xl px-5 py-3 text-sm font-medium transition-all duration-300 hover:scale-105 active:scale-95 ${
@@ -396,31 +392,32 @@ export default component$(() => {
               Refresh Now
             </button>
           </div>
-        </div>        {/* Status Overview */}
-        <div class="mb-6 grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        </div>{" "}
+        {/* Status Overview */}
+        <div class="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
           {/* Database Status */}
           <div class="card-cute rounded-2xl p-3 sm:p-4">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2 sm:gap-3">
-                <Database class="h-5 w-5 sm:h-6 sm:w-6 text-blue-500" />
+                <Database class="h-5 w-5 text-blue-500 sm:h-6 sm:w-6" />
                 <div>
-                  <h3 class="font-medium text-sm sm:text-base">Database</h3>
-                  <p class="text-xs sm:text-sm text-gray-600">
+                  <h3 class="text-sm font-medium sm:text-base">Database</h3>
+                  <p class="text-xs text-gray-600 sm:text-sm">
                     {data.database?.responseTime}ms response
                   </p>
                 </div>
               </div>
-              <CheckCircle class="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
+              <CheckCircle class="h-4 w-4 text-green-500 sm:h-5 sm:w-5" />
             </div>
           </div>
           {/* Storage Status */}
           <div class="card-cute rounded-2xl p-3 sm:p-4">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2 sm:gap-3">
-                <HardDrive class="h-5 w-5 sm:h-6 sm:w-6 text-purple-500" />
+                <HardDrive class="h-5 w-5 text-purple-500 sm:h-6 sm:w-6" />
                 <div class="min-w-0 flex-1">
-                  <h3 class="font-medium text-sm sm:text-base">Storage</h3>
-                  <p class="text-xs sm:text-sm text-gray-600 truncate">
+                  <h3 class="text-sm font-medium sm:text-base">Storage</h3>
+                  <p class="truncate text-xs text-gray-600 sm:text-sm">
                     {formatBytes(data.storage?.freeSpace || 0)} free
                     {data.storage?.diskUsedPercentage && (
                       <span class="ml-1 hidden sm:inline">
@@ -432,9 +429,9 @@ export default component$(() => {
               </div>
               {data.storage?.diskUsedPercentage &&
               data.storage.diskUsedPercentage > 80 ? (
-                <AlertTriangle class="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500 flex-shrink-0" />
+                <AlertTriangle class="h-4 w-4 flex-shrink-0 text-yellow-500 sm:h-5 sm:w-5" />
               ) : (
-                <CheckCircle class="h-4 w-4 sm:h-5 sm:w-5 text-green-500 flex-shrink-0" />
+                <CheckCircle class="h-4 w-4 flex-shrink-0 text-green-500 sm:h-5 sm:w-5" />
               )}
             </div>
           </div>
@@ -442,18 +439,18 @@ export default component$(() => {
           <div class="card-cute rounded-2xl p-3 sm:p-4">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2 sm:gap-3">
-                <Users class="h-5 w-5 sm:h-6 sm:w-6 text-green-500" />
+                <Users class="h-5 w-5 text-green-500 sm:h-6 sm:w-6" />
                 <div>
-                  <h3 class="font-medium text-sm sm:text-base">Users</h3>
-                  <p class="text-xs sm:text-sm text-gray-600">
+                  <h3 class="text-sm font-medium sm:text-base">Users</h3>
+                  <p class="text-xs text-gray-600 sm:text-sm">
                     {data.users?.pending || 0} pending approval
                   </p>
                 </div>
               </div>
               {(data.users?.pending || 0) > 0 ? (
-                <AlertTriangle class="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500" />
+                <AlertTriangle class="h-4 w-4 text-yellow-500 sm:h-5 sm:w-5" />
               ) : (
-                <CheckCircle class="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
+                <CheckCircle class="h-4 w-4 text-green-500 sm:h-5 sm:w-5" />
               )}
             </div>
           </div>
@@ -461,29 +458,32 @@ export default component$(() => {
           <div class="card-cute rounded-2xl p-3 sm:p-4">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2 sm:gap-3">
-                <Server class="h-5 w-5 sm:h-6 sm:w-6 text-indigo-500" />
+                <Server class="h-5 w-5 text-indigo-500 sm:h-6 sm:w-6" />
                 <div class="min-w-0 flex-1">
-                  <h3 class="font-medium text-sm sm:text-base">System</h3>
-                  <p class="text-xs sm:text-sm text-gray-600 truncate">
+                  <h3 class="text-sm font-medium sm:text-base">System</h3>
+                  <p class="truncate text-xs text-gray-600 sm:text-sm">
                     Uptime: {formatUptime(data.system?.uptime || 0)}
                   </p>
                 </div>
               </div>
-              <CheckCircle class="h-4 w-4 sm:h-5 sm:w-5 text-green-500 flex-shrink-0" />
+              <CheckCircle class="h-4 w-4 flex-shrink-0 text-green-500 sm:h-5 sm:w-5" />
             </div>
           </div>
-        </div>        {/* Key Metrics */}
+        </div>{" "}
+        {/* Key Metrics */}
         <div class="mb-6 grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
           {/* System Performance */}
-          <div class="card-cute rounded-2xl sm:rounded-3xl p-4 sm:p-6">
-            <h3 class="text-gradient-cute mb-4 flex items-center gap-2 text-base sm:text-lg font-bold">
+          <div class="card-cute rounded-2xl p-4 sm:rounded-3xl sm:p-6">
+            <h3 class="text-gradient-cute mb-4 flex items-center gap-2 text-base font-bold sm:text-lg">
               <Cpu class="h-4 w-4 sm:h-5 sm:w-5" />
               System Performance
             </h3>
             <div class="space-y-3 sm:space-y-4">
               <div class="flex items-center justify-between">
-                <span class="text-theme-text-secondary text-sm sm:text-base">Memory Usage</span>
-                <span class="font-medium text-sm sm:text-base">
+                <span class="text-theme-text-secondary text-sm sm:text-base">
+                  Memory Usage
+                </span>
+                <span class="text-sm font-medium sm:text-base">
                   {data.system?.memory.used}MB / {data.system?.memory.total}MB
                 </span>
               </div>
@@ -500,83 +500,100 @@ export default component$(() => {
                   }}
                 />
               </div>
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 pt-2">
+              <div class="grid grid-cols-1 gap-3 pt-2 sm:grid-cols-2 sm:gap-4">
                 <div>
                   <span class="text-theme-text-secondary text-xs sm:text-sm">
                     Available Memory
                   </span>
-                  <p class="font-medium text-sm sm:text-base">{data.system?.memory.available}MB</p>
+                  <p class="text-sm font-medium sm:text-base">
+                    {data.system?.memory.available}MB
+                  </p>
                 </div>
                 <div>
                   <span class="text-theme-text-secondary text-xs sm:text-sm">
                     Node Version
                   </span>
-                  <p class="font-medium text-sm sm:text-base">{data.system?.nodeVersion}</p>
+                  <p class="text-sm font-medium sm:text-base">
+                    {data.system?.nodeVersion}
+                  </p>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Activity Metrics */}
-          <div class="card-cute rounded-2xl sm:rounded-3xl p-4 sm:p-6">
-            <h3 class="text-gradient-cute mb-4 flex items-center gap-2 text-base sm:text-lg font-bold">
+          <div class="card-cute rounded-2xl p-4 sm:rounded-3xl sm:p-6">
+            <h3 class="text-gradient-cute mb-4 flex items-center gap-2 text-base font-bold sm:text-lg">
               <TrendingUp class="h-4 w-4 sm:h-5 sm:w-5" />
               24h Activity
             </h3>
             <div class="grid grid-cols-3 gap-3 sm:gap-4">
               <div class="text-center">
-                <div class="bg-gradient-theme-primary-secondary mx-auto mb-2 flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full">
-                  <FileText class="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                <div class="bg-gradient-theme-primary-secondary mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full sm:h-12 sm:w-12">
+                  <FileText class="h-5 w-5 text-white sm:h-6 sm:w-6" />
                 </div>
-                <div class="text-theme-primary text-lg sm:text-2xl font-bold">
+                <div class="text-theme-primary text-lg font-bold sm:text-2xl">
                   {data.activity?.uploads24h || 0}
                 </div>
-                <div class="text-theme-text-secondary text-xs sm:text-sm">Uploads</div>
+                <div class="text-theme-text-secondary text-xs sm:text-sm">
+                  Uploads
+                </div>
               </div>
               <div class="text-center">
-                <div class="bg-gradient-theme-secondary-tertiary mx-auto mb-2 flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full">
-                  <Eye class="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                <div class="bg-gradient-theme-secondary-tertiary mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full sm:h-12 sm:w-12">
+                  <Eye class="h-5 w-5 text-white sm:h-6 sm:w-6" />
                 </div>
-                <div class="text-theme-primary text-lg sm:text-2xl font-bold">
+                <div class="text-theme-primary text-lg font-bold sm:text-2xl">
                   {data.activity?.views24h || 0}
                 </div>
-                <div class="text-theme-text-secondary text-xs sm:text-sm">Views</div>
+                <div class="text-theme-text-secondary text-xs sm:text-sm">
+                  Views
+                </div>
               </div>
               <div class="text-center">
-                <div class="bg-gradient-theme-tertiary-quaternary mx-auto mb-2 flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full">
-                  <Download class="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                <div class="bg-gradient-theme-tertiary-quaternary mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-full sm:h-12 sm:w-12">
+                  <Download class="h-5 w-5 text-white sm:h-6 sm:w-6" />
                 </div>
-                <div class="text-theme-primary text-lg sm:text-2xl font-bold">
+                <div class="text-theme-primary text-lg font-bold sm:text-2xl">
                   {data.activity?.downloads24h || 0}
                 </div>
-                <div class="text-theme-text-secondary text-xs sm:text-sm">Downloads</div>
+                <div class="text-theme-text-secondary text-xs sm:text-sm">
+                  Downloads
+                </div>
               </div>
             </div>
           </div>
-        </div>        {/* Storage & User Analytics */}
+        </div>{" "}
+        {/* Storage & User Analytics */}
         <div class="mb-6 grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
           {/* Storage Breakdown */}
-          <div class="card-cute rounded-2xl sm:rounded-3xl p-4 sm:p-6">
-            <h3 class="text-gradient-cute mb-4 flex items-center gap-2 text-base sm:text-lg font-bold">
+          <div class="card-cute rounded-2xl p-4 sm:rounded-3xl sm:p-6">
+            <h3 class="text-gradient-cute mb-4 flex items-center gap-2 text-base font-bold sm:text-lg">
               <HardDrive class="h-4 w-4 sm:h-5 sm:w-5" />
               Storage Analytics
             </h3>
             <div class="space-y-3 sm:space-y-4">
               <div class="flex items-center justify-between">
-                <span class="text-theme-text-secondary text-sm sm:text-base">Total Files</span>
-                <span class="font-medium text-sm sm:text-base">
+                <span class="text-theme-text-secondary text-sm sm:text-base">
+                  Total Files
+                </span>
+                <span class="text-sm font-medium sm:text-base">
                   {data.storage?.totalFiles?.toLocaleString() || 0}
                 </span>
               </div>
               <div class="flex items-center justify-between">
-                <span class="text-theme-text-secondary text-sm sm:text-base">Files Size</span>
-                <span class="font-medium text-sm sm:text-base">
+                <span class="text-theme-text-secondary text-sm sm:text-base">
+                  Files Size
+                </span>
+                <span class="text-sm font-medium sm:text-base">
                   {formatBytes(data.storage?.totalSize || 0)}
                 </span>
               </div>
               <div class="flex items-center justify-between">
-                <span class="text-theme-text-secondary text-sm sm:text-base">Disk Free Space</span>
-                <span class="font-medium text-green-600 text-sm sm:text-base">
+                <span class="text-theme-text-secondary text-sm sm:text-base">
+                  Disk Free Space
+                </span>
+                <span class="text-sm font-medium text-green-600 sm:text-base">
                   {formatBytes(data.storage?.freeSpace || 0)}
                 </span>
               </div>
@@ -586,13 +603,15 @@ export default component$(() => {
                     <span class="text-theme-text-secondary text-sm sm:text-base">
                       Total Disk Size
                     </span>
-                    <span class="font-medium text-sm sm:text-base">
+                    <span class="text-sm font-medium sm:text-base">
                       {formatBytes(data.storage.diskTotal)}
                     </span>
                   </div>
                   <div class="flex items-center justify-between">
-                    <span class="text-theme-text-secondary text-sm sm:text-base">Disk Usage</span>
-                    <span class="font-medium text-sm sm:text-base">
+                    <span class="text-theme-text-secondary text-sm sm:text-base">
+                      Disk Usage
+                    </span>
+                    <span class="text-sm font-medium sm:text-base">
                       {data.storage.diskUsedPercentage?.toFixed(1) || 0}%
                     </span>
                   </div>
@@ -613,8 +632,10 @@ export default component$(() => {
                 </>
               )}
               <div class="flex items-center justify-between">
-                <span class="text-theme-text-secondary text-sm sm:text-base">Average File Size</span>
-                <span class="font-medium text-sm sm:text-base">
+                <span class="text-theme-text-secondary text-sm sm:text-base">
+                  Average File Size
+                </span>
+                <span class="text-sm font-medium sm:text-base">
                   {data.storage?.totalFiles && data.storage?.totalSize
                     ? formatBytes(
                         Math.round(
@@ -626,28 +647,36 @@ export default component$(() => {
               </div>
             </div>
           </div>
-          
+
           {/* User Statistics */}
-          <div class="card-cute rounded-2xl sm:rounded-3xl p-4 sm:p-6">
-            <h3 class="text-gradient-cute mb-4 flex items-center gap-2 text-base sm:text-lg font-bold">
+          <div class="card-cute rounded-2xl p-4 sm:rounded-3xl sm:p-6">
+            <h3 class="text-gradient-cute mb-4 flex items-center gap-2 text-base font-bold sm:text-lg">
               <Users class="h-4 w-4 sm:h-5 sm:w-5" />
               User Statistics
             </h3>
             <div class="space-y-3 sm:space-y-4">
               <div class="flex items-center justify-between">
-                <span class="text-theme-text-secondary text-sm sm:text-base">Total Users</span>
-                <span class="font-medium text-sm sm:text-base">{data.users?.total || 0}</span>
+                <span class="text-theme-text-secondary text-sm sm:text-base">
+                  Total Users
+                </span>
+                <span class="text-sm font-medium sm:text-base">
+                  {data.users?.total || 0}
+                </span>
               </div>
               <div class="flex items-center justify-between">
-                <span class="text-theme-text-secondary text-sm sm:text-base">Approved Users</span>
-                <span class="font-medium text-green-600 text-sm sm:text-base">
+                <span class="text-theme-text-secondary text-sm sm:text-base">
+                  Approved Users
+                </span>
+                <span class="text-sm font-medium text-green-600 sm:text-base">
                   {data.users?.approved || 0}
                 </span>
               </div>
               <div class="flex items-center justify-between">
-                <span class="text-theme-text-secondary text-sm sm:text-base">Pending Approval</span>
+                <span class="text-theme-text-secondary text-sm sm:text-base">
+                  Pending Approval
+                </span>
                 <span
-                  class={`font-medium text-sm sm:text-base ${
+                  class={`text-sm font-medium sm:text-base ${
                     (data.users?.pending || 0) > 0
                       ? "text-yellow-600"
                       : "text-gray-600"
@@ -670,10 +699,11 @@ export default component$(() => {
               </div>
             </div>
           </div>
-        </div>        {/* Top Active Users */}
+        </div>{" "}
+        {/* Top Active Users */}
         <div class="mb-6">
-          <div class="card-cute rounded-2xl sm:rounded-3xl p-4 sm:p-6">
-            <h3 class="text-gradient-cute mb-4 flex items-center gap-2 text-base sm:text-lg font-bold">
+          <div class="card-cute rounded-2xl p-4 sm:rounded-3xl sm:p-6">
+            <h3 class="text-gradient-cute mb-4 flex items-center gap-2 text-base font-bold sm:text-lg">
               <Zap class="h-4 w-4 sm:h-5 sm:w-5" />
               Top Active Users (Last 7 Days)
             </h3>
@@ -682,16 +712,16 @@ export default component$(() => {
                 <table class="w-full">
                   <thead>
                     <tr class="border-theme-card-border border-b">
-                      <th class="text-theme-text-secondary py-2 text-left text-xs sm:text-sm font-medium">
+                      <th class="text-theme-text-secondary py-2 text-left text-xs font-medium sm:text-sm">
                         User
                       </th>
-                      <th class="text-theme-text-secondary py-2 text-right text-xs sm:text-sm font-medium">
+                      <th class="text-theme-text-secondary py-2 text-right text-xs font-medium sm:text-sm">
                         Recent Uploads
                       </th>
-                      <th class="text-theme-text-secondary py-2 text-right text-xs sm:text-sm font-medium hidden sm:table-cell">
+                      <th class="text-theme-text-secondary hidden py-2 text-right text-xs font-medium sm:table-cell sm:text-sm">
                         Total Uploads
                       </th>
-                      <th class="text-theme-text-secondary py-2 text-right text-xs sm:text-sm font-medium">
+                      <th class="text-theme-text-secondary py-2 text-right text-xs font-medium sm:text-sm">
                         Storage Used
                       </th>
                     </tr>
@@ -704,16 +734,18 @@ export default component$(() => {
                       >
                         <td class="py-2 sm:py-3">
                           <div>
-                            <div class="font-medium text-sm sm:text-base truncate">{user.name}</div>
-                            <div class="text-theme-text-secondary text-xs sm:text-sm truncate">
+                            <div class="truncate text-sm font-medium sm:text-base">
+                              {user.name}
+                            </div>
+                            <div class="text-theme-text-secondary truncate text-xs sm:text-sm">
                               {user.email}
                             </div>
                           </div>
                         </td>
-                        <td class="text-theme-primary text-right font-medium text-sm sm:text-base">
+                        <td class="text-theme-primary text-right text-sm font-medium sm:text-base">
                           {user.uploadsLast7Days}
                         </td>
-                        <td class="text-theme-text-secondary text-right text-sm sm:text-base hidden sm:table-cell">
+                        <td class="text-theme-text-secondary hidden text-right text-sm sm:table-cell sm:text-base">
                           {user.totalUploads}
                         </td>
                         <td class="text-theme-text-secondary text-right text-sm sm:text-base">
@@ -725,23 +757,24 @@ export default component$(() => {
                 </table>
               </div>
             ) : (
-              <div class="py-6 sm:py-8 text-center">
-                <Users class="mx-auto h-8 w-8 sm:h-12 sm:w-12 text-gray-400" />
+              <div class="py-6 text-center sm:py-8">
+                <Users class="mx-auto h-8 w-8 text-gray-400 sm:h-12 sm:w-12" />
                 <p class="text-theme-text-secondary mt-2 text-sm sm:text-base">
                   No recent user activity
                 </p>
               </div>
             )}
           </div>
-        </div>{" "}        {/* System Events */}
+        </div>{" "}
+        {/* System Events */}
         <div class="mb-6">
-          <div class="card-cute rounded-2xl sm:rounded-3xl p-4 sm:p-6">
-            <div class="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <h3 class="text-gradient-cute flex items-center gap-2 text-base sm:text-lg font-bold">
+          <div class="card-cute rounded-2xl p-4 sm:rounded-3xl sm:p-6">
+            <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <h3 class="text-gradient-cute flex items-center gap-2 text-base font-bold sm:text-lg">
                 <Info class="h-4 w-4 sm:h-5 sm:w-5" />
                 System Events (Last 24h)
               </h3>
-              <div class="flex flex-wrap gap-1 sm:gap-2 text-xs">
+              <div class="flex flex-wrap gap-1 text-xs sm:gap-2">
                 {data.systemEvents?.stats && (
                   <>
                     {data.systemEvents.stats.CRITICAL && (
@@ -770,33 +803,36 @@ export default component$(() => {
             </div>
             {data.systemEvents?.recent &&
             data.systemEvents.recent.length > 0 ? (
-              <div class="max-h-80 sm:max-h-96 space-y-3 overflow-y-auto">
+              <div class="max-h-80 space-y-3 overflow-y-auto sm:max-h-96">
                 {data.systemEvents.recent.map((event, index) => (
                   <div
                     key={index}
-                    class="border-theme-card-border flex flex-col sm:flex-row sm:items-start sm:justify-between border-b pb-3 last:border-b-0 gap-2 sm:gap-3"
+                    class="border-theme-card-border flex flex-col gap-2 border-b pb-3 last:border-b-0 sm:flex-row sm:items-start sm:justify-between sm:gap-3"
                   >
-                    <div class="flex items-start gap-2 sm:gap-3 flex-1 min-w-0">
+                    <div class="flex min-w-0 flex-1 items-start gap-2 sm:gap-3">
                       {event.severity === "CRITICAL" && (
-                        <AlertTriangle class="mt-1 h-3 w-3 sm:h-4 sm:w-4 text-red-500 flex-shrink-0" />
+                        <AlertTriangle class="mt-1 h-3 w-3 flex-shrink-0 text-red-500 sm:h-4 sm:w-4" />
                       )}
                       {event.severity === "ERROR" && (
-                        <AlertTriangle class="mt-1 h-3 w-3 sm:h-4 sm:w-4 text-orange-500 flex-shrink-0" />
+                        <AlertTriangle class="mt-1 h-3 w-3 flex-shrink-0 text-orange-500 sm:h-4 sm:w-4" />
                       )}
                       {event.severity === "WARNING" && (
-                        <AlertTriangle class="mt-1 h-3 w-3 sm:h-4 sm:w-4 text-yellow-500 flex-shrink-0" />
+                        <AlertTriangle class="mt-1 h-3 w-3 flex-shrink-0 text-yellow-500 sm:h-4 sm:w-4" />
                       )}
                       {event.severity === "INFO" && (
-                        <Info class="mt-1 h-3 w-3 sm:h-4 sm:w-4 text-blue-500 flex-shrink-0" />
+                        <Info class="mt-1 h-3 w-3 flex-shrink-0 text-blue-500 sm:h-4 sm:w-4" />
                       )}
-                      <div class="flex-1 min-w-0">
-                        <div class="font-medium text-sm sm:text-base break-words">{event.title}</div>
-                        <div class="text-theme-text-secondary mt-1 text-xs sm:text-sm break-words">
+                      <div class="min-w-0 flex-1">
+                        <div class="text-sm font-medium break-words sm:text-base">
+                          {event.title}
+                        </div>
+                        <div class="text-theme-text-secondary mt-1 text-xs break-words sm:text-sm">
                           {event.message}
                         </div>
                         {event.user && (
                           <div class="text-theme-text-secondary mt-1 text-xs">
-                            User: <span class="truncate">{event.user.email}</span>
+                            User:{" "}
+                            <span class="truncate">{event.user.email}</span>
                           </div>
                         )}
                         {event.metadata && (
@@ -817,23 +853,24 @@ export default component$(() => {
                         )}
                       </div>
                     </div>
-                    <div class="text-theme-text-secondary text-xs sm:text-sm sm:text-right flex-shrink-0">
+                    <div class="text-theme-text-secondary flex-shrink-0 text-xs sm:text-right sm:text-sm">
                       {new Date(event.createdAt).toLocaleTimeString()}
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <div class="py-6 sm:py-8 text-center">
-                <CheckCircle class="mx-auto h-8 w-8 sm:h-12 sm:w-12 text-green-500" />
+              <div class="py-6 text-center sm:py-8">
+                <CheckCircle class="mx-auto h-8 w-8 text-green-500 sm:h-12 sm:w-12" />
                 <p class="text-theme-text-secondary mt-2 text-sm sm:text-base">
                   No system events in the last 24 hours! 🎉
                 </p>
               </div>
             )}
           </div>
-        </div>        {/* Footer */}
-        <div class="text-center text-xs sm:text-sm text-gray-500 px-4">
+        </div>{" "}
+        {/* Footer */}
+        <div class="px-4 text-center text-xs text-gray-500 sm:text-sm">
           <p>
             Last updated: {data.lastUpdated?.toLocaleString()} •{" "}
             {autoRefresh.value ? "Auto-refreshing every 30s" : "Manual refresh"}

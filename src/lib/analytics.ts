@@ -1,9 +1,10 @@
+import { db } from "~/lib/db";
+
 /**
  * Updates daily analytics for the current date
  * This function aggregates view logs and uploads for today
  */
 export async function updateDailyAnalytics(): Promise<void> {
-  const { db } = await import("~/lib/db");
   const today = new Date();
   today.setHours(0, 0, 0, 0); // Start of today
 
@@ -123,7 +124,6 @@ export async function updateDailyAnalytics(): Promise<void> {
  * Gets real-time analytics data for today
  */
 export async function getTodayAnalytics() {
-  const { db } = await import("~/lib/db");
   const today = new Date();
   today.setHours(0, 0, 0, 0); // Start of today
 
@@ -222,7 +222,6 @@ export async function getTodayAnalytics() {
  * Gets analytics data for the last N days with real-time data for today
  */
 export async function getAnalyticsData(days: number = 7) {
-  const { db } = await import("~/lib/db");
   const endDate = new Date();
   endDate.setHours(23, 59, 59, 999); // End of today
 
@@ -287,7 +286,6 @@ export async function getAnalyticsData(days: number = 7) {
  * Gets real-time analytics for a specific upload for today
  */
 export async function getUploadTodayAnalytics(uploadId: string) {
-  const { db } = await import("~/lib/db");
   const today = new Date();
   today.setHours(0, 0, 0, 0); // Start of today
 
@@ -334,7 +332,6 @@ export async function getUploadTodayAnalytics(uploadId: string) {
  * Gets analytics data for a specific upload over N days
  */
 export async function getUploadAnalytics(uploadId: string, days: number = 7) {
-  const { db } = await import("~/lib/db");
   const endDate = new Date();
   endDate.setHours(23, 59, 59, 999); // End of today
 
@@ -436,7 +433,6 @@ export async function getUploadAnalytics(uploadId: string, days: number = 7) {
  * Gets real-time analytics for a user for today
  */
 export async function getUserTodayAnalytics(userId: string) {
-  const { db } = await import("~/lib/db");
   const today = new Date();
   today.setHours(0, 0, 0, 0); // Start of today
 
@@ -450,13 +446,13 @@ export async function getUserTodayAnalytics(userId: string) {
   });
 
   const uploadIds = uploads.map((u: any) => u.id);
-
   if (uploadIds.length === 0) {
     return {
       date: today.toISOString().split('T')[0],
       totalViews: 0,
       uniqueViews: 0,
-      uploadsCount: 0
+      uploadsCount: 0,
+      usersRegistered: 0 // User analytics don't track user registrations
     };
   }
 
@@ -505,12 +501,12 @@ export async function getUserTodayAnalytics(userId: string) {
       }
     }
   });
-
   return {
     date: today.toISOString().split('T')[0],
     totalViews,
     uniqueViews,
-    uploadsCount
+    uploadsCount,
+    usersRegistered: 0 // User analytics don't track user registrations
   };
 }
 
@@ -518,7 +514,6 @@ export async function getUserTodayAnalytics(userId: string) {
  * Gets analytics data for a specific user over N days
  */
 export async function getUserAnalytics(userId: string, days: number = 7) {
-  const { db } = await import("~/lib/db");
   const endDate = new Date();
   endDate.setHours(23, 59, 59, 999); // End of today
 
@@ -537,7 +532,6 @@ export async function getUserAnalytics(userId: string, days: number = 7) {
   });
 
   const uploadIds = uploads.map((u: any) => u.id);
-
   if (uploadIds.length === 0) {
     // Fill with empty data
     const result = [];
@@ -549,7 +543,8 @@ export async function getUserAnalytics(userId: string, days: number = 7) {
         date: dateStr,
         totalViews: 0,
         uniqueViews: 0,
-        uploadsCount: 0
+        uploadsCount: 0,
+        usersRegistered: 0 // User analytics don't track user registrations
       });
       currentDate.setDate(currentDate.getDate() + 1);
     }
@@ -627,13 +622,13 @@ export async function getUserAnalytics(userId: string, days: number = 7) {
       day.uploadsCount++;
     }
   });
-
   // Convert to array and set unique counts
   const result = Array.from(dayMap.values()).map((day: any) => ({
     date: day.date,
     totalViews: day.date === todayStr ? todayAnalytics.totalViews : day.totalViews,
     uniqueViews: day.date === todayStr ? todayAnalytics.uniqueViews : day.ipViews.size,
-    uploadsCount: day.date === todayStr ? todayAnalytics.uploadsCount : day.uploadsCount
+    uploadsCount: day.date === todayStr ? todayAnalytics.uploadsCount : day.uploadsCount,
+    usersRegistered: 0 // User analytics don't track user registrations
   }));
 
   return result;

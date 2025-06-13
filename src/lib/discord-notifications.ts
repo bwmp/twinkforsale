@@ -1,4 +1,5 @@
 import type { EventType, EventSeverity } from './system-events';
+import { getEnvConfig } from './env';
 
 export interface DiscordEmbed {
   title: string;
@@ -197,10 +198,8 @@ export async function sendDiscordNotification(
     userEmail?: string;
     cpuUsage?: number;
     memoryUsage?: number;
-    diskUsage?: number;
-  } = {}
+    diskUsage?: number;  } = {}
 ): Promise<boolean> {
-  const { getEnvConfig } = await import('./env');
   const config = getEnvConfig();
 
   if (!config.DISCORD_WEBHOOK_URL) {
@@ -279,7 +278,6 @@ export async function sendAdminActionNotification(
   adminEmail: string,
   details: string,  metadata?: any
 ): Promise<boolean> {
-  const { getEnvConfig } = await import('./env');
   const config = getEnvConfig();
 
   if (!config.DISCORD_WEBHOOK_URL) {

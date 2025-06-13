@@ -9,13 +9,9 @@ import {
   Zap,
 } from "lucide-icons-qwik";
 import { DetailedAnalyticsChart } from "~/components/detailed-analytics-chart/detailed-analytics-chart";
-
+import { db } from "~/lib/db";
+import { getUploadAnalytics, getUserAnalytics } from "~/lib/analytics";
 export const useAnalyticsOverview = routeLoader$(async (requestEvent) => {
-  const { db } = await import("~/lib/db");
-  const { getUploadAnalytics, getUserAnalytics } = await import(
-    "~/lib/analytics"
-  );
-
   const session = requestEvent.sharedMap.get("session");
 
   if (!session?.user?.email) {

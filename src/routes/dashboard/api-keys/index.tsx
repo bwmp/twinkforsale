@@ -1,10 +1,10 @@
 import { component$, useSignal, $ } from "@builder.io/qwik";
 import { routeLoader$, server$ } from "@builder.io/qwik-city";
 import type { DocumentHead } from "@builder.io/qwik-city";
-
+import { db } from "~/lib/db";
 export const useApiKeys = routeLoader$(async (requestEvent) => {
   // Import server-side dependencies inside the loader
-  const { db } = await import("~/lib/db");
+  
 
   const session = requestEvent.sharedMap.get("session");
 
@@ -39,7 +39,7 @@ export const useApiKeys = routeLoader$(async (requestEvent) => {
 
 export const createApiKey = server$(async function (name: string) {
   // Import server-side dependencies inside the server action
-  const { db } = await import("~/lib/db");
+  
 
   const session = this.sharedMap.get("session");
 
@@ -80,7 +80,7 @@ export const createApiKey = server$(async function (name: string) {
 
 export const deleteApiKey = server$(async function (keyId: string) {
   // Import server-side dependencies inside the server action
-  const { db } = await import("~/lib/db");
+  
 
   const session = this.sharedMap.get("session");
 

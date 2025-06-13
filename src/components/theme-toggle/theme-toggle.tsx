@@ -1,6 +1,7 @@
 import { component$, useSignal, useVisibleTask$, $ } from "@builder.io/qwik";
-import { type ThemeName } from "~/lib/theme-store";
+import { type ThemeName, themes } from "~/lib/theme-store";
 import { Moon, Sun, Palette, Sparkles, Heart, Zap } from "lucide-icons-qwik";
+import { setThemePreference } from "~/lib/cookie-utils";
 
 export interface ThemeToggleProps {
   variant?: "compact" | "full" | "dropdown";
@@ -93,20 +94,15 @@ export const ThemeToggle = component$<ThemeToggleProps>(
 
     const currentThemeOption =
       themeOptions.find((option) => option.value === currentTheme.value) ||
-      themeOptions[0];
-    const handleThemeChange = $((newTheme: ThemeName) => {
+      themeOptions[0];    const handleThemeChange = $((newTheme: ThemeName) => {
       // Apply theme changes directly without reload
       if (typeof document !== "undefined") {
         (async () => {
-          const cookieUtils = await import("~/lib/cookie-utils");
-          const themeStore = await import("~/lib/theme-store");
-
           // Save to cookie
-          cookieUtils.setThemePreference(newTheme);
+          setThemePreference(newTheme);
 
           // Apply theme immediately
           const root = document.documentElement;
-          const themes = themeStore.themes;
           let effectiveTheme = newTheme;
           if (newTheme === "auto") {
             effectiveTheme = window.matchMedia("(prefers-color-scheme: dark)")

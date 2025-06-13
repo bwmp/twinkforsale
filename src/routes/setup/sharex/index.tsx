@@ -2,10 +2,10 @@ import { component$, $ } from "@builder.io/qwik";
 import { routeLoader$, server$ } from "@builder.io/qwik-city";
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { Camera, Key, Sparkle, Shield } from "lucide-icons-qwik";
-
+import { db } from "~/lib/db";
 export const useUserApiKeys = routeLoader$(async (requestEvent) => {
   // Import server-side dependencies inside the loader
-  const { db } = await import("~/lib/db");
+  
 
   const session = requestEvent.sharedMap.get("session");
 
@@ -31,7 +31,7 @@ export const useUserApiKeys = routeLoader$(async (requestEvent) => {
 
 export const createApiKey = server$(async function (name: string) {
   // Import server-side dependencies inside the server action
-  const { db } = await import("~/lib/db");
+  
 
   const session = this.sharedMap.get("session");
 

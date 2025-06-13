@@ -1,6 +1,6 @@
 import { component$, useSignal, useTask$ } from "@builder.io/qwik";
 import { server$ } from "@builder.io/qwik-city";
-
+import { getUserAnalytics } from "~/lib/analytics";
 interface UserAnalyticsProps {
   userId: string;
   userName: string;
@@ -10,7 +10,6 @@ const fetchUserAnalytics = server$(async function (
   userId: string,
   days: number = 7,
 ) {
-  const { getUserAnalytics } = await import("~/lib/analytics");
   try {
     return await getUserAnalytics(userId, days);
   } catch (error) {
