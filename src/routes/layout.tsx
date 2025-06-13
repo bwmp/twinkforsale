@@ -31,32 +31,72 @@ export const useServerTheme = routeLoader$(async (requestEvent) => {
 
 export default component$(() => {
   // Get server-side theme data
-  const serverThemeData = useServerTheme();
-
-  // Apply server-side theme immediately to prevent flash
+  const serverThemeData = useServerTheme();  // Apply server-side theme only on initial load to prevent flash
+  // Don't track serverThemeData to avoid overriding client-side theme changes on navigation
   // eslint-disable-next-line qwik/no-use-visible-task
-  useVisibleTask$(({ track }) => {
-    track(() => serverThemeData.value);
-
+  useVisibleTask$(() => {
     if (typeof document !== "undefined" && serverThemeData.value) {
-      const { theme, css } = serverThemeData.value;
       const root = document.documentElement;
+      
+      // Only apply server theme if no client theme is already set
+      const currentThemeVariant = root.getAttribute("data-theme-variant");
+      if (!currentThemeVariant || currentThemeVariant === "undefined") {
+        const { theme, css } = serverThemeData.value;
 
-      // Apply CSS variables immediately
-      const cssVars = css.split("\n    ").filter((line) => line.trim());
-      cssVars.forEach((cssVar) => {
-        if (cssVar.includes(":")) {
-          const [property, value] = cssVar.split(":").map((s) => s.trim());
-          if (property && value) {
-            root.style.setProperty(property, value.replace(";", ""));
+        // Apply CSS variables immediately
+        const cssVars = css.split("\n    ").filter((line) => line.trim());
+        cssVars.forEach((cssVar) => {
+          if (cssVar.includes(":")) {
+            const [property, value] = cssVar.split(":").map((s) => s.trim());
+            if (property && value) {
+              root.style.setProperty(property, value.replace(";", ""));
+            }
           }
-        }
-      });
+        });
 
-      // Set data attributes immediately
-      const effectiveTheme = theme === "auto" ? "dark" : theme;
-      root.setAttribute("data-theme", effectiveTheme);
-      root.setAttribute("data-theme-variant", theme);
+        // Set data attributes immediately
+        const effectiveTheme = theme === "auto" ? "dark" : theme;
+        root.setAttribute("data-theme", effectiveTheme);
+        root.setAttribute("data-theme-variant", theme);
+      }
+    }
+  });
+
+  // Ensure theme persistence across page navigations
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(async () => {
+    if (typeof document !== "undefined") {
+      const root = document.documentElement;
+      const currentThemeVariant = root.getAttribute("data-theme-variant");
+      
+      // If no theme is set or if we need to check cookies for user preference
+      if (!currentThemeVariant || currentThemeVariant === "undefined") {
+        try {
+          const { getThemePreference } = await import("~/lib/cookie-utils");
+          const { themes } = await import("~/lib/theme-store");
+          
+          const savedTheme = await getThemePreference();
+          if (savedTheme && themes[savedTheme]) {
+            let effectiveTheme = savedTheme;
+            if (savedTheme === "auto") {
+              effectiveTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
+                ? "dark"
+                : "light";
+            }
+
+            const themeColors = themes[effectiveTheme as keyof typeof themes];
+            Object.entries(themeColors).forEach(([key, value]) => {
+              const cssVarName = `--theme-${key.replace(/([A-Z])/g, "-$1").toLowerCase()}`;
+              root.style.setProperty(cssVarName, value);
+            });
+
+            root.setAttribute("data-theme", effectiveTheme);
+            root.setAttribute("data-theme-variant", savedTheme);
+          }
+        } catch (error) {
+          console.warn("Failed to load theme preference:", error);
+        }
+      }
     }
   });
 
