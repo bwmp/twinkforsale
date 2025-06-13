@@ -385,33 +385,34 @@ export default component$(() => {
             data={userData.value?.analyticsData || []}
             metric="totalViews"
             title="Total Views"
-            color="var(--theme-primary)"
+            color="var(--theme-accent-primary)"
           />
           <AnalyticsChart
             data={userData.value?.analyticsData || []}
             metric="uniqueViews"
             title="Unique Visitors"
-            color="var(--theme-accent)"
+            color="var(--theme-accent-secondary)"
           />
           <AnalyticsChart
             data={userData.value?.analyticsData || []}
             metric="uploadsCount"
             title="New Uploads"
-            color="var(--theme-accent-secondary)"
+            color="var(--theme-accent-tertiary)"
           />
           <AnalyticsChart
             data={userData.value?.analyticsData || []}
             metric="usersRegistered"
             title="New Users"
-            color="var(--theme-success)"          />
+            color="var(--theme-accent-quaternary)"
+          />
         </div>
       </div>
-      
       {/* Admin Quick Actions */}
       <div class="mb-6 sm:mb-8">
         <h2 class="text-gradient-cute mb-4 flex items-center justify-center gap-2 text-center text-xl font-bold sm:mb-6 sm:text-2xl">
           Admin Actions~ ⚙️
-        </h2>        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        </h2>{" "}
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <Link
             href="/admin/domains"
             class="card-cute group rounded-3xl p-4 sm:p-6"
@@ -427,10 +428,11 @@ export default component$(() => {
               </h3>
             </div>
             <p class="text-theme-secondary text-xs sm:text-sm">
-              Manage available upload domains for users~ Add cute domains! (◕‿◕)♡
+              Manage available upload domains for users~ Add cute domains!
+              (◕‿◕)♡
             </p>
           </Link>
-          
+
           <Link
             href="/admin/health"
             class="card-cute group rounded-3xl p-4 sm:p-6"
@@ -446,7 +448,8 @@ export default component$(() => {
               </h3>
             </div>
             <p class="text-theme-secondary text-xs sm:text-sm">
-              Monitor server performance, system metrics, and health status~ 📊✨
+              Monitor server performance, system metrics, and health status~
+              📊✨
             </p>
           </Link>
 
@@ -470,7 +473,6 @@ export default component$(() => {
           </Link>
         </div>
       </div>
-      
       {/* User Management */}
       <div class="card-cute mb-6 rounded-3xl p-4 sm:mb-8 sm:p-6">
         <div class="mb-4 flex flex-col gap-4">
