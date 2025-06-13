@@ -181,6 +181,7 @@ export async function monitorFailedUpload(userId: string | null, reason: string,
 export function getMonitoringStatus() {
   return {
     isRunning: monitoringInterval !== null,
-    intervalId: monitoringInterval
+    // Don't return the actual interval object as it's not serializable
+    intervalExists: monitoringInterval !== null
   };
 }
