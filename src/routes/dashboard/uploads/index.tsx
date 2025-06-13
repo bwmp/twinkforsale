@@ -34,6 +34,7 @@ import {
   Square,
 } from "lucide-icons-qwik";
 import { ImagePreviewContext } from "~/lib/image-preview-store";
+import { FileTypeIcon } from "~/components/lazy-image";
 
 export const useDeleteUpload = routeAction$(async (data, requestEvent) => {
   // Import server-side dependencies inside the action
@@ -744,55 +745,21 @@ export default component$(() => {
                             <Square class="h-4 w-4" />
                           )}
                         </button>
-                      </td>
-                      <td class="px-3 py-4 sm:px-6">
+                      </td>                      <td class="px-3 py-4 sm:px-6">
                         <div class="flex items-center space-x-2 sm:space-x-3">
                           <div class="flex-shrink-0">
-                            {upload.mimeType.startsWith("image/") ? (
-                              <div
-                                class="border-theme-card h-8 w-8 cursor-pointer overflow-hidden rounded-lg transition-all duration-300 sm:h-10 sm:w-10"
-                                onClick$={() =>
+                            <FileTypeIcon
+                              upload={upload}
+                              size="sm"
+                              onClick$={() => {
+                                if (upload.mimeType.startsWith("image/")) {
                                   imagePreview.openPreview(
                                     `/f/${upload.shortCode}`,
                                     upload.originalName,
-                                  )
+                                  );
                                 }
-                              >
-                                <img
-                                  src={`/f/${upload.shortCode}?preview=true`}
-                                  alt={upload.originalName}
-                                  class="h-full w-full object-cover transition-transform duration-300 hover:scale-110"
-                                  width="40"
-                                  height="40"
-                                />
-                              </div>
-                            ) : upload.mimeType.startsWith("video/") ? (
-                              <div class="bg-gradient-video flex h-8 w-8 items-center justify-center rounded-lg sm:h-10 sm:w-10">
-                                <div class="text-sm sm:text-base">🎬</div>
-                              </div>
-                            ) : upload.mimeType.startsWith("audio/") ? (
-                              <div class="bg-gradient-audio flex h-8 w-8 items-center justify-center rounded-lg sm:h-10 sm:w-10">
-                                <div class="text-sm sm:text-base">🎵</div>
-                              </div>
-                            ) : upload.mimeType.includes("pdf") ? (
-                              <div class="bg-gradient-pdf flex h-8 w-8 items-center justify-center rounded-lg sm:h-10 sm:w-10">
-                                <div class="text-sm sm:text-base">📄</div>
-                              </div>
-                            ) : upload.mimeType.includes("zip") ||
-                              upload.mimeType.includes("rar") ||
-                              upload.mimeType.includes("archive") ? (
-                              <div class="bg-gradient-archive flex h-8 w-8 items-center justify-center rounded-lg sm:h-10 sm:w-10">
-                                <div class="text-sm sm:text-base">📦</div>
-                              </div>
-                            ) : upload.mimeType.includes("text") ? (
-                              <div class="bg-gradient-text flex h-8 w-8 items-center justify-center rounded-lg sm:h-10 sm:w-10">
-                                <div class="text-sm sm:text-base">📝</div>
-                              </div>
-                            ) : (
-                              <div class="glass flex h-8 w-8 items-center justify-center rounded-lg sm:h-10 sm:w-10">
-                                <div class="text-sm sm:text-base">📄</div>
-                              </div>
-                            )}
+                              }}
+                            />
                           </div>
                           <div class="min-w-0 flex-1">
                             <p class="text-theme-text-primary truncate text-sm font-medium sm:text-base">
@@ -923,39 +890,20 @@ export default component$(() => {
                           <Square class="h-5 w-5" />
                         )}
                       </button>
-                    </div>
-
-                    {/* File Preview */}
+                    </div>                    {/* File Preview */}
                     <div class="bg-gradient-grid-item mb-3 flex aspect-square items-center justify-center overflow-hidden rounded-xl">
-                      {upload.mimeType.startsWith("image/") ? (
-                        <img
-                          width={400}
-                          height={400}
-                          src={`/f/${upload.shortCode}?preview=true`}
-                          alt={upload.originalName}
-                          class="h-full w-full cursor-pointer object-cover transition-transform duration-300 hover:scale-110"
-                          onClick$={() =>
+                      <FileTypeIcon
+                        upload={upload}
+                        size="lg"
+                        onClick$={() => {
+                          if (upload.mimeType.startsWith("image/")) {
                             imagePreview.openPreview(
                               `/f/${upload.shortCode}`,
                               upload.originalName,
-                            )
+                            );
                           }
-                        />
-                      ) : upload.mimeType.startsWith("video/") ? (
-                        <div class="text-6xl">🎬</div>
-                      ) : upload.mimeType.startsWith("audio/") ? (
-                        <div class="text-6xl">🎵</div>
-                      ) : upload.mimeType.includes("pdf") ? (
-                        <div class="text-6xl">📄</div>
-                      ) : upload.mimeType.includes("zip") ||
-                        upload.mimeType.includes("rar") ||
-                        upload.mimeType.includes("archive") ? (
-                        <div class="text-6xl">📦</div>
-                      ) : upload.mimeType.includes("text") ? (
-                        <div class="text-6xl">📝</div>
-                      ) : (
-                        <div class="text-6xl">📄</div>
-                      )}
+                        }}
+                      />
                     </div>
                     {/* File Info */}
                     <div class="space-y-2">
