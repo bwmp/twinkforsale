@@ -1,4 +1,3 @@
-import { getEnvConfig } from './env';
 import type { EventType, EventSeverity } from './system-events';
 
 export interface DiscordEmbed {
@@ -107,7 +106,6 @@ export function createSystemEventEmbed(
   memoryUsage?: number,
   diskUsage?: number
 ): DiscordEmbed {
-  const config = getEnvConfig();
   const severityEmoji = getSeverityEmoji(severity);
   const typeEmoji = getEventTypeEmoji(eventType);
 
@@ -164,11 +162,10 @@ export function createSystemEventEmbed(
       });
     }
   }
-
   // Add environment info
   fields.push({
     name: '🌐 Environment',
-    value: config.NODE_ENV === 'production' ? '🚀 Production' : '🧪 Development',
+    value: process.env.NODE_ENV === 'production' ? '🚀 Production' : '🧪 Development',
     inline: true
   });
 
@@ -203,6 +200,7 @@ export async function sendDiscordNotification(
     diskUsage?: number;
   } = {}
 ): Promise<boolean> {
+  const { getEnvConfig } = await import('./env');
   const config = getEnvConfig();
 
   if (!config.DISCORD_WEBHOOK_URL) {
@@ -279,9 +277,9 @@ export async function sendCriticalEventNotification(
 export async function sendAdminActionNotification(
   action: string,
   adminEmail: string,
-  details: string,
-  metadata?: any
+  details: string,  metadata?: any
 ): Promise<boolean> {
+  const { getEnvConfig } = await import('./env');
   const config = getEnvConfig();
 
   if (!config.DISCORD_WEBHOOK_URL) {

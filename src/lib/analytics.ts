@@ -1,10 +1,9 @@
-import { db } from "~/lib/db";
-
 /**
  * Updates daily analytics for the current date
  * This function aggregates view logs and uploads for today
  */
 export async function updateDailyAnalytics(): Promise<void> {
+  const { db } = await import("~/lib/db");
   const today = new Date();
   today.setHours(0, 0, 0, 0); // Start of today
 
@@ -94,7 +93,8 @@ export async function updateDailyAnalytics(): Promise<void> {
     await db.dailyAnalytics.upsert({
       where: {
         date: today
-      },      update: {
+      },
+      update: {
         totalViews,
         uniqueViews,
         totalDownloads,
@@ -123,6 +123,7 @@ export async function updateDailyAnalytics(): Promise<void> {
  * Gets real-time analytics data for today
  */
 export async function getTodayAnalytics() {
+  const { db } = await import("~/lib/db");
   const today = new Date();
   today.setHours(0, 0, 0, 0); // Start of today
 
@@ -205,6 +206,7 @@ export async function getTodayAnalytics() {
       }
     }
   });
+
   return {
     date: today.toISOString().split('T')[0],
     totalViews,
@@ -220,6 +222,7 @@ export async function getTodayAnalytics() {
  * Gets analytics data for the last N days with real-time data for today
  */
 export async function getAnalyticsData(days: number = 7) {
+  const { db } = await import("~/lib/db");
   const endDate = new Date();
   endDate.setHours(23, 59, 59, 999); // End of today
 
@@ -259,9 +262,11 @@ export async function getAnalyticsData(days: number = 7) {
       result.push(todayAnalytics);
     } else {
       // Use stored data for previous days
-      const existing = analytics.find(a =>
+      const existing = analytics.find((a: any) =>
         a.date.toISOString().split('T')[0] === dateStr
-      );      result.push({
+      );
+
+      result.push({
         date: dateStr,
         totalViews: existing?.totalViews || 0,
         uniqueViews: existing?.uniqueViews || 0,
@@ -282,6 +287,7 @@ export async function getAnalyticsData(days: number = 7) {
  * Gets real-time analytics for a specific upload for today
  */
 export async function getUploadTodayAnalytics(uploadId: string) {
+  const { db } = await import("~/lib/db");
   const today = new Date();
   today.setHours(0, 0, 0, 0); // Start of today
 
@@ -298,7 +304,8 @@ export async function getUploadTodayAnalytics(uploadId: string) {
     }
   });
   const totalViews = viewLogs.length;
-  const uniqueIPs = new Set(viewLogs.map(log => log.ipAddress).filter(Boolean));
+  const uniqueIPs = new Set(viewLogs.map((log: any) => log.ipAddress).filter(Boolean));
+  const uniqueViews = uniqueIPs.size;
 
   // Get download logs for today
   const downloadLogs = await db.downloadLog.findMany({
@@ -310,37 +317,42 @@ export async function getUploadTodayAnalytics(uploadId: string) {
       }
     }
   });
-
   const totalDownloads = downloadLogs.length;
-  const uniqueDownloadIPs = new Set(downloadLogs.map(log => log.ipAddress).filter(Boolean));
+  const uniqueDownloadIPs = new Set(downloadLogs.map((log: any) => log.ipAddress).filter(Boolean));
+  const uniqueDownloads = uniqueDownloadIPs.size;
 
   return {
     date: today.toISOString().split('T')[0],
     totalViews,
-    uniqueViews: uniqueIPs.size,
+    uniqueViews,
     totalDownloads,
-    uniqueDownloads: uniqueDownloadIPs.size
+    uniqueDownloads
   };
 }
 
 /**
- * Gets view analytics for a specific upload over the last N days with real-time data for today
+ * Gets analytics data for a specific upload over N days
  */
 export async function getUploadAnalytics(uploadId: string, days: number = 7) {
+  const { db } = await import("~/lib/db");
   const endDate = new Date();
+  endDate.setHours(23, 59, 59, 999); // End of today
+
   const startDate = new Date(endDate);
-  startDate.setDate(startDate.getDate() - days);
+  startDate.setDate(startDate.getDate() - (days - 1));
+  startDate.setHours(0, 0, 0, 0); // Start of N days ago
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const todayStr = today.toISOString().split('T')[0];
+
   // Get view logs excluding today for real-time data
   const viewLogs = await db.viewLog.findMany({
     where: {
       uploadId,
       viewedAt: {
         gte: startDate,
-        lt: today // Exclude today for real-time data
+        lt: today
       }
     },
     orderBy: {
@@ -354,7 +366,7 @@ export async function getUploadAnalytics(uploadId: string, days: number = 7) {
       uploadId,
       downloadedAt: {
         gte: startDate,
-        lt: today // Exclude today for real-time data
+        lt: today
       }
     },
     orderBy: {
@@ -365,76 +377,66 @@ export async function getUploadAnalytics(uploadId: string, days: number = 7) {
   // Get real-time data for today
   const todayAnalytics = await getUploadTodayAnalytics(uploadId);
 
-  // Group by date
-  const groupedByDate: { [key: string]: { 
-    totalViews: number; 
-    uniqueViews: Set<string>;
-    totalDownloads: number;
-    uniqueDownloads: Set<string>;
-  } } = {};
+  // Process data by day
+  const dayMap = new Map();
 
-  viewLogs.forEach(log => {
-    const dateStr = log.viewedAt.toISOString().split('T')[0];
-    if (!groupedByDate[dateStr]) {
-      groupedByDate[dateStr] = { 
-        totalViews: 0, 
-        uniqueViews: new Set(),
-        totalDownloads: 0,
-        uniqueDownloads: new Set()
-      };
-    }
-    groupedByDate[dateStr].totalViews += 1;
-    if (log.ipAddress) {
-      groupedByDate[dateStr].uniqueViews.add(log.ipAddress);
-    }
-  });
-
-  downloadLogs.forEach(log => {
-    const dateStr = log.downloadedAt.toISOString().split('T')[0];
-    if (!groupedByDate[dateStr]) {
-      groupedByDate[dateStr] = { 
-        totalViews: 0, 
-        uniqueViews: new Set(),
-        totalDownloads: 0,
-        uniqueDownloads: new Set()
-      };
-    }
-    groupedByDate[dateStr].totalDownloads += 1;
-    if (log.ipAddress) {
-      groupedByDate[dateStr].uniqueDownloads.add(log.ipAddress);
-    }
-  });
-
-  // Fill in missing days and convert to array
-  const result = [];
+  // Initialize all days with zero data
   const currentDate = new Date(startDate);
-
   while (currentDate <= endDate) {
     const dateStr = currentDate.toISOString().split('T')[0];
-
-    if (dateStr === todayStr) {
-      // Use real-time data for today
-      result.push(todayAnalytics);
-    } else {      // Use stored data for previous days
-      const data = groupedByDate[dateStr];
-      result.push({
-        date: dateStr,
-        totalViews: data?.totalViews || 0,
-        uniqueViews: data?.uniqueViews.size || 0,
-        totalDownloads: data?.totalDownloads || 0,
-        uniqueDownloads: data?.uniqueDownloads.size || 0
-      });
-    }
-
+    dayMap.set(dateStr, {
+      date: dateStr,
+      totalViews: 0,
+      uniqueViews: 0,
+      totalDownloads: 0,
+      uniqueDownloads: 0,
+      ipViews: new Set(),
+      ipDownloads: new Set()
+    });
     currentDate.setDate(currentDate.getDate() + 1);
   }
+
+  // Process view logs
+  viewLogs.forEach((log: any) => {
+    const dateStr = log.viewedAt.toISOString().split('T')[0];
+    const day = dayMap.get(dateStr);
+    if (day) {
+      day.totalViews++;
+      if (log.ipAddress) {
+        day.ipViews.add(log.ipAddress);
+      }
+    }
+  });
+
+  // Process download logs
+  downloadLogs.forEach((log: any) => {
+    const dateStr = log.downloadedAt.toISOString().split('T')[0];
+    const day = dayMap.get(dateStr);
+    if (day) {
+      day.totalDownloads++;
+      if (log.ipAddress) {
+        day.ipDownloads.add(log.ipAddress);
+      }
+    }
+  });
+
+  // Convert to array and set unique counts
+  const result = Array.from(dayMap.values()).map((day: any) => ({
+    date: day.date,
+    totalViews: day.date === todayStr ? todayAnalytics.totalViews : day.totalViews,
+    uniqueViews: day.date === todayStr ? todayAnalytics.uniqueViews : day.ipViews.size,
+    totalDownloads: day.date === todayStr ? todayAnalytics.totalDownloads : day.totalDownloads,
+    uniqueDownloads: day.date === todayStr ? todayAnalytics.uniqueDownloads : day.ipDownloads.size
+  }));
+
   return result;
 }
 
 /**
- * Gets real-time analytics data for a specific user for today
+ * Gets real-time analytics for a user for today
  */
 export async function getUserTodayAnalytics(userId: string) {
+  const { db } = await import("~/lib/db");
   const today = new Date();
   today.setHours(0, 0, 0, 0); // Start of today
 
@@ -442,27 +444,28 @@ export async function getUserTodayAnalytics(userId: string) {
   tomorrow.setDate(tomorrow.getDate() + 1); // Start of tomorrow
 
   // Get all user's uploads
-  const userUploads = await db.upload.findMany({
+  const uploads = await db.upload.findMany({
     where: { userId },
     select: { id: true }
   });
 
-  const uploadIds = userUploads.map(u => u.id);
+  const uploadIds = uploads.map((u: any) => u.id);
 
   if (uploadIds.length === 0) {
     return {
       date: today.toISOString().split('T')[0],
       totalViews: 0,
       uniqueViews: 0,
-      uploadsCount: 0,
-      usersRegistered: 0
+      uploadsCount: 0
     };
   }
 
   // Count total views for today
   const totalViews = await db.viewLog.count({
     where: {
-      uploadId: { in: uploadIds },
+      uploadId: {
+        in: uploadIds
+      },
       viewedAt: {
         gte: today,
         lt: tomorrow
@@ -474,7 +477,9 @@ export async function getUserTodayAnalytics(userId: string) {
   const uniqueViewsResult = await db.viewLog.groupBy({
     by: ['ipAddress'],
     where: {
-      uploadId: { in: uploadIds },
+      uploadId: {
+        in: uploadIds
+      },
       viewedAt: {
         gte: today,
         lt: tomorrow
@@ -505,32 +510,36 @@ export async function getUserTodayAnalytics(userId: string) {
     date: today.toISOString().split('T')[0],
     totalViews,
     uniqueViews,
-    uploadsCount,
-    usersRegistered: 0 // User analytics don't track user registrations
+    uploadsCount
   };
 }
 
 /**
- * Gets analytics data for a specific user over the last N days with real-time data for today
+ * Gets analytics data for a specific user over N days
  */
 export async function getUserAnalytics(userId: string, days: number = 7) {
+  const { db } = await import("~/lib/db");
   const endDate = new Date();
+  endDate.setHours(23, 59, 59, 999); // End of today
+
   const startDate = new Date(endDate);
-  startDate.setDate(startDate.getDate() - days);
+  startDate.setDate(startDate.getDate() - (days - 1));
+  startDate.setHours(0, 0, 0, 0); // Start of N days ago
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const todayStr = today.toISOString().split('T')[0];
 
   // Get all user's uploads
-  const userUploads = await db.upload.findMany({
+  const uploads = await db.upload.findMany({
     where: { userId },
     select: { id: true }
   });
 
-  const uploadIds = userUploads.map(u => u.id);
+  const uploadIds = uploads.map((u: any) => u.id);
+
   if (uploadIds.length === 0) {
-    // Return empty data if user has no uploads
+    // Fill with empty data
     const result = [];
     const currentDate = new Date(startDate);
 
@@ -540,8 +549,7 @@ export async function getUserAnalytics(userId: string, days: number = 7) {
         date: dateStr,
         totalViews: 0,
         uniqueViews: 0,
-        uploadsCount: 0,
-        usersRegistered: 0
+        uploadsCount: 0
       });
       currentDate.setDate(currentDate.getDate() + 1);
     }
@@ -552,10 +560,12 @@ export async function getUserAnalytics(userId: string, days: number = 7) {
   // Get view logs for all user's uploads (excluding today for real-time data)
   const viewLogs = await db.viewLog.findMany({
     where: {
-      uploadId: { in: uploadIds },
+      uploadId: {
+        in: uploadIds
+      },
       viewedAt: {
         gte: startDate,
-        lt: today // Exclude today for real-time data
+        lt: today
       }
     },
     orderBy: {
@@ -564,70 +574,67 @@ export async function getUserAnalytics(userId: string, days: number = 7) {
   });
 
   // Get uploads created by this user in the time period (excluding today)
-  const uploadsInPeriod = await db.upload.findMany({
+  const userUploads = await db.upload.findMany({
     where: {
       userId,
       createdAt: {
         gte: startDate,
-        lt: today // Exclude today for real-time data
+        lt: today
       }
     },
-    select: {
-      createdAt: true
+    orderBy: {
+      createdAt: 'asc'
     }
   });
 
   // Get real-time data for today
   const todayAnalytics = await getUserTodayAnalytics(userId);
 
-  // Group by date
-  const groupedByDate: { [key: string]: { totalViews: number; uniqueViews: Set<string>; uploadsCount: number } } = {};
+  // Process data by day
+  const dayMap = new Map();
+
+  // Initialize all days with zero data
+  const currentDate = new Date(startDate);
+  while (currentDate <= endDate) {
+    const dateStr = currentDate.toISOString().split('T')[0];
+    dayMap.set(dateStr, {
+      date: dateStr,
+      totalViews: 0,
+      uniqueViews: 0,
+      uploadsCount: 0,
+      ipViews: new Set()
+    });
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
 
   // Process view logs
-  viewLogs.forEach(log => {
+  viewLogs.forEach((log: any) => {
     const dateStr = log.viewedAt.toISOString().split('T')[0];
-    if (!groupedByDate[dateStr]) {
-      groupedByDate[dateStr] = { totalViews: 0, uniqueViews: new Set(), uploadsCount: 0 };
-    }
-    groupedByDate[dateStr].totalViews += 1;
-    if (log.ipAddress) {
-      groupedByDate[dateStr].uniqueViews.add(log.ipAddress);
+    const day = dayMap.get(dateStr);
+    if (day) {
+      day.totalViews++;
+      if (log.ipAddress) {
+        day.ipViews.add(log.ipAddress);
+      }
     }
   });
 
   // Process uploads
-  uploadsInPeriod.forEach(upload => {
+  userUploads.forEach((upload: any) => {
     const dateStr = upload.createdAt.toISOString().split('T')[0];
-    if (!groupedByDate[dateStr]) {
-      groupedByDate[dateStr] = { totalViews: 0, uniqueViews: new Set(), uploadsCount: 0 };
+    const day = dayMap.get(dateStr);
+    if (day) {
+      day.uploadsCount++;
     }
-    groupedByDate[dateStr].uploadsCount += 1;
   });
 
-  // Fill in missing days and convert to array
-  const result = [];
-  const currentDate = new Date(startDate);
-
-  while (currentDate <= endDate) {
-    const dateStr = currentDate.toISOString().split('T')[0];
-
-    if (dateStr === todayStr) {
-      // Use real-time data for today
-      result.push(todayAnalytics);
-    } else {
-      // Use stored data for previous days
-      const data = groupedByDate[dateStr];
-      result.push({
-        date: dateStr,
-        totalViews: data?.totalViews || 0,
-        uniqueViews: data?.uniqueViews.size || 0,
-        uploadsCount: data?.uploadsCount || 0,
-        usersRegistered: 0
-      });
-    }
-
-    currentDate.setDate(currentDate.getDate() + 1);
-  }
+  // Convert to array and set unique counts
+  const result = Array.from(dayMap.values()).map((day: any) => ({
+    date: day.date,
+    totalViews: day.date === todayStr ? todayAnalytics.totalViews : day.totalViews,
+    uniqueViews: day.date === todayStr ? todayAnalytics.uniqueViews : day.ipViews.size,
+    uploadsCount: day.date === todayStr ? todayAnalytics.uploadsCount : day.uploadsCount
+  }));
 
   return result;
 }

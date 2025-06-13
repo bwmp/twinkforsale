@@ -1,5 +1,3 @@
-import { db } from "~/lib/db";
-import { getEnvConfig } from "~/lib/env";
 import fs from "fs";
 import path from "path";
 
@@ -7,6 +5,8 @@ import path from "path";
  * Cleanup expired files and files that exceeded view limits
  */
 export async function cleanupExpiredFiles() {
+  const { db } = await import("~/lib/db");
+  const { getEnvConfig } = await import("~/lib/env");
   try {
     const now = new Date();    // Find files that are expired or exceeded view limits
     const allFiles = await db.upload.findMany({
