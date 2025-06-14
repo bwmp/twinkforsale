@@ -275,29 +275,6 @@ export const onRequest: RequestHandler = async ({ params, send, status, url, req
     const userAgent = request.headers.get('user-agent')?.toLowerCase() || '';
     const isBotOrCrawler = /bot|crawler|spider|crawling|discord|telegram|whatsapp|facebook|twitter|slack/i.test(userAgent);
 
-    const isDiscordBot = /discordbot|discord/i.test(userAgent);
-
-    // For Discord bots requesting GIFs directly, always serve the file
-    if (isDiscordBot && upload.mimeType === 'image/gif') {
-      // Serve file directly for Discord bots, bypass embed
-      const fileBuffer = fs.readFileSync(filePath);
-
-      const response = new Response(fileBuffer, {
-        headers: {
-          "Content-Type": "image/gif",
-          "Content-Length": upload.size.toString(),
-          "Content-Disposition": `inline; filename="${upload.originalName}"`,
-          "Cache-Control": "public, max-age=31536000, immutable",
-          "Accept-Ranges": "bytes",
-          "Access-Control-Allow-Origin": "*",
-          "Content-Encoding": "identity"
-        }
-      });
-
-      send(response);
-      return;
-    }
-
     if (isDirect || isPreview || (!isBotOrCrawler)) {
       // Track download ONLY when it's an explicit direct request (?direct=true)
       // or when it's a non-bot request that's not from our internal pages
