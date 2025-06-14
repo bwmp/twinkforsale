@@ -75,14 +75,19 @@ function generateDiscordEmbed(upload: any, user: any, baseUrl: string, userStats
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${embedTitle}">
   <meta name="twitter:description" content="${plainDescription}">  
-  ${upload.mimeType === 'image/gif' ? `
+${upload.mimeType === 'image/gif' ? `
   <!-- GIF-specific meta tags for Discord animation support -->
   <meta property="og:image" content="${upload.url}?direct=true">
   <meta property="og:image:type" content="image/gif">
-  <meta property="og:image:width" content="498">
-  <meta property="og:image:height" content="498">
+  <!-- Remove fixed dimensions for GIFs - let Discord handle sizing -->
   <meta name="twitter:image" content="${upload.url}?direct=true">
   <meta name="twitter:image:alt" content="${embedTitle}">
+  <meta name="twitter:card" content="summary_large_image">
+  <!-- Add these critical Discord GIF headers -->
+  <meta property="og:image:secure_url" content="${upload.url}?direct=true">
+  <meta property="og:video" content="${upload.url}?direct=true">
+  <meta property="og:video:type" content="image/gif">
+  <meta property="og:video:secure_url" content="${upload.url}?direct=true">
   ` : upload.mimeType.startsWith('image/') ? `
   <!-- Standard image meta tags -->
   <meta property="og:image" content="${upload.url}?direct=true">
@@ -190,7 +195,7 @@ export const onRequest: RequestHandler = async ({ params, send, status, url, req
     const upload = await db.upload.findUnique({
       where: { shortCode },
       include: { user: true }
-    });    if (!upload) {
+    }); if (!upload) {
       status(404);
       return;
     }
@@ -270,6 +275,29 @@ export const onRequest: RequestHandler = async ({ params, send, status, url, req
     const userAgent = request.headers.get('user-agent')?.toLowerCase() || '';
     const isBotOrCrawler = /bot|crawler|spider|crawling|discord|telegram|whatsapp|facebook|twitter|slack/i.test(userAgent);
 
+    const isDiscordBot = /discordbot|discord/i.test(userAgent);
+
+    // For Discord bots requesting GIFs directly, always serve the file
+    if (isDiscordBot && upload.mimeType === 'image/gif') {
+      // Serve file directly for Discord bots, bypass embed
+      const fileBuffer = fs.readFileSync(filePath);
+
+      const response = new Response(fileBuffer, {
+        headers: {
+          "Content-Type": "image/gif",
+          "Content-Length": upload.size.toString(),
+          "Content-Disposition": `inline; filename="${upload.originalName}"`,
+          "Cache-Control": "public, max-age=31536000, immutable",
+          "Accept-Ranges": "bytes",
+          "Access-Control-Allow-Origin": "*",
+          "Content-Encoding": "identity"
+        }
+      });
+
+      send(response);
+      return;
+    }
+
     if (isDirect || isPreview || (!isBotOrCrawler)) {
       // Track download ONLY when it's an explicit direct request (?direct=true)
       // or when it's a non-bot request that's not from our internal pages
@@ -314,12 +342,18 @@ export const onRequest: RequestHandler = async ({ params, send, status, url, req
         "Content-Length": upload.size.toString(),
         "Content-Disposition": `inline; filename="${upload.originalName}"`,
         "Cache-Control": "public, max-age=31536000"
-      };// Additional headers for GIFs to ensure proper playback
+      };
       if (upload.mimeType === 'image/gif') {
         headers["X-Content-Type-Options"] = "nosniff";
         headers["Accept-Ranges"] = "bytes";
-        // Ensure proper caching for Discord
+        // Critical: Discord needs these specific headers for GIF animation
         headers["Cache-Control"] = "public, max-age=31536000, immutable";
+        headers["Content-Disposition"] = `inline; filename="${upload.originalName}"`; // inline, not attachment
+        // Ensure no compression for GIFs
+        headers["Content-Encoding"] = "identity";
+        // Add CORS headers for Discord
+        headers["Access-Control-Allow-Origin"] = "*";
+        headers["Access-Control-Allow-Methods"] = "GET, HEAD, OPTIONS";
       }
 
       const response = new Response(fileBuffer, { headers });
