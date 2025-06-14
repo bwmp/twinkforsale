@@ -1,7 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
+
 @import "@luminescent/ui";
-@plugin "@luminescent/ui/lum-bg";
 @config "@luminescent/ui-qwik/config";
 @source "../node_modules/@luminescent/ui-qwik";
 
@@ -48,6 +48,15 @@
   --color-theme-success: var(--theme-confirm);
   --color-theme-error: var(--theme-deny);
   --color-theme-warning: #f59e0b;
+
+
+  /* Luminescent UI theme options */
+  --lum-default-alpha: 30;
+  --lum-btn-p-x: 2;
+  --lum-input-p-x: 1.5;
+  --lum-border-radius: var(--radius-3xl);
+  --lum-border-mix: 20%;
+  --lum-border-color: var(--color-gray-300);
 }
 
 /* Custom styles for cute femboy aesthetic */
@@ -71,7 +80,7 @@
   --theme-accent-quaternary: #8b5cf6;
   --theme-card-bg: linear-gradient(135deg, rgba(15, 23, 42, 0.8), rgba(30, 41, 59, 0.6));
   --theme-card-border: rgba(236, 72, 153, 0.2);
-  --theme-glass-bg: rgba(15, 23, 42, 0.3);
+  --theme-glass-bg: rgba(15, 23, 42);
   --theme-glass-border: rgba(255, 255, 255, 0.1);
   --theme-scrollbar-track: #1e293b;
   --theme-scrollbar-thumb: linear-gradient(to bottom, #ec4899, #8b5cf6);
@@ -142,10 +151,7 @@
 
 /* Glassmorphism effect */
 .glass {
-  background: var(--theme-glass-bg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--theme-glass-border);
+  @apply backdrop-blur-xl lum-bg-theme-glass-bg border-theme-glass-border/20;
 }
 
 /* Cute button styles */
@@ -178,13 +184,13 @@
 
 /* Cute card hover effects */
 .card-cute {
-  transition: all 0.3s ease;
+  @apply transition duration-500;
   background: var(--theme-card-bg);
   border: 1px solid var(--theme-card-border);
 }
 
 .card-cute:hover {
-  transform: translateY(-5px);
+  @apply -translate-y-2;
   border-color: var(--theme-accent-primary);
   box-shadow: 0 20px 40px var(--theme-button-shadow);
 }
@@ -233,11 +239,6 @@
     width: 1.5rem;
     height: 1.5rem;
   }
-}
-
-/* Theme transitions */
-* {
-  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
 }
 
 /* Light theme specific overrides */

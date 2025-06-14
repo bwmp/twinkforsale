@@ -29,13 +29,13 @@ export default component$(() => {
     return pathname === "/dashboard" || pathname === "/dashboard/";
   };
   const getNavLinkClasses = (isActive: boolean, isMobile = false) => {
-    const baseClasses = `font-medium transition-all duration-300 flex items-center gap-${isMobile ? "3" : "2"} whitespace-nowrap`;
+    const baseClasses = `lum-btn lum-bg-transparent ${isMobile ? "gap-3" : "gap-2"}`;
     const sizeClasses = isMobile
       ? "px-4 py-3 rounded-xl"
       : "px-4 py-2 rounded-full";
     const activeClasses = isActive
       ? "btn-cute text-white shadow-lg"
-      : "text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-bg-tertiary/20";
+      : "text-theme-text-secondary hover:text-theme-text-primary hover:lum-bg-theme-bg-tertiary/20";
 
     return `${baseClasses} ${sizeClasses} ${activeClasses}`;
   };
@@ -44,22 +44,25 @@ export default component$(() => {
   return (
     <Nav
       fixed
-      colorClass="bg-theme-secondary/60 backdrop-blur-md !border-b border-theme-card-border"
+      colorClass="lum-bg-theme-bg-secondary backdrop-blur-md !border-b border-theme-card-border"
     >
       {/* Logo/Brand */}
       <Link
         href="/"
         q:slot="start"
-        class="text-gradient-cute flex items-center gap-2 text-xl font-bold transition-transform duration-300 hover:scale-105 sm:text-2xl"
+        class="text-gradient-cute lum-btn lum-bg-transparent text-xl font-bold"
       >
         <div class="heart-gradient sm"></div>
         <span>twink.forsale</span>
       </Link>
-      {/* Desktop Center Navigation */}      {session.value && (
-        <div q:slot="center" class="hidden items-center space-x-3 lg:flex">          <Link href="/dashboard" class={getNavLinkClasses(isDashboardExact())}>
+      {/* Desktop Center Navigation */}
+      {session.value && (
+        <div q:slot="center" class="hidden items-center space-x-3 lg:flex">
+          <Link href="/dashboard" class={getNavLinkClasses(isDashboardExact())}>
             <Home class="h-4 w-4" />
             Dashboard
-          </Link>          <Link
+          </Link>
+          <Link
             href="/dashboard/uploads"
             class={getNavLinkClasses(isCurrentPage("/dashboard/uploads"))}
           >
@@ -103,7 +106,7 @@ export default component$(() => {
             <Form action={signOut}>
               <input type="hidden" name="providerId" value="discord" />
               <input type="hidden" name="options.redirectTo" />
-              <button class="text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-bg-tertiary/20 flex items-center gap-2 rounded-full px-4 py-2 !whitespace-nowrap transition-all duration-300">
+              <button class="lum-btn lum-bg-transparent text-theme-text-secondary hover:text-theme-text-primary hover:lum-bg-theme-bg-tertiary/20">
                 <LogOut class="h-4 w-4" />
                 Sign Out
               </button>
