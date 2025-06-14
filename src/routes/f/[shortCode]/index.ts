@@ -4,9 +4,10 @@ import { getEnvConfig } from "~/lib/env";
 import { updateDailyAnalytics } from "~/lib/analytics";
 import fs from "fs";
 import path from "path";
+import { Upload } from "@prisma/client";
 
 // Generate Discord embed HTML
-function generateDiscordEmbed(upload: any, user: any, baseUrl: string, userStats?: { totalFiles: number, totalStorage: number, totalViews: number }) {
+function generateDiscordEmbed(upload: Upload, user: any, baseUrl: string, userStats?: { totalFiles: number, totalStorage: number, totalViews: number }) {
   // Helper function to replace placeholders
   const replacePlaceholders = (text: string) => {
     if (!text) return text;
@@ -69,33 +70,17 @@ function generateDiscordEmbed(upload: any, user: any, baseUrl: string, userStats
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="${domain}">
   <meta property="og:title" content="${embedTitle}">  <meta property="og:description" content="${plainDescription}">
-  <meta property="og:url" content="${upload.url}">
+  <meta property="og:url" content="${upload.url}?direct=true">
   <meta name="theme-color" content="${embedColor}">
   <!-- Twitter Card Meta Tags -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${embedTitle}">
   <meta name="twitter:description" content="${plainDescription}">  
-${upload.mimeType === 'image/gif' ? `
-  <!-- GIF-specific meta tags for Discord animation support -->
   <meta property="og:image" content="${upload.url}?direct=true">
-  <meta property="og:image:type" content="image/gif">
-  <!-- Remove fixed dimensions for GIFs - let Discord handle sizing -->
+  <meta property="og:image:width" content="498">
+  <meta property="og:image:height" content="498">
   <meta name="twitter:image" content="${upload.url}?direct=true">
   <meta name="twitter:image:alt" content="${embedTitle}">
-  <meta name="twitter:card" content="summary_large_image">
-  <!-- Add these critical Discord GIF headers -->
-  <meta property="og:image:secure_url" content="${upload.url}?direct=true">
-  <meta property="og:video" content="${upload.url}?direct=true">
-  <meta property="og:video:type" content="image/gif">
-  <meta property="og:video:secure_url" content="${upload.url}?direct=true">
-  ` : upload.mimeType.startsWith('image/') ? `
-  <!-- Standard image meta tags -->
-  <meta property="og:image" content="${upload.url}?direct=true">
-  <meta property="og:image:type" content="${upload.mimeType}">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta name="twitter:image" content="${upload.url}?direct=true">
-  ` : ''}
   ${embedAuthor ? `<meta name="author" content="${embedAuthor}">` : ''}
   
   <!-- oEmbed alternate link for better platform support -->
@@ -187,45 +172,35 @@ export const onRequest: RequestHandler = async ({ params, send, status, url, req
     if (!shortCode) {
       status(404);
       return;
-    }    // Check if this is a direct file request or preview request
+    }
+
+    // Check if this is a direct file request
     const isDirect = url.searchParams.get('direct') === 'true';
-    const isPreview = url.searchParams.get('preview') === 'true';
 
     // Find upload in database with user info for embed settings
     const upload = await db.upload.findUnique({
       where: { shortCode },
       include: { user: true }
-    }); if (!upload) {
-      status(404);
-      return;
-    }
+    });
 
-    // Check if file has expired
-    if (upload.expiresAt && new Date() > upload.expiresAt) {
+    if (!upload) {
       status(404);
       return;
     }
-
-    // Check if file has exceeded view limit
-    if (upload.maxViews && upload.views >= upload.maxViews) {
-      status(404);
-      return;
-    }
-    // Update view count only for external views    // Don't count views when accessed from our own dashboard/uploads/admin pages
+    // Update view count only for external views
+    // Don't count views when accessed from our own dashboard/uploads/admin pages
     const referrer = request.headers.get('referer') || request.headers.get('referrer') || '';
 
     // Check if this is an internal view from our dashboard/uploads pages
     const isInternalDashboardView = referrer.includes('/dashboard') ||
       referrer.includes('/uploads') ||
-      referrer.includes('/admin') ||
-      referrer.includes('/api') ||
-      referrer.includes('/setup');    // Only increment views if:
+      referrer.includes('/admin');
+
+    // Only increment views if:
     // 1. Not from our internal dashboard/admin pages (excludes image previews, etc.)
     // 2. Not a direct file request (which is usually for downloads)
-    // 3. This is not a direct request (which would be a download)
-    // 4. Not a preview request (internal dashboard previews)
     // This ensures we only count "real" external views and embeds
-    if (!isInternalDashboardView && !isDirect && !isPreview) {
+    if (!isInternalDashboardView && !isDirect) {
       // Get visitor info for analytics
       const ipAddress = request.headers.get('x-forwarded-for') ||
         request.headers.get('x-real-ip') ||
@@ -241,9 +216,7 @@ export const onRequest: RequestHandler = async ({ params, send, status, url, req
           userAgent,
           referer: referrer || null,
         }
-      });
-
-      await db.upload.update({
+      }); await db.upload.update({
         where: { id: upload.id },
         data: {
           views: { increment: 1 },
@@ -270,16 +243,13 @@ export const onRequest: RequestHandler = async ({ params, send, status, url, req
     if (!fs.existsSync(filePath)) {
       status(404);
       return;
-    }    // If this is a direct file request, preview request, or browser request, serve the file directly
+    }
+    // If this is a direct file request, always serve the file directly
     // For non-direct requests, serve embed HTML for bots/crawlers, direct file for browsers
     const userAgent = request.headers.get('user-agent')?.toLowerCase() || '';
-    const isBotOrCrawler = /bot|crawler|spider|crawling|discord|telegram|whatsapp|facebook|twitter|slack/i.test(userAgent);
-
-    if (isDirect || isPreview || (!isBotOrCrawler)) {
-      // Track download ONLY when it's an explicit direct request (?direct=true)
-      // or when it's a non-bot request that's not from our internal pages
-      // and not a preview request
-      if (isDirect && !isInternalDashboardView && !isPreview) {
+    const isBotOrCrawler = /bot|crawler|spider|crawling|discord|telegram|whatsapp|facebook|twitter|slack/i.test(userAgent); if (isDirect || (!isBotOrCrawler)) {
+      // Track download when serving file directly
+      if (isDirect || !isBotOrCrawler) {
         // Get visitor info for download analytics
         const ipAddress = request.headers.get('x-forwarded-for') ||
           request.headers.get('x-real-ip') ||
@@ -319,18 +289,12 @@ export const onRequest: RequestHandler = async ({ params, send, status, url, req
         "Content-Length": upload.size.toString(),
         "Content-Disposition": `inline; filename="${upload.originalName}"`,
         "Cache-Control": "public, max-age=31536000"
-      };
+      };// Additional headers for GIFs to ensure proper playback
       if (upload.mimeType === 'image/gif') {
         headers["X-Content-Type-Options"] = "nosniff";
         headers["Accept-Ranges"] = "bytes";
-        // Critical: Discord needs these specific headers for GIF animation
+        // Ensure proper caching for Discord
         headers["Cache-Control"] = "public, max-age=31536000, immutable";
-        headers["Content-Disposition"] = `inline; filename="${upload.originalName}"`; // inline, not attachment
-        // Ensure no compression for GIFs
-        headers["Content-Encoding"] = "identity";
-        // Add CORS headers for Discord
-        headers["Access-Control-Allow-Origin"] = "*";
-        headers["Access-Control-Allow-Methods"] = "GET, HEAD, OPTIONS";
       }
 
       const response = new Response(fileBuffer, { headers });
