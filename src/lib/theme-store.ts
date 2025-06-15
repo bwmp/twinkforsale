@@ -1,5 +1,5 @@
-import { createContextId, useContext, useContextProvider, useSignal, useStore, useVisibleTask$, $ } from "@builder.io/qwik";
-import { getThemePreference, setThemePreference } from "./cookie-utils";
+import { createContextId, useContext, useContextProvider, useSignal, useVisibleTask$, $ } from '@builder.io/qwik';
+import { getThemePreference, setThemePreference } from './cookie-utils';
 
 export type ThemeName = 'dark' | 'light' | 'pastel' | 'neon' | 'valentine' | 'auto';
 
@@ -259,10 +259,10 @@ export const useThemeProvider = () => {
     isDark.value = effectiveTheme === 'dark' ||
       (themeName === 'neon') ||
       (themeName === 'auto' && (typeof window !== 'undefined' && window.matchMedia?.('(prefers-color-scheme: dark)').matches));
-  }); const setTheme = $((theme: ThemeName) => {
+  }); const setTheme = $(async (theme: ThemeName) => {
     currentTheme.value = theme;
-    applyTheme(theme);
-    setThemePreference(theme);
+    await applyTheme(theme);
+    await setThemePreference(theme);
   });
   // Load saved theme on initialization
   // eslint-disable-next-line qwik/no-use-visible-task
@@ -285,14 +285,14 @@ export const useThemeProvider = () => {
     }
 
     // Apply theme (this will update if needed)
-    applyTheme(initialTheme);
+    await applyTheme(initialTheme);
 
     // Listen for system theme changes when using auto theme
     if (typeof window !== 'undefined' && window.matchMedia) {
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
       const handleChange = () => {
         if (currentTheme.value === 'auto') {
-          applyTheme('auto');
+          void applyTheme('auto');
         }
       };
       mediaQuery.addEventListener('change', handleChange);
@@ -300,9 +300,11 @@ export const useThemeProvider = () => {
       // Cleanup function
       return () => mediaQuery.removeEventListener('change', handleChange);
     }
-  }); const contextValue: ThemeContextType = {
+  });
+
+  const contextValue: ThemeContextType = {
     currentTheme: currentTheme.value,
-    setTheme,
+    setTheme: (theme: ThemeName) => void setTheme(theme),
     isDark: isDark.value,
     themeColors: themes[currentTheme.value],
   };
@@ -328,7 +330,7 @@ export const useTheme = () => {
  * @param userAgent - Optional user agent string for auto theme detection
  * @returns CSS variables string to inject into the document
  */
-export function generateThemeCSS(themeName: ThemeName, userAgent?: string): string {
+export function generateThemeCSS(themeName: ThemeName): string {
   let effectiveTheme = themeName;
 
   // Handle auto theme detection on server-side
@@ -357,7 +359,7 @@ export function generateThemeCSS(themeName: ThemeName, userAgent?: string): stri
  * @param userAgent - Optional user agent string for auto theme detection
  * @returns The effective theme name ('dark' or 'light' etc.)
  */
-export function getEffectiveTheme(themeName: ThemeName, userAgent?: string): Exclude<ThemeName, 'auto'> {
+export function getEffectiveTheme(themeName: ThemeName): Exclude<ThemeName, 'auto'> {
   if (themeName === 'auto') {
     // Server-side auto theme detection fallback
     return 'dark'; // Default fallback

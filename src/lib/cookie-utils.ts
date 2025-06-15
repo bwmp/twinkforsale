@@ -1,4 +1,6 @@
 import { $ } from "@builder.io/qwik";
+import { server$ } from "@builder.io/qwik-city";
+import { themes } from "./theme-store";
 
 /**
  * Cookie utility functions for client-side cookie management
@@ -171,17 +173,17 @@ export const setUploadsViewMode = $((mode: 'grid' | 'list') => {
  * Get the theme preference
  * @returns Promise<'light' | 'dark' | 'auto' | 'pastel' | 'neon' | 'valentine' | null>
  */
-export const getThemePreference = $(async (): Promise<'light' | 'dark' | 'auto' | 'pastel' | 'neon' | 'valentine' | null> => {
-  const value = await getCookie(COOKIE_KEYS.THEME_PREFERENCE);
-  return value as 'light' | 'dark' | 'auto' | 'pastel' | 'neon' | 'valentine' | null;
+export const getThemePreference = server$(function (): keyof typeof themes | null {
+  const value = this.cookie.get(COOKIE_KEYS.THEME_PREFERENCE);
+  return value as keyof typeof themes | null;
 });
 
 /**
  * Set the theme preference
  * @param theme - 'light', 'dark', 'auto', 'pastel', 'neon', or 'valentine'
  */
-export const setThemePreference = $((theme: 'light' | 'dark' | 'auto' | 'pastel' | 'neon' | 'valentine') => {
-  return setCookie(COOKIE_KEYS.THEME_PREFERENCE, theme);
+export const setThemePreference = server$(function (theme: keyof typeof themes) {
+  return this.cookie.set(COOKIE_KEYS.THEME_PREFERENCE, theme);
 });
 
 /**
