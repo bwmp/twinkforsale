@@ -4,6 +4,7 @@ import { generateShortCode, saveFile, validateFile } from "~/lib/upload";
 import { getEnvConfig } from "~/lib/env";
 import { monitorUploadEvent, monitorFailedUpload } from "~/lib/system-monitoring";
 import { nanoid } from "nanoid";
+import { extractDimensionsFromBuffer } from "~/lib/media-utils";
 
 export const onPost: RequestHandler = async ({ request, json }) => {
   // Check for API key authentication
@@ -122,9 +123,14 @@ export const onPost: RequestHandler = async ({ request, json }) => {
 
   const shortCode = generateShortCode(useCuteWords);
   const deletionKey = nanoid(32);
-  const filename = `${shortCode}_${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
-  // Save file to storage
-  await saveFile(file, filename, userId);  // Determine the upload domain based on user preference
+  const filename = `${shortCode}_${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;  // Save file to storage
+  await saveFile(file, filename, userId);
+
+  // Extract dimensions for images and videos
+  const fileBuffer = Buffer.from(await file.arrayBuffer());
+  const dimensions = await extractDimensionsFromBuffer(fileBuffer, file.type);
+
+  // Determine the upload domain based on user preference
   const config = getEnvConfig();
   let uploadDomain = config.BASE_URL;
 
@@ -136,8 +142,7 @@ export const onPost: RequestHandler = async ({ request, json }) => {
   const expiresAt = finalExpirationDays 
     ? new Date(Date.now() + finalExpirationDays * 24 * 60 * 60 * 1000)
     : null;
-    
-  const upload = await db.upload.create({
+      const upload = await db.upload.create({
     data: {
       filename,
       originalName: file.name,
@@ -148,7 +153,9 @@ export const onPost: RequestHandler = async ({ request, json }) => {
       deletionKey,
       userId,
       expiresAt,
-      maxViews: finalMaxViews
+      maxViews: finalMaxViews,
+      width: dimensions?.width,
+      height: dimensions?.height
     }
   });
   // Update user storage if authenticated

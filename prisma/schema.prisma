@@ -118,6 +118,10 @@ model Upload {
   shortCode   String   @unique // Short identifier
   deletionKey String   @unique
   
+  // Image dimensions (for images only)
+  width       Int?     // Image width in pixels
+  height      Int?     // Image height in pixels
+  
   createdAt   DateTime @default(now())
   expiresAt   DateTime?
   

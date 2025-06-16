@@ -5,6 +5,7 @@ import { updateDailyAnalytics } from "~/lib/analytics";
 import fs from "fs";
 import path from "path";
 import { Upload } from "@prisma/client";
+import { extractMediaDimensions } from "~/lib/media-utils";
 
 // Generate Discord embed HTML
 function generateDiscordEmbed(upload: Upload, user: any, baseUrl: string, userStats?: { totalFiles: number, totalStorage: number, totalViews: number }) {
@@ -74,11 +75,10 @@ function generateDiscordEmbed(upload: Upload, user: any, baseUrl: string, userSt
   <meta name="theme-color" content="${embedColor}">
   <!-- Twitter Card Meta Tags -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="${embedTitle}">
-  <meta name="twitter:description" content="${plainDescription}">  
+  <meta name="twitter:title" content="${embedTitle}">  <meta name="twitter:description" content="${plainDescription}">  
   <meta property="og:image" content="${upload.url}?direct=true">
-  <meta property="og:image:width" content="498">
-  <meta property="og:image:height" content="498">
+  <meta property="og:image:width" content="${upload.width || 498}">
+  <meta property="og:image:height" content="${upload.height || 498}">
   <meta name="twitter:image" content="${upload.url}?direct=true">
   <meta name="twitter:image:alt" content="${embedTitle}">
   ${embedAuthor ? `<meta name="author" content="${embedAuthor}">` : ''}
@@ -300,11 +300,39 @@ export const onRequest: RequestHandler = async ({ params, send, status, url, req
       const response = new Response(fileBuffer, { headers });
 
       send(response);
-      return;
-    } else {
+      return;    } else {
       // Generate and serve Discord embed HTML
       const config = getEnvConfig();
       const baseUrl = config.BASE_URL;
+
+      // Extract dimensions on-the-fly if missing and this is a media file
+      let finalUpload = upload;
+      if (!upload.width || !upload.height) {
+        if (upload.mimeType.startsWith('image/') || upload.mimeType.startsWith('video/')) {
+          try {
+            const dimensions = await extractMediaDimensions(filePath, upload.mimeType);
+            if (dimensions) {
+              // Update the database with extracted dimensions
+              await db.upload.update({
+                where: { id: upload.id },
+                data: {
+                  width: dimensions.width,
+                  height: dimensions.height
+                }
+              });
+              
+              // Update our local upload object
+              finalUpload = {
+                ...upload,
+                width: dimensions.width,
+                height: dimensions.height
+              };
+            }
+          } catch (error) {
+            console.error('Error extracting dimensions on-the-fly:', error);
+          }
+        }
+      }
 
       // Fetch user statistics if the user wants to show them
       let userStats = undefined;
@@ -328,7 +356,7 @@ export const onRequest: RequestHandler = async ({ params, send, status, url, req
         };
       }
 
-      const embedHtml = generateDiscordEmbed(upload, upload.user, baseUrl, userStats);
+      const embedHtml = generateDiscordEmbed(finalUpload, upload.user, baseUrl, userStats);
       const response = new Response(embedHtml, {
         headers: {
           "Content-Type": "text/html",

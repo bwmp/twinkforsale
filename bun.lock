@@ -6,6 +6,7 @@
       "dependencies": {
         "@prisma/client": "^6.9.0",
         "diskusage": "^1.2.0",
+        "sharp": "^0.34.2",
       },
       "devDependencies": {
         "@auth/prisma-adapter": "^2.9.1",

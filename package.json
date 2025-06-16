@@ -54,6 +54,7 @@
   },
   "dependencies": {
     "@prisma/client": "^6.9.0",
-    "diskusage": "^1.2.0"
+    "diskusage": "^1.2.0",
+    "sharp": "^0.34.2"
   }
 }
