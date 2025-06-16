@@ -3,6 +3,7 @@ import fs from 'fs'
 import path from 'path'
 import { getEnvConfig } from './env'
 import { generateCuteShortCode } from './cute-words'
+import { db } from './db'
 
 // Generate short codes for URLs (URL-safe characters)
 const generateRandomShortCode = customAlphabet('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 8)
@@ -16,6 +17,31 @@ export function generateShortCode(useCuteWords: boolean = false): string {
     return generateCuteShortCode();
   }
   return generateRandomShortCode();
+}
+
+// Generate a unique shortcode by checking database for collisions
+export async function generateUniqueShortCode(useCuteWords: boolean = false, maxAttempts: number = 10): Promise<string> {
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    const shortCode = generateShortCode(useCuteWords);
+    
+    // Check if this shortcode already exists in the database
+    const existingUpload = await db.upload.findUnique({
+      where: { shortCode },
+      select: { id: true } // Only select id to minimize data transfer
+    });
+    
+    if (!existingUpload) {
+      return shortCode; // Found a unique shortcode
+    }
+    
+    console.log(`Shortcode collision detected: ${shortCode}, attempting again (${attempt + 1}/${maxAttempts})`);
+  }
+  
+  // If we still haven't found a unique shortcode after max attempts, 
+  // fall back to a longer random string to virtually guarantee uniqueness
+  console.warn(`Failed to generate unique shortcode after ${maxAttempts} attempts, using longer fallback`);
+  const fallbackGenerator = customAlphabet('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 16);
+  return fallbackGenerator();
 }
 
 // Standalone functions for easier import

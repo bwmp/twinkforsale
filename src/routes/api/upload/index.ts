@@ -1,6 +1,6 @@
 import type { RequestHandler } from "@builder.io/qwik-city";
 import { db } from "~/lib/db";
-import { generateShortCode, saveFile, validateFile } from "~/lib/upload";
+import { generateUniqueShortCode, saveFile, validateFile } from "~/lib/upload";
 import { getEnvConfig } from "~/lib/env";
 import { monitorUploadEvent, monitorFailedUpload } from "~/lib/system-monitoring";
 import { nanoid } from "nanoid";
@@ -116,12 +116,11 @@ export const onPost: RequestHandler = async ({ request, json }) => {
   // Use custom values if provided, otherwise use user defaults
   const finalExpirationDays = customExpirationDays 
     ? parseInt(customExpirationDays as string) 
-    : userExpirationDays;
-  const finalMaxViews = customMaxViews 
+    : userExpirationDays;  const finalMaxViews = customMaxViews 
     ? parseInt(customMaxViews as string) 
     : userMaxViews;
 
-  const shortCode = generateShortCode(useCuteWords);
+  const shortCode = await generateUniqueShortCode(useCuteWords);
   const deletionKey = nanoid(32);
   const filename = `${shortCode}_${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;  // Save file to storage
   await saveFile(file, filename, userId);
