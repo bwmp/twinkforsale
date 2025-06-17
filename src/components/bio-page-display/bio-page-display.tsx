@@ -1,4 +1,9 @@
-import { component$, type QRL, useSignal, useVisibleTask$ } from "@builder.io/qwik";
+import {
+  component$,
+  type QRL,
+  useSignal,
+  useVisibleTask$,
+} from "@builder.io/qwik";
 import { Music } from "lucide-icons-qwik";
 import type { BioLink } from "@prisma/client";
 import {
@@ -8,6 +13,7 @@ import {
 import { BioLinkIcon } from "~/components/bio-link-icon";
 import { DiscordProfile } from "~/components/discord-profile";
 import { getLanyardData, getDiscordAvatarUrl } from "~/lib/discord";
+import { sanitizeCSS } from "~/lib/css-sanitizer";
 
 export interface BioPageData {
   displayName?: string | null;
@@ -37,7 +43,7 @@ export interface BioPageDisplayProps {
 export const BioPageDisplay = component$<BioPageDisplayProps>(
   ({ bioData, isPreview = false, onLinkClick, class: className = "" }) => {
     const activeLinks = bioData.bioLinks.filter((link) => link.isActive);
-    const discordAvatarUrl = useSignal<string | null>(null);    // Fetch Discord avatar as fallback if no profile image is provided
+    const discordAvatarUrl = useSignal<string | null>(null); // Fetch Discord avatar as fallback if no profile image is provided
     // eslint-disable-next-line qwik/no-use-visible-task
     useVisibleTask$(async () => {
       if (!bioData.profileImage && bioData.discordUserId) {
@@ -47,7 +53,7 @@ export const BioPageDisplay = component$<BioPageDisplayProps>(
             const avatarUrl = getDiscordAvatarUrl(
               lanyardData.data.discord_user.id,
               lanyardData.data.discord_user.avatar,
-              128
+              128,
             );
             discordAvatarUrl.value = avatarUrl;
           }
@@ -104,7 +110,6 @@ export const BioPageDisplay = component$<BioPageDisplayProps>(
             : {}),
         }}
       >
-        {" "}
         {/* Particle Background */}
         {particleConfig?.enabled && (
           <ParticleBackground
@@ -115,9 +120,9 @@ export const BioPageDisplay = component$<BioPageDisplayProps>(
           />
         )}
         {/* Custom CSS injection */}
-        {bioData.customCss && !isPreview && (
-          <style dangerouslySetInnerHTML={bioData.customCss} />
-        )}
+        {/* {bioData.customCss && !isPreview && (
+          <style dangerouslySetInnerHTML={sanitizeCSS(bioData.customCss)} />
+        )} */}
         {/* Background overlay if background image exists */}
         {bioData.backgroundImage && (
           <div
@@ -130,7 +135,8 @@ export const BioPageDisplay = component$<BioPageDisplayProps>(
           <div
             class="bio-content relative z-10 mx-auto w-full max-w-xl rounded-3xl border border-white/10 bg-black/20 p-8 text-center shadow-2xl backdrop-blur-sm"
             style={{ backgroundColor: `${bioData.backgroundColor}15` }}
-          >            {/* Profile Image */}
+          >
+            {/* Profile Image */}
             {(bioData.profileImage || discordAvatarUrl.value) && (
               <img
                 src={bioData.profileImage || discordAvatarUrl.value || ""}
@@ -143,13 +149,13 @@ export const BioPageDisplay = component$<BioPageDisplayProps>(
             {/* Display Name */}
             <h1 class="display-name mb-4 text-4xl font-bold tracking-tight">
               {bioData.displayName || "Your Name"}
-            </h1>{" "}
+            </h1>
             {/* Description */}
             {bioData.description && (
               <p class="bio-description mx-auto mb-8 max-w-md text-lg leading-relaxed whitespace-pre-wrap opacity-90">
                 {bioData.description}
               </p>
-            )}{" "}
+            )}
             {/* Bio Links */}
             <div class="bio-links mb-8">
               {activeLinks.length > 0 ? (
@@ -217,7 +223,7 @@ export const BioPageDisplay = component$<BioPageDisplayProps>(
                   </div>
                 )
               )}
-            </div>{" "}
+            </div>
             {/* Discord Profile */}
             {bioData.showDiscord && bioData.discordUserId && (
               <div class="discord-section mb-8">

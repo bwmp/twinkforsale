@@ -61,6 +61,7 @@ import {
   type GradientConfig,
 } from "~/components/gradient-config-panel";
 import { autoPopulateDiscordId, getLanyardData } from "~/lib/discord";
+import { sanitizeCSS, hasDangerousCSS } from "~/lib/css-sanitizer";
 
 export const useBioData = routeLoader$(async (requestEvent) => {
   const session = requestEvent.sharedMap.get("session");
@@ -172,13 +173,25 @@ export const useUpdateBio = routeAction$(
       if (!isAvailable) {
         return requestEvent.fail(400, { message: "Username is already taken" });
       }
-    }
-
-    // Validate bio data against user limits
+    } // Validate bio data against user limits
     const validation = await validateBioData(user.id, values);
     if (!validation.isValid) {
       return requestEvent.fail(400, { message: validation.errors.join(", ") });
     }
+
+    // Sanitize custom CSS to prevent XSS
+    let sanitizedCSS = null;
+    if (values.bioCustomCss) {
+      sanitizedCSS = sanitizeCSS(values.bioCustomCss);
+
+      // Warn if dangerous content was found and removed
+      if (hasDangerousCSS(values.bioCustomCss)) {
+        console.warn(
+          `Dangerous CSS detected and sanitized for user ${user.id}`,
+        );
+      }
+    }
+
     await db.user.update({
       where: { id: user.id },
       data: {
@@ -190,7 +203,7 @@ export const useUpdateBio = routeAction$(
         bioBackgroundColor: values.bioBackgroundColor || "#8B5CF6",
         bioTextColor: values.bioTextColor || "#FFFFFF",
         bioAccentColor: values.bioAccentColor || "#F59E0B",
-        bioCustomCss: values.bioCustomCss || null,
+        bioCustomCss: sanitizedCSS,
         bioSpotifyTrack: values.bioSpotifyTrack || null,
         bioIsPublic: values.bioIsPublic || false,
         bioGradientConfig: values.bioGradientConfig || null,
@@ -423,12 +436,16 @@ export default component$(() => {
   const textColor = useSignal(bioData.value.user.bioTextColor);
   const accentColor = useSignal(bioData.value.user.bioAccentColor);
   const customCss = useSignal(bioData.value.user.bioCustomCss || "");
-  const spotifyTrack = useSignal(bioData.value.user.bioSpotifyTrack || "");  const isPublic = useSignal(bioData.value.user.bioIsPublic);
+  const spotifyTrack = useSignal(bioData.value.user.bioSpotifyTrack || "");
+  const isPublic = useSignal(bioData.value.user.bioIsPublic);
   const showDiscord = useSignal(bioData.value.user.bioShowDiscord);
-  
+
   // Discord error tracking
   const discordError = useSignal<string | null>(null);
   const discordTesting = useSignal(false);
+
+  // CSS security warning
+  const cssWarning = useSignal<string | null>(null);
 
   // Parse Discord configuration
   const parseDiscordConfig = () => {
@@ -453,7 +470,8 @@ export default component$(() => {
   // Function to test Discord connectivity
   const testDiscordConnection = $(async () => {
     if (!bioData.value.user.bioDiscordUserId) {
-      discordError.value = "No Discord user ID found. Please log in with Discord first.";
+      discordError.value =
+        "No Discord user ID found. Please log in with Discord first.";
       return;
     }
 
@@ -463,16 +481,20 @@ export default component$(() => {
     try {
       const result = await getLanyardData(bioData.value.user.bioDiscordUserId);
       if (!result.success) {
-        discordError.value = result.error || "Failed to connect to Discord. Please check if you've joined our Discord server (https://discord.gg/TDsQpa9tdT) or invited the bot to your server.";
+        discordError.value =
+          result.error ||
+          "Failed to connect to Discord. Please check if you've joined our Discord server (https://discord.gg/TDsQpa9tdT) or invited the bot to your server.";
       } else {
         discordError.value = null;
       }
     } catch (error) {
-      discordError.value = "Error testing Discord connection. Please try again.";
+      discordError.value =
+        "Error testing Discord connection. Please try again.";
       console.error("Discord test error:", error);
     } finally {
       discordTesting.value = false;
-    }  });
+    }
+  });
 
   // Auto-test Discord connection on load if enabled
   useTask$(async () => {
@@ -605,9 +627,22 @@ export default component$(() => {
     track(() => JSON.stringify(discordConfig.value));
     track(() => JSON.stringify(particleConfig.value));
     track(() => JSON.stringify(gradientConfig.value));
-
     checkForChanges();
-  }); // Function to reset all values to original database values
+  });
+
+  // Monitor CSS changes for security warnings
+  useTask$(({ track }) => {
+    track(() => customCss.value);
+
+    if (customCss.value && hasDangerousCSS(customCss.value)) {
+      cssWarning.value =
+        "Warning: Your custom CSS contains potentially dangerous content that will be automatically sanitized for security.";
+    } else {
+      cssWarning.value = null;
+    }
+  });
+
+  // Function to reset all values to original database values
   const resetToOriginal = $(() => {
     username.value = bioData.value.user.bioUsername || "";
     displayName.value = bioData.value.user.bioDisplayName || "";
@@ -649,9 +684,10 @@ export default component$(() => {
         colors: ["#8B5CF6", "#EC4899"],
         enabled: false,
       };
-    }    // Reset Discord settings
+    } // Reset Discord settings
     showDiscord.value = bioData.value.user.bioShowDiscord;
     discordError.value = null; // Clear Discord errors on reset
+    cssWarning.value = null; // Clear CSS warnings on reset
     try {
       if (bioData.value.user.bioDiscordConfig) {
         discordConfig.value = JSON.parse(bioData.value.user.bioDiscordConfig);
@@ -731,7 +767,6 @@ export default component$(() => {
         <div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
           {/* Settings Panel */}
           <div class="space-y-6">
-            {" "}
             {/* Basic Settings */}
             <div class="glass rounded-2xl p-6">
               <button
@@ -763,7 +798,6 @@ export default component$(() => {
                       </span>
                     </label>
                     <div class="relative">
-                      {" "}
                       <input
                         type="text"
                         name="bioUsername"
@@ -790,7 +824,7 @@ export default component$(() => {
                         ({displayName.value.length}/
                         {bioData.value.bioLimits.maxDisplayNameLength})
                       </span>
-                    </label>{" "}
+                    </label>
                     <input
                       type="text"
                       name="bioDisplayName"
@@ -807,7 +841,7 @@ export default component$(() => {
                         ({description.value.length}/
                         {bioData.value.bioLimits.maxDescriptionLength})
                       </span>
-                    </label>{" "}
+                    </label>
                     <textarea
                       name="bioDescription"
                       bind:value={description}
@@ -824,7 +858,7 @@ export default component$(() => {
                         ({profileImage.value.length}/
                         {bioData.value.bioLimits.maxUrlLength})
                       </span>
-                    </label>{" "}
+                    </label>
                     <input
                       type="url"
                       name="bioProfileImage"
@@ -833,9 +867,8 @@ export default component$(() => {
                       maxLength={bioData.value.bioLimits.maxUrlLength}
                       class={inputClasses}
                     />
-                  </div>{" "}
+                  </div>
                   <div class="glass flex items-center gap-3 rounded-2xl p-3">
-                    {" "}
                     <input
                       type="checkbox"
                       id="bioIsPublic"
@@ -862,12 +895,12 @@ export default component$(() => {
                         {isPublic.value
                           ? "Anyone can view your bio page"
                           : "Your bio page is hidden from public"}
-                      </div>{" "}
+                      </div>
                     </label>
                   </div>
                 </Form>
               )}
-            </div>{" "}
+            </div>
             {/* Appearance Settings */}
             <div class="glass rounded-2xl p-6">
               <button
@@ -897,7 +930,7 @@ export default component$(() => {
                         ({backgroundImage.value.length}/
                         {bioData.value.bioLimits.maxUrlLength})
                       </span>
-                    </label>{" "}
+                    </label>
                     <input
                       type="url"
                       name="bioBackgroundImage"
@@ -911,7 +944,7 @@ export default component$(() => {
                     <div>
                       <label class="text-theme-text-secondary mb-2 block text-sm font-medium">
                         Background Color
-                      </label>{" "}
+                      </label>
                       <input
                         type="color"
                         name="bioBackgroundColor"
@@ -922,7 +955,7 @@ export default component$(() => {
                     <div>
                       <label class="text-theme-text-secondary mb-2 block text-sm font-medium">
                         Text Color
-                      </label>{" "}
+                      </label>
                       <input
                         type="color"
                         name="bioTextColor"
@@ -933,7 +966,7 @@ export default component$(() => {
                     <div>
                       <label class="text-theme-text-secondary mb-2 block text-sm font-medium">
                         Accent Color
-                      </label>{" "}
+                      </label>
                       <input
                         type="color"
                         name="bioAccentColor"
@@ -949,7 +982,7 @@ export default component$(() => {
                         ({spotifyTrack.value.length}/
                         {bioData.value.bioLimits.maxUrlLength})
                       </span>
-                    </label>{" "}
+                    </label>
                     <input
                       type="url"
                       name="bioSpotifyTrack"
@@ -957,18 +990,6 @@ export default component$(() => {
                       placeholder="https://open.spotify.com/track/..."
                       maxLength={bioData.value.bioLimits.maxUrlLength}
                       class={inputClasses}
-                    />
-                  </div>
-                  <div>
-                    <label class="text-theme-text-secondary mb-2 block text-sm font-medium">
-                      Custom CSS (Advanced)
-                    </label>{" "}
-                    <textarea
-                      name="bioCustomCss"
-                      bind:value={customCss}
-                      placeholder="/* Custom CSS rules */&#10;.bio-container { ... }"
-                      rows={4}
-                      class={`${inputClasses} font-mono text-sm`}
                     />
                   </div>
                   {/* Copy hidden fields */}
@@ -1006,15 +1027,15 @@ export default component$(() => {
                     type="hidden"
                     name="bioAccentColor"
                     value={accentColor.value}
-                  />{" "}
+                  />
                   <input
                     type="hidden"
                     name="bioIsPublic"
                     value={isPublic.value ? "true" : "false"}
-                  />{" "}
+                  />
                 </Form>
               )}
-            </div>{" "}
+            </div>
             {/* Discord Integration */}
             <div class="glass rounded-2xl p-6">
               <button
@@ -1064,12 +1085,13 @@ export default component$(() => {
                         <div class="flex items-center justify-between">
                           <label class="text-theme-text-secondary flex items-center gap-2 text-sm font-medium">
                             Show Discord Profile
-                          </label>                          <button
+                          </label>
+                          <button
                             type="button"
                             onClick$={async () => {
                               const newValue = !showDiscord.value;
                               showDiscord.value = newValue;
-                              
+
                               // Test Discord connection when enabling
                               if (newValue) {
                                 await testDiscordConnection();
@@ -1091,7 +1113,8 @@ export default component$(() => {
                                   : "translate-x-1"
                               }`}
                             />
-                          </button>                        </div>
+                          </button>
+                        </div>
 
                         {/* Discord Connection Test Button */}
                         <div class="flex items-center gap-3 pt-2">
@@ -1099,31 +1122,29 @@ export default component$(() => {
                             type="button"
                             onClick$={testDiscordConnection}
                             disabled={discordTesting.value}
-                            class="btn-secondary text-xs px-3 py-1.5 flex items-center gap-2"
+                            class="btn-secondary flex items-center gap-2 px-3 py-1.5 text-xs"
                           >
                             {discordTesting.value ? (
                               <>
-                                <div class="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin" />
+                                <div class="h-3 w-3 animate-spin rounded-full border border-current border-t-transparent" />
                                 Testing...
                               </>
                             ) : (
-                              <>
-                                🔍 Test Connection
-                              </>
+                              <>🔍 Test Connection</>
                             )}
                           </button>
                         </div>
 
                         {/* Discord Error Display */}
                         {discordError.value && (
-                          <div class="rounded-lg bg-red-500/10 p-3 border border-red-500/20">
+                          <div class="rounded-lg border border-red-500/20 bg-red-500/10 p-3">
                             <div class="flex items-start gap-2">
-                              <div class="text-red-400 text-lg">⚠️</div>
+                              <div class="text-lg text-red-400">⚠️</div>
                               <div>
-                                <p class="text-red-400 text-sm font-medium mb-1">
+                                <p class="mb-1 text-sm font-medium text-red-400">
                                   Discord Connection Failed
                                 </p>
-                                <p class="text-red-300 text-xs">
+                                <p class="text-xs text-red-300">
                                   {discordError.value}
                                 </p>
                               </div>
@@ -1265,7 +1286,7 @@ export default component$(() => {
                         current activity, and Spotify listening status.
                       </p>
                     </div>
-                  )}{" "}
+                  )}
                   {/* Hidden fields */}
                   <input
                     type="hidden"
@@ -1334,7 +1355,7 @@ export default component$(() => {
                   />
                 </Form>
               )}
-            </div>{" "}
+            </div>
             {/* Background Effects */}
             <div class="glass rounded-2xl p-6">
               <button
@@ -1358,7 +1379,6 @@ export default component$(() => {
 
               {!backgroundEffectsCollapsed.value && (
                 <div class="space-y-6">
-                  {" "}
                   {/* Gradient Configuration */}
                   <GradientConfigPanel
                     config={gradientConfig}
@@ -1432,7 +1452,7 @@ export default component$(() => {
                       type="hidden"
                       name="bioGradientConfig"
                       value={JSON.stringify(gradientConfig.value)}
-                    />{" "}
+                    />
                     <input
                       type="hidden"
                       name="bioParticleConfig"
@@ -1441,7 +1461,7 @@ export default component$(() => {
                   </Form>
                 </div>
               )}
-            </div>{" "}
+            </div>
             {/* Links Management */}
             <div class="glass rounded-2xl p-6">
               <button
@@ -1517,7 +1537,7 @@ export default component$(() => {
                                 class={inputClasses}
                               />
                             </div>
-                          </div>{" "}
+                          </div>
                           <div class="mb-4">
                             <label class="text-theme-text-secondary mb-1 block text-xs">
                               Icon (max {bioData.value.bioLimits.maxIconLength})
@@ -1541,7 +1561,7 @@ export default component$(() => {
                             >
                               <Plus class="h-4 w-4" />
                               Add Link
-                            </button>{" "}
+                            </button>
                             <button
                               type="button"
                               onClick$={resetNewLinkForm}
@@ -1579,7 +1599,7 @@ export default component$(() => {
 
                         {editingLink.value === link.id ? (
                           <Form action={updateBioLink} class="flex-1">
-                            <input type="hidden" name="id" value={link.id} />{" "}
+                            <input type="hidden" name="id" value={link.id} />
                             <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
                               <input
                                 type="text"
@@ -1641,7 +1661,6 @@ export default component$(() => {
                           </Form>
                         ) : (
                           <>
-                            {" "}
                             <div class="max-w-4/5 flex-1">
                               <div class="flex items-center gap-2">
                                 <BioLinkIcon
@@ -1652,7 +1671,7 @@ export default component$(() => {
                                 <span class="text-theme-text-primary font-medium">
                                   {link.title}
                                 </span>
-                              </div>{" "}
+                              </div>
                               <div class="text-theme-text-secondary truncate text-sm">
                                 {link.url}
                               </div>
@@ -1684,12 +1703,12 @@ export default component$(() => {
                           </>
                         )}
                       </div>
-                    ))}{" "}
+                    ))}
                     {bioData.value.bioLinks.length === 0 && (
                       <div class="text-theme-text-muted py-8 text-center">
                         <LinkIcon class="mx-auto mb-3 h-12 w-12 opacity-50" />
-                        <p>No links added yet</p>{" "}
-                        <p class="text-sm">Click "Add Link" to get started</p>{" "}
+                        <p>No links added yet</p>
+                        <p class="text-sm">Click "Add Link" to get started</p>
                       </div>
                     )}
                   </div>
@@ -1765,7 +1784,7 @@ export default component$(() => {
                                   {link.clicks} clicks
                                 </span>
                               </div>
-                            ))}{" "}
+                            ))}
                         </div>
                       </div>
                     )}
@@ -1793,7 +1812,7 @@ export default component$(() => {
                       View Live
                     </Link>
                   )}
-              </div>{" "}
+              </div>
               {/* Bio Preview */}
               <div class="border-theme-card-border relative overflow-hidden rounded-2xl border">
                 <BioPageDisplay
@@ -1808,7 +1827,7 @@ export default component$(() => {
                     Set a username to make your bio page accessible to others
                   </p>
                 </div>
-              )}{" "}
+              )}
             </div>
           </div>
         </div>
@@ -1828,7 +1847,7 @@ export default component$(() => {
                 >
                   <X class="h-4 w-4" />
                   Reset
-                </button>{" "}
+                </button>
                 <Form action={updateBio}>
                   {/* All form fields as hidden inputs */}
                   <input
@@ -1890,7 +1909,7 @@ export default component$(() => {
                     type="hidden"
                     name="bioGradientConfig"
                     value={JSON.stringify(gradientConfig.value)}
-                  />{" "}
+                  />
                   <input
                     type="hidden"
                     name="bioParticleConfig"
