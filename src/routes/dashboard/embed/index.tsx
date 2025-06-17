@@ -381,7 +381,7 @@ export default component$(() => {
                 <label class={toggleClasses}>
                   <Toggle
                     checkbox
-                    onColor="purple"
+                    class="peer-checked:lum-bg-theme-accent-primary"
                     checked={showFileInfo.value}
                     onChange$={(e, el) => {
                       showFileInfo.value = el.checked;
@@ -395,7 +395,7 @@ export default component$(() => {
                 <label class={toggleClasses}>
                   <Toggle
                     checkbox
-                    onColor="purple"
+                    class="peer-checked:lum-bg-theme-accent-primary"
                     checked={showUploadDate.value}
                     onChange$={(e, el) => {
                       showUploadDate.value = el.checked;
@@ -409,7 +409,7 @@ export default component$(() => {
                 <label class={toggleClasses}>
                   <Toggle
                     checkbox
-                    onColor="purple"
+                    class="peer-checked:lum-bg-theme-accent-primary"
                     checked={showUserStats.value}
                     onChange$={(e, el) => {
                       showUserStats.value = el.checked;
@@ -424,7 +424,7 @@ export default component$(() => {
                 <label class={toggleClasses}>
                   <Toggle
                     checkbox
-                    onColor="purple"
+                    class="peer-checked:lum-bg-theme-accent-primary"
                     checked={useCustomWords.value}
                     onChange$={(e, el) => {
                       useCustomWords.value = el.checked;

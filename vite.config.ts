@@ -30,7 +30,7 @@ export default defineConfig(({ command, mode }): UserConfig => {
     },
     build: {
       rollupOptions: {
-        external: mode === 'development' ? [] : ['diskusage', 'fs', 'path', 'os'],
+        external: mode === 'development' ? ['@prisma/client'] : ['@prisma/client', 'diskusage', 'fs', 'path', 'os'],
       },
     },
     // Ensure environment variables are available in SSR
