@@ -28,38 +28,37 @@ export default component$(() => {
     const pathname = location.url.pathname;
     return pathname === "/dashboard" || pathname === "/dashboard/";
   };
-  const getNavLinkClasses = (isActive: boolean, isMobile = false) => {
-    const baseClasses = `font-medium transition-all duration-300 flex items-center gap-${isMobile ? "3" : "2"} whitespace-nowrap`;
-    const sizeClasses = isMobile
-      ? "px-4 py-3 rounded-xl"
-      : "px-4 py-2 rounded-full";
-    const activeClasses = isActive
-      ? "btn-cute text-white shadow-lg"
-      : "text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-bg-tertiary/20";
 
-    return `${baseClasses} ${sizeClasses} ${activeClasses}`;
-  };
   const buttonClasses =
-    "w-full text-left px-4 py-3 rounded-xl font-medium transition-all duration-300 flex items-center gap-3";
+    "lum-btn text-sm font-medium lum-bg-transparent";
+  const getNavLinkClasses = (isActive: boolean, isMobile = false) => {
+    const activeClasses = isActive
+      ? "btn-cute shadow-lg"
+      : "text-theme-text-secondary hover:text-theme-text-primary";
+
+    return `${buttonClasses} ${activeClasses}`;
+  };
+  
   return (
     <Nav
       fixed
-      colorClass="bg-theme-secondary/60 backdrop-blur-md !border-b border-theme-card-border"
     >
       {/* Logo/Brand */}
       <Link
         href="/"
         q:slot="start"
-        class="text-gradient-cute flex items-center gap-2 text-xl font-bold transition-transform duration-300 hover:scale-105 sm:text-2xl"
+        class="lum-btn lum-bg-transparent text-gradient-cute text-xl font-bold"
       >
         <div class="heart-gradient sm"></div>
         <span>twink.forsale</span>
       </Link>
       {/* Desktop Center Navigation */}      {session.value && (
-        <div q:slot="center" class="hidden items-center space-x-3 lg:flex">          <Link href="/dashboard" class={getNavLinkClasses(isDashboardExact())}>
+        <div q:slot="center" class="hidden items-center space-x-3 lg:flex">
+          <Link href="/dashboard" class={getNavLinkClasses(isDashboardExact())}>
             <Home class="h-4 w-4" />
             Dashboard
-          </Link>          <Link
+          </Link>
+          <Link
             href="/dashboard/uploads"
             class={getNavLinkClasses(isCurrentPage("/dashboard/uploads"))}
           >
@@ -95,7 +94,7 @@ export default component$(() => {
           <>
             <Link
               href="/setup/sharex"
-              class="btn-cute flex items-center gap-2 rounded-full px-5 py-2 font-medium !whitespace-nowrap text-white"
+              class={`${buttonClasses} btn-cute`}
             >
               <Settings class="h-4 w-4" />
               ShareX Setup
@@ -103,7 +102,7 @@ export default component$(() => {
             <Form action={signOut}>
               <input type="hidden" name="providerId" value="discord" />
               <input type="hidden" name="options.redirectTo" />
-              <button class="text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-bg-tertiary/20 flex items-center gap-2 rounded-full px-4 py-2 !whitespace-nowrap transition-all duration-300">
+              <button class={`${buttonClasses}`}>
                 <LogOut class="h-4 w-4" />
                 Sign Out
               </button>
@@ -113,7 +112,7 @@ export default component$(() => {
           <Form action={signIn}>
             <input type="hidden" name="providerId" value="discord" />
             <input type="hidden" name="options.redirectTo" />
-            <button class="btn-cute flex items-center gap-2 rounded-full px-6 py-2 font-medium text-white">
+            <button class={`${buttonClasses} btn-cute`}>
               <User class="h-4 w-4" />
               Sign In
             </button>
@@ -122,17 +121,16 @@ export default component$(() => {
       </div>
       {/* Mobile Navigation Items */}
       {session.value ? (
-        <>
+        <div q:slot="mobile" class="space-y-2">
           <Link
             href="/dashboard"
-            q:slot="mobile"
             class={getNavLinkClasses(isDashboardExact(), true)}
           >
             <Home class="h-5 w-5" />
             Dashboard
-          </Link>          <Link
+          </Link>
+          <Link
             href="/dashboard/uploads"
-            q:slot="mobile"
             class={getNavLinkClasses(isCurrentPage("/dashboard/uploads"), true)}
           >
             <Upload class="h-5 w-5" />
@@ -140,7 +138,6 @@ export default component$(() => {
           </Link>
           <Link
             href="/dashboard/api-keys"
-            q:slot="mobile"
             class={getNavLinkClasses(
               isCurrentPage("/dashboard/api-keys"),
               true,
@@ -150,7 +147,6 @@ export default component$(() => {
             API Keys
           </Link>{" "}          <Link
             href="/dashboard/embed"
-            q:slot="mobile"
             class={getNavLinkClasses(isCurrentPage("/dashboard/embed"), true)}
           >
             <Sparkle class="h-5 w-5" />
@@ -158,40 +154,36 @@ export default component$(() => {
           </Link>
           <Link
             href="/dashboard/settings"
-            q:slot="mobile"
             class={getNavLinkClasses(isCurrentPage("/dashboard/settings"), true)}
           >
             <Settings class="h-5 w-5" />
             Settings
           </Link>
-          <Link
-            href="/setup/sharex"
-            q:slot="mobile"
-            class="btn-cute flex items-center gap-3 rounded-xl px-4 py-3 font-medium !whitespace-nowrap text-white transition-all duration-300"
-          >
-            <Settings class="h-5 w-5" />
-            ShareX Setup
-          </Link>
-          <div q:slot="mobile" class="px-4 py-3">
-            <ThemeToggle variant="dropdown" showLabel={true} />
+          <div class="flex items-center">
+            <Link
+              href="/setup/sharex"
+              class={`${buttonClasses} btn-cute flex-1`}
+            >
+              <Settings class="h-5 w-5" />
+              ShareX Setup
+            </Link>
           </div>
+          <ThemeToggle variant="dropdown" showLabel={true} />
           <Form action={signOut} q:slot="mobile">
             <input type="hidden" name="providerId" value="discord" />
             <input type="hidden" name="options.redirectTo" />
             <button
-              class={`${buttonClasses} text-theme-text-secondary hover:text-theme-text-primary hover:bg-theme-bg-tertiary/20 !whitespace-nowrap`}
+              class={`${buttonClasses}`}
             >
               <LogOut class="h-5 w-5" />
               Sign Out
             </button>
           </Form>
-        </>
+        </div>
       ) : (
-        <>
-          <div q:slot="mobile" class="px-4 py-3">
-            <ThemeToggle variant="dropdown" showLabel={true} />
-          </div>
-          <Form action={signIn} q:slot="mobile">
+        <div q:slot="mobile">
+          <ThemeToggle variant="dropdown" showLabel={true} />
+          <Form action={signIn}>
             <input type="hidden" name="providerId" value="discord" />
             <input type="hidden" name="options.redirectTo" />
             <button class={`${buttonClasses} btn-cute text-white`}>
@@ -199,7 +191,7 @@ export default component$(() => {
               Sign In
             </button>
           </Form>
-        </>
+        </div>
       )}
     </Nav>
   );

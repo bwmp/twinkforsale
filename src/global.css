@@ -47,6 +47,20 @@
   --color-theme-success: var(--theme-confirm);
   --color-theme-error: var(--theme-deny);
   --color-theme-warning: #f59e0b;
+
+  /* Luminescent UI variables */
+  --lum-default-alpha: 30;
+  --lum-btn-p-x: 2;
+  --lum-input-p-x: 1.5;
+  --lum-border-radius: var(--radius-3xl);
+  --lum-border-mix: 100%;
+  --color-lum-border: var(--theme-card-border);
+  --color-lum-card-bg: var(--theme-bg-primary);
+  --color-lum-input-bg: var(--theme-bg-secondary);
+  --color-lum-input-hover-bg: var(--theme-bg-tertiary);
+  --color-lum-accent: var(--theme-accent-primary);
+  --color-lum-text: var(--theme-text-primary);
+  --color-lum-text-secondary: var(--theme-text-secondary);
 }
 
 /* Custom styles for cute femboy aesthetic */
@@ -232,11 +246,6 @@
     width: 1.5rem;
     height: 1.5rem;
   }
-}
-
-/* Theme transitions */
-* {
-  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
 }
 
 /* Light theme specific overrides */

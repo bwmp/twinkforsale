@@ -1,7 +1,8 @@
 import { component$, useSignal, useVisibleTask$, $ } from "@builder.io/qwik";
 import { type ThemeName, themes } from "~/lib/theme-store";
-import { Moon, Sun, Palette, Sparkles, Heart, Zap } from "lucide-icons-qwik";
+import { Moon, Sun, Sparkles, Heart, Zap } from "lucide-icons-qwik";
 import { setThemePreference } from "~/lib/cookie-utils";
+import { SelectMenuRaw } from "@luminescent/ui-qwik";
 
 export interface ThemeToggleProps {
   variant?: "compact" | "full" | "dropdown";
@@ -11,7 +12,6 @@ export interface ThemeToggleProps {
 
 export const ThemeToggle = component$<ThemeToggleProps>(
   ({ variant = "compact", showLabel = false, class: className = "" }) => {
-    const isOpen = useSignal(false);
     const currentTheme = useSignal<ThemeName>("dark");
 
     // Update current theme from DOM
@@ -121,7 +121,6 @@ export const ThemeToggle = component$<ThemeToggleProps>(
           root.setAttribute("data-theme-variant", newTheme);
         })();
       }
-      isOpen.value = false;
     });
     const handleCycleTheme = $(() => {
       // Get current theme from DOM attribute instead of context to avoid serialization
@@ -140,7 +139,7 @@ export const ThemeToggle = component$<ThemeToggleProps>(
       return (
         <button
           onClick$={handleCycleTheme}
-          class={`glass group rounded-full p-2 transition-all duration-300 hover:bg-white/20 ${className}`}
+          class={`lum-btn group rounded-full p-2 transition-all duration-300 hover:bg-white/20 ${className}`}
           title={`Current theme: ${currentThemeOption.label}. Click to cycle themes.`}
         >
           <IconComponent class="text-theme-accent-primary group-hover:text-theme-text-primary h-5 w-5 transition-colors" />
@@ -155,70 +154,46 @@ export const ThemeToggle = component$<ThemeToggleProps>(
     // Dropdown variant - full theme selector
     return (
       <div class={`relative z-50 ${className}`}>
-        <button
-          onClick$={() => (isOpen.value = !isOpen.value)}
-          class="glass group relative z-50 flex items-center gap-2 rounded-full p-2 transition-all duration-300 hover:bg-white/20"
-          title="Select theme"
-        >
-          <currentThemeOption.icon class="text-theme-accent-primary group-hover:text-theme-text-primary h-5 w-5 transition-colors" />
-          {(variant === "full" || showLabel) && (
-            <span class="text-theme-accent-primary group-hover:text-theme-text-primary text-sm">
-              {currentThemeOption.label}
-            </span>
-          )}
-          <Palette class="text-theme-accent-primary group-hover:text-theme-text-primary ml-1 h-4 w-4 transition-colors" />
-        </button>
-        {isOpen.value && (
-          <div class="glass border-theme-card-border absolute top-full right-0 z-[99999] mt-2 w-64 rounded-2xl border p-2 shadow-2xl backdrop-blur-xl">
-            <div class="space-y-1">
-              {themeOptions.map((option) => {
-                const IconComponent = option.icon;
-                const isActive = currentTheme.value === option.value;
+        <SelectMenuRaw id="theme-toggle" customDropdown
+        onChange$={(e, el) => handleThemeChange(el.value as ThemeName)}
+        values={themeOptions.map((option) => {
+          const IconComponent = option.icon;
+          const isActive = currentTheme.value === option.value;
 
-                return (
-                  <button
-                    key={option.value}
-                    onClick$={() => handleThemeChange(option.value)}
-                    class={`flex w-full items-center gap-3 rounded-xl p-3 text-left transition-all duration-300 ${
-                      isActive
-                        ? "bg-gradient-to-br from-theme-accent-primary to-theme-accent-secondary border-theme-accent-primary/40 border"
-                        : "hover:bg-white/10"
-                    }`}
-                  >
-                    <div
-                      class={`h-8 w-8 rounded-full bg-gradient-to-r ${option.gradient} flex items-center justify-center`}
-                    >
-                      <IconComponent class="h-4 w-4 text-white" />
-                    </div>
-                    <div class="flex-1">
-                      <div class="text-theme-text-primary text-sm font-medium">
-                        {option.label}
-                        {isActive && (
-                          <span class="text-theme-accent-primary ml-2 text-xs">✓</span>
-                        )}
-                      </div>
-                      <div class="text-theme-text-muted text-xs">
-                        {option.description}
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-            <div class="border-theme-card-border mt-3 border-t pt-3">
-              <p class="text-theme-text-muted text-center text-xs">
-                Theme preference saved automatically~ ✨
-              </p>
-            </div>
+          return {
+            name: (
+              <div class="flex items-center gap-2 text-left">
+                <div
+                  class={`h-8 w-8 rounded-full bg-gradient-to-r ${option.gradient} flex items-center justify-center`}
+                >
+                  <IconComponent class="h-4 w-4 text-white" />
+                </div>
+                <div class="flex-1">
+                  <div class="text-theme-text-primary text-sm font-medium">
+                    {option.label}
+                    {isActive && (
+                      <span class="text-theme-accent-primary ml-2 text-xs">✓</span>
+                    )}
+                  </div>
+                  <div class="text-theme-text-muted text-xs">
+                    {option.description}
+                  </div>
+                </div>
+              </div>
+            ),
+            value: option.value,
+          };
+        })}
+        value={currentTheme.value}>
+          <div q:slot="dropdown" class="flex items-center gap-2">
+            <currentThemeOption.icon class="text-theme-accent-primary group-hover:text-theme-text-primary h-5 w-5 transition-colors" />
+            {(variant === "full" || showLabel) && (
+              <span class="text-theme-accent-primary group-hover:text-theme-text-primary text-sm">
+                {currentThemeOption.label}
+              </span>
+            )}
           </div>
-        )}{" "}
-        {/* Click outside to close */}
-        {isOpen.value && (
-          <div
-            class="fixed inset-0 z-[99998]"
-            onClick$={() => (isOpen.value = false)}
-          />
-        )}
+        </SelectMenuRaw>
       </div>
     );
   },
