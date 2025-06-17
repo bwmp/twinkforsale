@@ -28,6 +28,11 @@ export default defineConfig(({ command, mode }): UserConfig => {
       // For example ['better-sqlite3'] if you use that in server functions.
       exclude: ['diskusage', 'fs', 'path', 'os'],
     },
+    resolve: {
+      alias: {
+        '.prisma/client/index-browser': './node_modules/.prisma/client/index-browser.js',
+      },
+    },
     build: {
       rollupOptions: {
         external: mode === 'development' ? [] : ['diskusage', 'fs', 'path', 'os'],
