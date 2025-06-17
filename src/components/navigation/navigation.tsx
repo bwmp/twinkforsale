@@ -9,6 +9,7 @@ import {
   Settings,
   LogOut,
   User,
+  Link as LinkIcon,
 } from "lucide-icons-qwik";
 import { Nav } from "@luminescent/ui-qwik";
 import { ThemeToggle } from "~/components/theme-toggle/theme-toggle";
@@ -78,6 +79,12 @@ export default component$(() => {
           >
             <Sparkle class="h-4 w-4" />
             Embed
+          </Link>          <Link
+            href="/dashboard/bio"
+            class={getNavLinkClasses(isCurrentPage("/dashboard/bio"))}
+          >
+            <LinkIcon class="h-4 w-4" />
+            Bio
           </Link>
           <Link
             href="/dashboard/settings"
@@ -155,6 +162,13 @@ export default component$(() => {
           >
             <Sparkle class="h-5 w-5" />
             Embed
+          </Link>          <Link
+            href="/dashboard/bio"
+            q:slot="mobile"
+            class={getNavLinkClasses(isCurrentPage("/dashboard/bio"), true)}
+          >
+            <LinkIcon class="h-5 w-5" />
+            Bio
           </Link>
           <Link
             href="/dashboard/settings"

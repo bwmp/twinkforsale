@@ -96,6 +96,42 @@ model User {
   defaultExpirationDays Int? // Default days until files expire (null = never)
   defaultMaxViews Int? // Default max views before files are deleted (null = unlimited)
   
+  // Global particle configuration for site background
+  globalParticleConfig String?  // JSON string for global particle configuration
+  
+  // Bio service fields
+  bioUsername       String?  @unique // Custom username for bio page (e.g., "cutie" -> domain.com/cutie)
+  bioDisplayName    String?  // Display name on bio page
+  bioDescription    String?  // Bio description/about section
+  bioProfileImage   String?  // Profile image URL
+  bioBackgroundImage String? // Background image URL
+  bioBackgroundColor String? @default("#8B5CF6") // Background color (fallback when no image)
+  bioTextColor      String?  @default("#FFFFFF") // Text color
+  bioAccentColor    String?  @default("#F59E0B") // Accent color for links/buttons
+  bioCustomCss      String?  // Custom CSS for advanced users
+  bioSpotifyTrack   String?  // Spotify track/playlist URL
+  bioIsPublic       Boolean  @default(false) // Whether bio page is public
+  bioViews          Int      @default(0) // Total bio page views
+  bioLastViewed     DateTime? // Last time bio was viewed
+  
+  // Bio background effects
+  bioGradientConfig String?  // JSON string for gradient configuration
+  bioParticleConfig String?  // JSON string for particle configuration
+  
+  // Discord integration via Lanyard API
+  bioDiscordUserId  String?  // Discord user ID for Lanyard API
+  bioShowDiscord    Boolean  @default(false) // Whether to show Discord status
+  bioDiscordConfig  String?  // JSON string for Discord display configuration
+  
+  // Bio service limits (null = use global defaults)
+  maxBioLinks       Int?     @default(10) // Maximum number of bio links
+  maxUsernameLength Int?     @default(20) // Maximum username length
+  maxDisplayNameLength Int?  @default(20) // Maximum display name length
+  maxDescriptionLength Int?  @default(1000) // Maximum description length
+  maxUrlLength      Int?     @default(200) // Maximum URL length
+  maxLinkTitleLength Int?    @default(50) // Maximum link title length
+  maxIconLength     Int?     @default(20) // Maximum icon length
+  
   // Auth.js relations
   accounts Account[]
   sessions Session[]
@@ -104,6 +140,8 @@ model User {
   uploads  Upload[]
   apiKeys  ApiKey[]
   systemEvents SystemEvent[]
+  bioLinks BioLink[] // Bio links
+  bioViewLogs BioView[] // Bio view logs
   
   @@map("users")
 }
@@ -271,4 +309,45 @@ model SystemAlert {
   updatedAt   DateTime @updatedAt
   
   @@map("system_alerts")
+}
+
+// Bio links (like Linktree)
+model BioLink {
+  id       String  @id @default(cuid())
+  userId   String
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  title    String  // Link title/name
+  url      String  // Link URL
+  icon     String? // Icon name or emoji
+  order    Int     @default(0) // Display order
+  isActive Boolean @default(true)
+  
+  // Analytics
+  clicks   Int     @default(0)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([userId, order])
+  @@map("bio_links")
+}
+
+// Bio page view tracking
+model BioView {
+  id       String @id @default(cuid())
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Analytics data
+  ipAddress String?
+  userAgent String?
+  referer   String?
+  
+  viewedAt DateTime @default(now())
+  
+  @@index([userId])
+  @@index([viewedAt])
+  @@index([ipAddress, userId, viewedAt])
+  @@map("bio_views")
 }

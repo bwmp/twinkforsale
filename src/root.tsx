@@ -3,6 +3,7 @@ import { QwikCityProvider, RouterOutlet } from "@builder.io/qwik-city";
 import { RouterHead } from "./components/router-head/router-head";
 import { useThemeProvider } from "./lib/theme-store";
 import { useAlertProvider } from "./lib/alert-store";
+import { useGlobalParticleProvider } from "./lib/global-particle-store";
 import { AlertContainer } from "./components/alert";
 
 import "./global.css";
@@ -20,6 +21,9 @@ export default component$(() => {
   
   // Initialize alert provider
   useAlertProvider();
+
+  // Initialize global particle provider
+  useGlobalParticleProvider();
 
   return (
     <QwikCityProvider>

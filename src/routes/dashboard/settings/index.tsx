@@ -19,6 +19,13 @@ import {
 } from "lucide-icons-qwik";
 import { db } from "~/lib/db";
 import { setThemePreference } from "~/lib/cookie-utils";
+import { ParticleConfigPanel } from "~/components/particle-config-panel/particle-config-panel";
+import {
+  useGlobalParticle,
+  updateGlobalParticleConfig,
+  themeParticleConfigs,
+} from "~/lib/global-particle-store";
+
 export const useUserLoader = routeLoader$(async (requestEvent) => {
   const session = requestEvent.sharedMap.get("session");
 
@@ -46,6 +53,7 @@ export const useUserLoader = routeLoader$(async (requestEvent) => {
       uploadDomain: user.uploadDomain,
       defaultExpirationDays: user.defaultExpirationDays,
       defaultMaxViews: user.defaultMaxViews,
+      globalParticleConfig: user.globalParticleConfig,
     },
   };
 });
@@ -107,10 +115,57 @@ export const useUpdateSettingsAction = routeAction$(
   }),
 );
 
+export const useUpdateParticleConfigAction = routeAction$(
+  async (values, requestEvent) => {
+    const session = requestEvent.sharedMap.get("session");
+
+    if (!session?.user?.email) {
+      return requestEvent.fail(401, { message: "Unauthorized" });
+    }
+
+    const user = await db.user.findUnique({
+      where: { email: session.user.email },
+    });
+
+    if (!user) {
+      return requestEvent.fail(404, { message: "User not found" });
+    }
+
+    await db.user.update({
+      where: { id: user.id },
+      data: {
+        globalParticleConfig: JSON.stringify(values.config),
+      },
+    });
+
+    return { success: true, message: "Particle settings saved successfully" };
+  },
+  zod$({
+    config: z.object({
+      type: z.string(),
+      amount: z.number(),
+      speed: z.number(),
+      direction: z.string(),
+      colors: z.array(z.string()),
+      size: z.object({
+        min: z.number(),
+        max: z.number(),
+      }),
+      opacity: z.object({
+        min: z.number(),
+        max: z.number(),
+      }),
+      enabled: z.boolean(),
+    }),
+  }),
+);
+
 export default component$(() => {
   const userData = useUserLoader();
   const uploadDomains = useUploadDomainsLoader();
   const updateAction = useUpdateSettingsAction();
+  const updateParticleAction = useUpdateParticleConfigAction();
+  const globalParticle = useGlobalParticle();
 
   // Set default to first available domain if no domain is selected
   const getDefaultDomainId = () => {
@@ -131,6 +186,43 @@ export default component$(() => {
   );
   const defaultMaxViews = useSignal(userData.value.user.defaultMaxViews || "");
   const currentThemeDisplay = useSignal<ThemeName>("dark");
+  
+  // Initialize particle config from database or default
+  const getInitialParticleConfig = () => {
+    if (userData.value.user.globalParticleConfig) {
+      try {
+        const parsed = JSON.parse(userData.value.user.globalParticleConfig);
+        return { ...themeParticleConfigs.hearts, ...parsed };
+      } catch (e) {
+        console.warn('Failed to parse user particle config:', e);
+      }
+    }
+    return { ...themeParticleConfigs.hearts, enabled: true };
+  };
+  
+  const particleConfigSignal = useSignal(getInitialParticleConfig());
+
+  // Sync particle settings with database on page load
+  // eslint-disable-next-line qwik/no-use-visible-task
+  useVisibleTask$(async () => {
+    // Update global particle store with database settings
+    await updateGlobalParticleConfig(globalParticle, particleConfigSignal.value);
+    
+    // Check if localStorage has different settings than database
+    try {
+      const localSettings = localStorage.getItem('global-particle-config');
+      if (localSettings && !userData.value.user.globalParticleConfig) {
+        // User has local settings but no database settings - save local to database
+        const parsed = JSON.parse(localSettings);
+        const mergedConfig = { ...themeParticleConfigs.hearts, ...parsed };
+        particleConfigSignal.value = mergedConfig;
+        await updateGlobalParticleConfig(globalParticle, mergedConfig);
+        updateParticleAction.submit({ config: mergedConfig });
+      }
+    } catch (e) {
+      console.warn('Failed to sync particle settings:', e);
+    }
+  });
 
   // Update current theme display from DOM
   // eslint-disable-next-line qwik/no-use-visible-task
@@ -520,6 +612,108 @@ export default component$(() => {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Particle Settings */}
+      <div class="card-cute mb-6 rounded-3xl p-4 sm:mb-8 sm:p-6">
+        <h2 class="text-gradient-cute mb-4 flex items-center text-lg font-bold sm:mb-6 sm:text-xl">
+          Background Particles~ <Sparkles class="ml-2 h-5 w-5" />{" "}
+          <span class="sparkle ml-2">✨</span>
+        </h2>
+        <p class="text-theme-text-secondary mb-6 text-sm">
+          Control the animated particles that appear in the background of the site~ ✨
+        </p>
+
+        {/* Quick Presets */}
+        <div class="mb-6">
+          <label class="text-theme-text-secondary mb-3 block text-sm font-medium">
+            Quick Presets~ 🎀
+          </label>
+          <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">            {Object.keys(themeParticleConfigs).map((name) => (
+              <button
+                key={name}
+                type="button"
+                onClick$={async () => {
+                  const config = themeParticleConfigs[name];
+                  // Update global particle store immediately for visual feedback
+                  await updateGlobalParticleConfig(globalParticle, config);
+                  particleConfigSignal.value = config;
+                  
+                  // Save to database in the background
+                  updateParticleAction.submit({ config });
+                }}
+                class={`glass rounded-lg p-3 text-center capitalize transition-all hover:scale-105 ${
+                  particleConfigSignal.value.type ===
+                    themeParticleConfigs[name].type &&
+                  particleConfigSignal.value.enabled ===
+                    themeParticleConfigs[name].enabled
+                    ? "ring-theme-accent-primary bg-theme-accent-primary/10 ring-2"
+                    : ""
+                }`}
+              >
+                <div class="text-sm font-medium">
+                  {name === "disabled"
+                    ? "❌ Off"
+                    : name === "hearts"
+                      ? "💕 Hearts"
+                      : name === "snow"
+                        ? "❄️ Snow"
+                        : name === "stars"
+                          ? "⭐ Stars"
+                          : name === "bubbles"
+                            ? "🫧 Bubbles"
+                            : name === "confetti"
+                              ? "🎉 Confetti"
+                              : name}
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>        {/* Advanced Configuration */}
+        <div>
+          <ParticleConfigPanel
+            config={particleConfigSignal}
+            previewEnabled={false}
+          />
+          
+          {/* Save advanced settings button */}
+          <div class="mt-4">
+            <button
+              type="button"
+              onClick$={async () => {
+                // Update global particle store
+                await updateGlobalParticleConfig(globalParticle, particleConfigSignal.value);
+                // Save to database
+                updateParticleAction.submit({ config: particleConfigSignal.value });
+              }}
+              class="btn-cute text-theme-text-primary w-full rounded-full px-4 py-2 text-sm font-medium transition-all duration-300"
+            >
+              Save Advanced Settings~ 💾✨
+            </button>
+          </div>
+        </div>        {/* Save note */}
+        <div class="mt-4 rounded-lg border border-blue-500/20 bg-blue-500/10 p-3">
+          <p class="text-xs text-blue-400">
+            💡 Your particle preferences are saved to your account and will sync across all your devices~ ✨
+          </p>
+        </div>
+        
+        {/* Particle save status */}
+        {updateParticleAction.value?.success && (
+          <div class="bg-gradient-to-br from-theme-accent-secondary/20 to-theme-accent-tertiary/20 border-theme-accent-secondary/30 glass mt-4 rounded-2xl border p-3 sm:p-4">
+            <p class="text-theme-accent-secondary flex items-center text-xs sm:text-sm">
+              ✅ {updateParticleAction.value.message}~ ✨
+            </p>
+          </div>
+        )}
+
+        {updateParticleAction.value?.failed && (
+          <div class="bg-gradient-to-br from-theme-accent-primary/20 to-theme-accent-secondary/20 border-theme-accent-primary/30 glass mt-4 rounded-2xl border p-3 sm:p-4">
+            <p class="text-theme-accent-primary flex items-center text-xs sm:text-sm">
+              ❌ {updateParticleAction.value.message}~ 💔
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

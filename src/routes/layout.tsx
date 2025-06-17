@@ -6,15 +6,19 @@ import {
   $,
   useVisibleTask$,
 } from "@builder.io/qwik";
-import { routeLoader$ } from "@builder.io/qwik-city";
+import { routeLoader$, useLocation } from "@builder.io/qwik-city";
 import { ImagePreview } from "~/components/image-preview/image-preview";
 import {
   ImagePreviewContext,
   type ImagePreviewStore,
 } from "~/lib/image-preview-store";
 import Navigation from "~/components/navigation/navigation";
-import { HeartParticles } from "~/components/heart-particles/heart-particles";
-import { getServerThemePreference, getThemePreference } from "~/lib/cookie-utils";
+import { ParticleBackground } from "~/components/particle-background";
+import { useGlobalParticle } from "~/lib/global-particle-store";
+import {
+  getServerThemePreference,
+  getThemePreference,
+} from "~/lib/cookie-utils";
 import { generateThemeCSS, themes } from "~/lib/theme-store";
 
 export const useServerTheme = routeLoader$(async (requestEvent) => {
@@ -30,13 +34,25 @@ export const useServerTheme = routeLoader$(async (requestEvent) => {
 
 export default component$(() => {
   // Get server-side theme data
-  const serverThemeData = useServerTheme();  // Apply server-side theme only on initial load to prevent flash
+  const serverThemeData = useServerTheme();
+  const location = useLocation();
+  const globalParticle = useGlobalParticle();
+
+  // Check if this is a bio page (username route)
+  const isBioPage =
+    location.url.pathname.match(/^\/[^/]+\/?$/) &&
+    !location.url.pathname.startsWith("/dashboard") &&
+    !location.url.pathname.startsWith("/admin") &&
+    !location.url.pathname.startsWith("/setup") &&
+    !location.url.pathname.startsWith("/f/") &&
+    location.url.pathname !== "/";
+  // Apply server-side theme only on initial load to prevent flash
   // Don't track serverThemeData to avoid overriding client-side theme changes on navigation
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(() => {
     if (typeof document !== "undefined" && serverThemeData.value) {
       const root = document.documentElement;
-      
+
       // Only apply server theme if no client theme is already set
       const currentThemeVariant = root.getAttribute("data-theme-variant");
       if (!currentThemeVariant || currentThemeVariant === "undefined") {
@@ -66,7 +82,7 @@ export default component$(() => {
     if (typeof document !== "undefined") {
       const root = document.documentElement;
       const currentThemeVariant = root.getAttribute("data-theme-variant");
-      
+
       // If no theme is set or if we need to check cookies for user preference
       if (!currentThemeVariant || currentThemeVariant === "undefined") {
         try {
@@ -74,7 +90,8 @@ export default component$(() => {
           if (savedTheme && themes[savedTheme]) {
             let effectiveTheme = savedTheme;
             if (savedTheme === "auto") {
-              effectiveTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
+              effectiveTheme = window.matchMedia("(prefers-color-scheme: dark)")
+                .matches
                 ? "dark"
                 : "light";
             }
@@ -145,25 +162,42 @@ export default component$(() => {
         />
       )}
 
-      <div
-        class="relative min-h-screen overflow-hidden"
-        style="background: linear-gradient(135deg, var(--theme-bg-gradient-from), var(--theme-bg-gradient-via), var(--theme-bg-gradient-to))"
-      >
-        {/* Heart particles background - rendered behind everything */}
-        <HeartParticles />
-        <Navigation />
-        <div class="relative z-10 mx-auto mt-18 max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      {isBioPage ? (
+        // Bio page layout - minimal, no navigation or background
+        <div class="min-h-screen">
           <Slot />
-        </div>
 
-        {/* Global Image Preview Modal */}
-        <ImagePreview
-          isOpen={contextStore.state.isOpen}
-          imageUrl={contextStore.state.imageUrl}
-          imageName={contextStore.state.imageName}
-          onClose={closePreview}
-        />
-      </div>
+          {/* Image Preview Modal for bio pages */}
+          <ImagePreview
+            isOpen={contextStore.state.isOpen}
+            imageUrl={contextStore.state.imageUrl}
+            imageName={contextStore.state.imageName}
+            onClose={closePreview}
+          />
+        </div>
+      ) : (
+        // Regular site layout with navigation and background
+        <div
+          class="relative min-h-screen overflow-hidden"
+          style="background: linear-gradient(135deg, var(--theme-bg-gradient-from), var(--theme-bg-gradient-via), var(--theme-bg-gradient-to))"        >
+          {" "}
+          {/* Particle background - rendered behind everything */}
+          {globalParticle.isInitialized && globalParticle.config.enabled && (
+            <ParticleBackground config={globalParticle.config} />
+          )}
+          <Navigation />
+          <div class="relative z-10 mx-auto mt-18 max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+            <Slot />
+          </div>
+          {/* Global Image Preview Modal */}
+          <ImagePreview
+            isOpen={contextStore.state.isOpen}
+            imageUrl={contextStore.state.imageUrl}
+            imageName={contextStore.state.imageName}
+            onClose={closePreview}
+          />
+        </div>
+      )}
     </>
   );
 });
