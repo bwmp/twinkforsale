@@ -252,7 +252,7 @@ export default component$(() => {
             <div>
               <label class="text-theme-text-secondary mb-2 block text-xs font-medium sm:text-sm">
                 Upload Domain~ 🌍
-              </label>{" "}
+              </label>
               <select
                 name="uploadDomainId"
                 value={selectedDomainId.value}
@@ -390,7 +390,7 @@ export default component$(() => {
       {/* Theme Settings */}
       <div class="card-cute mb-6 rounded-3xl p-4 sm:mb-8 sm:p-6">
         <h2 class="text-gradient-cute mb-4 flex items-center text-lg font-bold sm:mb-6 sm:text-xl">
-          Theme Settings~ <Palette class="ml-2 h-5 w-5" />{" "}
+          Theme Settings~ <Palette class="ml-2 h-5 w-5" />
           <span class="sparkle ml-2">✨</span>
         </h2>
 

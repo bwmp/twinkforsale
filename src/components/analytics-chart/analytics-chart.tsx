@@ -74,7 +74,7 @@ export const AnalyticsChart = component$<AnalyticsChartProps>(
                 style={`stop-color:${color};stop-opacity:0.05`}
               />
             </linearGradient>
-          </defs>{" "}
+          </defs>
           {/* Y-axis grid lines */}
           {[0, 0.25, 0.5, 0.75, 1].map((ratio) => (
             <line
@@ -132,7 +132,7 @@ export const AnalyticsChart = component$<AnalyticsChartProps>(
                 <title>{`${d.date}: ${d[metric]}`}</title>
               </circle>
             );
-          })}{" "}
+          })}
           {/* Y-axis labels */}
           <text
             x={padding - 5}
@@ -150,7 +150,7 @@ export const AnalyticsChart = component$<AnalyticsChartProps>(
           >
             0
           </text>
-        </svg>{" "}
+        </svg>
         {/* Date labels */}
         <div class="mt-2 flex justify-between px-2">
           <span class="text-theme-accent-tertiary text-xs">

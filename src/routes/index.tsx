@@ -17,9 +17,10 @@ import {
   Users,
   Palette,
 } from "lucide-icons-qwik";
-import { ThemeToggle } from "~/components/theme-toggle/theme-toggle";
+import { themeOptions, ThemeToggle } from "~/components/theme-toggle/theme-toggle";
 import { db } from "~/lib/db";
 import { getAnalyticsData } from "~/lib/analytics";
+import { Hoverable } from "@luminescent/ui-qwik";
 export const usePublicStats = routeLoader$(async () => {
   try {
     // Get total counts
@@ -86,13 +87,13 @@ export default component$(() => {
       {/* Hero Section */}
       <div class="relative overflow-hidden">
         <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-24 lg:px-8">
-          {" "}
+          
           <div class="text-center">
-            {" "}
+            
             <h1 class="text-theme-text-primary mb-4 text-3xl leading-tight font-bold sm:mb-6 sm:text-4xl md:text-6xl">
               Cute femboy
               <span class="text-gradient-cute block sm:inline">
-                {" "}
+                
                 File Sharing
               </span>
             </h1>
@@ -102,17 +103,17 @@ export default component$(() => {
             </p>
             {session.value ? (
               <div class="flex flex-col items-center justify-center gap-4 px-4 sm:flex-row">
-                {" "}
+                
                 <Link
                   href="/dashboard"
-                  class="btn-cute flex w-full items-center justify-center gap-2 rounded-full px-6 py-3 text-base font-semibold text-white sm:w-auto sm:px-8 sm:py-4 sm:text-lg"
+                  class="lum-btn btn-cute rounded-full lum-btn-p-3 text-base font-semibold text-white w-full sm:w-auto sm:lum-btn-p-4 sm:text-lg"
                 >
                   <Home class="h-5 w-5" />
                   Go to Dashboard
                 </Link>
                 <Link
                   href="/setup/sharex"
-                  class="glass text-theme-text-primary hover:bg-gradient-to-br from-theme-accent-primary/10 via-theme-accent-secondary to-theme-accent-tertiary/10 flex w-full items-center justify-center gap-2 rounded-full px-6 py-3 text-base font-semibold transition-all duration-300 sm:w-auto sm:px-8 sm:py-4 sm:text-lg"
+                  class="lum-btn rounded-full lum-btn-p-3 text-base font-semibold text-white w-full sm:w-auto sm:lum-btn-p-4 sm:text-lg"
                 >
                   <Settings class="h-5 w-5" />
                   Setup ShareX
@@ -125,7 +126,7 @@ export default component$(() => {
                   type="hidden"
                   name="options.redirectTo"
                   value={loc.url.pathname + loc.url.search}
-                />{" "}
+                />
                 <button class="btn-cute mx-auto flex w-full max-w-xs items-center justify-center gap-2 rounded-full px-6 py-3 text-base font-semibold text-white sm:w-auto sm:px-8 sm:py-4 sm:text-lg">
                   <User class="h-5 w-5" />
                   Get Started
@@ -138,7 +139,7 @@ export default component$(() => {
 
       {/* Features Section */}
       <div class="relative py-12 sm:py-24">
-        {" "}
+        
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h2 class="text-theme-text-primary text-gradient-cute mb-4 flex flex-wrap items-center justify-center gap-2 text-center text-2xl font-bold sm:text-3xl">
             Why Choose twink.forsale?
@@ -152,34 +153,40 @@ export default component$(() => {
             discord @akiradev to ask for access
           </p>
           <div class="grid grid-cols-1 gap-6 sm:gap-8 md:grid-cols-3">
-            <div class="card-cute rounded-3xl p-8">
-              <div class="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-pink-500 to-purple-500">
+            <div class="lum-card card-cute p-8"
+              onMouseMove$={(e, el) => Hoverable.onMouseMove$(e, el)}
+              onMouseLeave$={(e, el) => Hoverable.onMouseLeave$(e, el)}>
+              <div class="mb-2 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-pink-500 to-purple-500">
                 <Rocket class="h-8 w-8 text-white" />
               </div>
-              <h3 class="text-theme-text-primary mb-3 text-xl font-semibold">
+              <h3 class="text-theme-text-primary text-xl font-semibold">
                 Femboy Certified ✓
-              </h3>{" "}
+              </h3>
               <p class="text-theme-text-secondary">
                 Gay femboy approved file sharing with a focus on simplicity,
                 speed, and maximum cuteness! (◕‿◕)♡
               </p>
-            </div>{" "}
-            <div class="card-cute rounded-3xl p-8">
-              <div class="animation-delay-200 mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-violet-500">
+            </div>
+            <div class="lum-card card-cute p-8"
+              onMouseMove$={(e, el) => Hoverable.onMouseMove$(e, el)}
+              onMouseLeave$={(e, el) => Hoverable.onMouseLeave$(e, el)}>
+              <div class="animation-delay-200 mb-2 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-violet-500">
                 <Heart class="h-8 w-8 text-white" />
               </div>
-              <h3 class="text-theme-text-primary mb-3 text-xl font-semibold">
+              <h3 class="text-theme-text-primary text-xl font-semibold">
                 Super Secure uwu
               </h3>
               <p class="text-theme-text-secondary">
                 Your files are protected with love and care~ (´｡• ᵕ •｡`) ♡
               </p>
-            </div>{" "}
-            <div class="card-cute rounded-3xl p-8">
-              <div class="animation-delay-400 mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500">
+            </div>
+            <div class="lum-card card-cute p-8"
+              onMouseMove$={(e, el) => Hoverable.onMouseMove$(e, el)}
+              onMouseLeave$={(e, el) => Hoverable.onMouseLeave$(e, el)}>
+              <div class="animation-delay-400 mb-2 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500">
                 <BarChart3 class="h-8 w-8 text-white" />
               </div>
-              <h3 class="text-theme-text-primary mb-3 text-xl font-semibold">
+              <h3 class="text-theme-text-primary text-xl font-semibold">
                 Analytics & Stats
               </h3>
               <p class="text-theme-text-secondary">
@@ -193,7 +200,7 @@ export default component$(() => {
 
       {/* Platform Stats Section */}
       <div class="relative py-12 sm:py-16">
-        {" "}
+        
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h2 class="text-theme-text-primary text-gradient-cute mb-4 flex flex-wrap items-center justify-center gap-2 text-center text-2xl font-bold sm:text-3xl">
             Platform Activity
@@ -206,11 +213,13 @@ export default component$(() => {
 
           <div class="mb-8 grid grid-cols-2 gap-4 sm:mb-12 sm:gap-6 md:grid-cols-4">
             {/* Total Stats */}
-            <div class="card-cute rounded-3xl p-4 text-center sm:p-6">
-              <div class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-pink-500 to-purple-500 sm:mb-4 sm:h-16 sm:w-16">
+            <div class="lum-card card-cute p-8 text-center"
+              onMouseMove$={(e, el) => Hoverable.onMouseMove$(e, el)}
+              onMouseLeave$={(e, el) => Hoverable.onMouseLeave$(e, el)}>
+              <div class="mx-auto mb-1 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-pink-500 to-purple-500 sm:mb-2 sm:h-16 sm:w-16">
                 <Upload class="h-6 w-6 text-white sm:h-8 sm:w-8" />
-              </div>{" "}
-              <div class="text-theme-text-primary mb-1 text-lg font-bold sm:text-2xl">
+              </div>
+              <div class="text-theme-text-primary text-lg font-bold sm:text-2xl">
                 {publicStats.value.totalUploads.toLocaleString()}
               </div>
               <div class="text-theme-text-secondary text-xs sm:text-sm">
@@ -218,11 +227,13 @@ export default component$(() => {
               </div>
             </div>
 
-            <div class="card-cute rounded-3xl p-4 text-center sm:p-6">
-              <div class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-violet-500 sm:mb-4 sm:h-16 sm:w-16">
+            <div class="lum-card card-cute p-8 text-center"
+              onMouseMove$={(e, el) => Hoverable.onMouseMove$(e, el)}
+              onMouseLeave$={(e, el) => Hoverable.onMouseLeave$(e, el)}>
+              <div class="mx-auto mb-1 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-violet-500 sm:mb-2 sm:h-16 sm:w-16">
                 <Eye class="h-6 w-6 text-white sm:h-8 sm:w-8" />
-              </div>{" "}
-              <div class="text-theme-text-primary mb-1 text-lg font-bold sm:text-2xl">
+              </div>
+              <div class="text-theme-text-primary text-lg font-bold sm:text-2xl">
                 {publicStats.value.totalViews.toLocaleString()}
               </div>
               <div class="text-theme-text-secondary text-xs sm:text-sm">
@@ -230,21 +241,25 @@ export default component$(() => {
               </div>
             </div>
 
-            <div class="card-cute rounded-3xl p-4 text-center sm:p-6">
-              <div class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 sm:mb-4 sm:h-16 sm:w-16">
+            <div class="lum-card card-cute p-8 text-center"
+              onMouseMove$={(e, el) => Hoverable.onMouseMove$(e, el)}
+              onMouseLeave$={(e, el) => Hoverable.onMouseLeave$(e, el)}>
+              <div class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-fuchsia-500 sm:mb-2 sm:h-16 sm:w-16">
                 <Users class="h-6 w-6 text-white sm:h-8 sm:w-8" />
-              </div>{" "}
-              <div class="text-theme-text-primary mb-1 text-lg font-bold sm:text-2xl">
+              </div>
+              <div class="text-theme-text-primary text-lg font-bold sm:text-2xl">
                 {publicStats.value.totalUsers.toLocaleString()}
               </div>
               <div class="text-theme-text-secondary text-xs sm:text-sm">Twinks</div>
             </div>
 
-            <div class="card-cute rounded-3xl p-4 text-center sm:p-6">
-              <div class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-green-500 to-emerald-500 sm:mb-4 sm:h-16 sm:w-16">
+            <div class="lum-card card-cute p-8 text-center"
+              onMouseMove$={(e, el) => Hoverable.onMouseMove$(e, el)}
+              onMouseLeave$={(e, el) => Hoverable.onMouseLeave$(e, el)}>
+              <div class="mx-auto mb-1 flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-green-500 to-emerald-500 sm:mb-2 sm:h-16 sm:w-16">
                 <Sparkle class="h-6 w-6 text-white sm:h-8 sm:w-8" />
-              </div>{" "}
-              <div class="text-theme-text-primary mb-1 text-lg font-bold sm:text-2xl">
+              </div>
+              <div class="text-theme-text-primary text-lg font-bold sm:text-2xl">
                 {publicStats.value.weeklyStats.views.toLocaleString()}
               </div>
               <div class="text-theme-text-secondary text-xs sm:text-sm">
@@ -255,8 +270,8 @@ export default component$(() => {
 
           {/* Activity Chart */}
           {publicStats.value.analyticsData.length > 0 && (
-            <div class="glass mx-auto max-w-4xl rounded-3xl p-4 sm:p-8">
-              {" "}
+            <div class="lum-card mx-auto max-w-4xl p-4 sm:p-8">
+              
               <h3 class="text-theme-text-primary mb-4 flex items-center justify-center gap-2 text-center text-lg font-bold sm:mb-6 sm:text-xl">
                 <BarChart3 class="h-5 w-5" />
                 7-Day Activity Overview
@@ -288,7 +303,7 @@ export default component$(() => {
                         />
                       );
                     })}
-                  </div>{" "}
+                  </div>
                   <div class="text-theme-text-primary mt-2 text-lg font-bold">
                     {publicStats.value.weeklyStats.views}
                   </div>
@@ -318,7 +333,7 @@ export default component$(() => {
                         />
                       );
                     })}
-                  </div>{" "}
+                  </div>
                   <div class="text-theme-text-primary mt-2 text-lg font-bold">
                     {publicStats.value.weeklyStats.uploads}
                   </div>
@@ -348,19 +363,19 @@ export default component$(() => {
                         />
                       );
                     })}
-                  </div>{" "}
+                  </div>
                   <div class="text-theme-text-primary mt-2 text-lg font-bold">
                     {publicStats.value.weeklyStats.users}
                   </div>
-                </div>{" "}
+                </div>
               </div>
             </div>
           )}
 
           {/* Recent Activity Feed */}
           {publicStats.value.recentUploads.length > 0 && (
-            <div class="glass mx-auto mt-8 max-w-2xl rounded-3xl p-4 sm:mt-12 sm:p-6">
-              {" "}
+            <div class="lum-card mx-auto mt-8 max-w-2xl p-4 sm:mt-12 sm:p-6">
+              
               <h3 class="text-theme-text-primary mb-4 flex items-center justify-center gap-2 text-center text-lg font-bold">
                 <Sparkle class="h-5 w-5" />
                 Recent Activity
@@ -407,12 +422,12 @@ export default component$(() => {
                         <div>
                           <div class="text-theme-text-primary text-sm font-medium">
                             {getFileType(upload.mimeType)} uploaded
-                          </div>{" "}
+                          </div>
                           <div class="text-theme-accent-primary text-xs">
                             {timeAgo(upload.createdAt)} • {upload.views} views
                           </div>
                         </div>
-                      </div>{" "}
+                      </div>
                       <div class="flex items-center gap-1">
                         <Eye class="text-theme-accent-primary h-3 w-3" />
                         <span class="text-theme-accent-primary text-xs">
@@ -430,7 +445,7 @@ export default component$(() => {
 
       {/* ShareX Setup Section */}
       <div class="relative py-12 sm:py-24">
-        {" "}
+        
         <div class="mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
           <h2 class="text-theme-text-primary text-gradient-cute mb-4 flex flex-wrap items-center justify-center gap-2 text-2xl font-bold sm:text-3xl">
             Super Easy ShareX Setup!
@@ -441,9 +456,9 @@ export default component$(() => {
             Set up ShareX in seconds with our automatic configuration generator~
             So easy even a catboy could do it! (=^･ω･^=)
           </p>
-          <div class="glass rounded-3xl p-4 sm:p-8">
+          <div class="lum-card p-4 sm:p-8">
             <div class="grid grid-cols-1 gap-6 text-left sm:gap-8 md:grid-cols-3">
-              {" "}
+              
               <div class="flex items-start space-x-3 sm:space-x-4">
                 <div class="pulse-soft flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-pink-500 to-purple-500 text-base font-bold text-white sm:h-12 sm:w-12 sm:text-lg">
                   1
@@ -493,7 +508,7 @@ export default component$(() => {
 
       {/* Theme Showcase Section */}
       <div class="relative py-12 sm:py-16">
-        {" "}
+        
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h2 class="text-theme-text-primary text-gradient-cute mb-4 flex flex-wrap items-center justify-center gap-2 text-center text-2xl font-bold sm:text-3xl">
             Customize Your Experience
@@ -505,8 +520,8 @@ export default component$(() => {
           </p>
 
           <div class="mx-auto max-w-4xl">
-            <div class="glass rounded-3xl p-6 sm:p-8">
-              {" "}
+            <div class="lum-card p-6 sm:p-8">
+              
               <div class="mb-6 text-center">
                 <h3 class="text-theme-text-primary mb-2 text-lg font-bold sm:text-xl">
                   Try Different Themes!
@@ -515,47 +530,37 @@ export default component$(() => {
                   Click the theme selector below to see how cute each theme
                   looks~ ✨
                 </p>
-              </div>{" "}
+              </div>
               <div class="relative z-10 flex justify-center">
                 <ThemeToggle
                   variant="dropdown"
                   showLabel={true}
                   class="scale-110"
                 />
-              </div>{" "}
+              </div>
               <div class="relative z-0 mt-6 grid grid-cols-2 gap-4 text-center md:grid-cols-3">
-                <div class="glass rounded-xl p-4">
-                  <div class="mx-auto mb-2 h-8 w-8 rounded-full bg-gradient-to-br from-slate-800 to-slate-900"></div>
-                  <div class="text-theme-text-secondary text-xs">Dark Theme</div>
-                  <div class="text-theme-text-muted text-xs">Classic & sleek</div>
-                </div>
-                <div class="glass rounded-xl p-4">
-                  <div class="mx-auto mb-2 h-8 w-8 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500"></div>
-                  <div class="text-theme-text-secondary text-xs">Light Theme</div>
-                  <div class="text-theme-text-muted text-xs">Clean & bright</div>
-                </div>
-                <div class="glass rounded-xl p-4">
-                  <div class="mx-auto mb-2 h-8 w-8 rounded-full bg-gradient-to-br from-pink-300 to-purple-400"></div>
-                  <div class="text-theme-text-secondary text-xs">Pastel Theme</div>
-                  <div class="text-theme-text-muted text-xs">Soft & dreamy</div>
-                </div>
-                <div class="glass rounded-xl p-4">
-                  <div class="mx-auto mb-2 h-8 w-8 rounded-full bg-gradient-to-br from-pink-500 to-violet-600"></div>
-                  <div class="text-theme-text-secondary text-xs">Neon Theme</div>
-                  <div class="text-theme-text-muted text-xs">Cyberpunk vibes</div>
-                </div>
-                <div class="glass rounded-xl p-4">
-                  <div class="mx-auto mb-2 h-8 w-8 rounded-full bg-gradient-to-br from-rose-400 to-pink-600"></div>
-                  <div class="text-theme-text-secondary text-xs">
-                    Valentine Theme
-                  </div>
-                  <div class="text-theme-text-muted text-xs">Romantic pink</div>
-                </div>
-                <div class="glass rounded-xl p-4">
-                  <div class="mx-auto mb-2 h-8 w-8 rounded-full bg-gradient-to-br from-slate-500 to-slate-600"></div>
-                  <div class="text-theme-text-secondary text-xs">Auto Theme</div>
-                  <div class="text-theme-text-muted text-xs">Follows system</div>
-                </div>
+                {
+                  themeOptions.map((option, i) => {
+                    const IconComponent = option.icon;
+
+                    return (<div key={i} class="lum-card rounded-lum-2 text-left">
+                      <div
+                        class={`h-8 w-8 rounded-full bg-gradient-to-r ${option.gradient} flex items-center justify-center`}
+                      >
+                        <IconComponent class="h-4 w-4 text-white" />
+                      </div>
+                      <div class="flex-1">
+                        <div class="text-theme-text-primary text-sm font-medium">
+                          {option.label}
+                        </div>
+                        <div class="text-theme-text-muted text-xs">
+                          {option.description}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                  })
+                }
               </div>
               <div class="mt-6 text-center">
                 <p class="text-theme-text-muted text-xs">

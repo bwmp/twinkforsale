@@ -164,6 +164,7 @@
 /* Cute button styles */
 .btn-cute {
   background: linear-gradient(135deg, var(--theme-button-gradient-start), var(--theme-button-gradient-end));
+  border: none;
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
@@ -191,13 +192,14 @@
 
 /* Cute card hover effects */
 .card-cute {
-  transition: all 0.3s ease;
+  @apply transition duration-1000 lum-hoverable;
   background: var(--theme-card-bg);
   border: 1px solid var(--theme-card-border);
 }
 
 .card-cute:hover {
-  transform: translateY(-5px);
+  @apply duration-300;
+  transform: translateY(-10px);
   border-color: var(--theme-accent-primary);
   box-shadow: 0 20px 40px var(--theme-button-shadow);
 }

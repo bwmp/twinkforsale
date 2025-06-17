@@ -111,7 +111,7 @@ export default component$(() => {
 
   return (
     <>
-      {" "}
+      
       {/* Page Header */}
       <div class="mb-6 text-center sm:mb-8">
         <h1 class="text-gradient-cute mb-3 flex flex-wrap items-center justify-center gap-2 text-3xl font-bold sm:gap-3 sm:text-4xl">
@@ -121,7 +121,7 @@ export default component$(() => {
           Your cute dashboard is ready~ Manage uploads, API keys, and more!
           (◕‿◕)♡
         </p>
-      </div>{" "}
+      </div>
       {/* Account Status Banner */}
       {!userData.value.user.isApproved && (
         <div class="border-theme-accent-secondary bg-theme-secondary/10 text-theme-text-primary mb-6 rounded-xl border p-4 sm:mb-8 sm:p-6">
@@ -152,7 +152,7 @@ export default component$(() => {
       )}
       {/* Stats Cards */}
       <div class="mb-6 grid grid-cols-2 gap-3 sm:mb-8 sm:gap-6 md:grid-cols-4">
-        {" "}
+        
         <div class="card-cute rounded-3xl p-4 sm:p-6">
           <div class="flex items-center">
             <div class="from-theme-accent-primary to-theme-accent-secondary rounded-full bg-gradient-to-br p-2 sm:p-3">
@@ -213,7 +213,7 @@ export default component$(() => {
             </div>
           </div>
         </div>
-      </div>{" "}
+      </div>
       {/* Analytics Section */}
       <div class="mb-6 sm:mb-8">
         <h2 class="text-gradient-cute mb-4 flex items-center justify-center gap-2 text-center text-xl font-bold sm:mb-6 sm:text-2xl">
@@ -245,9 +245,9 @@ export default component$(() => {
       <div class="mb-6 sm:mb-8">
         <h2 class="text-gradient-cute mb-4 flex items-center justify-center gap-2 text-center text-xl font-bold sm:mb-6 sm:text-2xl">
           Quick Actions
-        </h2>{" "}
+        </h2>
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
-          {" "}
+          
           <Link
             href="/dashboard/uploads"
             class="card-cute group rounded-3xl p-4 sm:p-6"
@@ -293,7 +293,7 @@ export default component$(() => {
               <h3 class="group-hover:text-gradient-cute text-theme-text-primary ml-2 text-base font-medium transition-all duration-300 sm:ml-3 sm:text-lg">
                 Discord Embeds
               </h3>
-            </div>{" "}
+            </div>
             <p class="text-theme-text-secondary text-xs sm:text-sm">
               Customize how your uploads appear on Discord and social media~
               Make them extra cute! uwu
@@ -351,7 +351,7 @@ export default component$(() => {
             </p>
           </Link>
         </div>
-      </div>{" "}
+      </div>
       {/* Recent Uploads */}
       <div class="card-cute rounded-3xl p-4 sm:p-6">
         <h2 class="text-gradient-cute mb-4 flex items-center gap-2 text-lg font-bold sm:text-xl">
@@ -417,7 +417,7 @@ export default component$(() => {
                       {upload.originalName}
                     </p>
                     <p class="text-theme-text-secondary text-sm">
-                      {upload.views} views •{" "}
+                      {upload.views} views •
                       {new Date(upload.createdAt).toLocaleDateString()}
                     </p>
                   </div>
@@ -442,7 +442,7 @@ export default component$(() => {
           </div>
         ) : (
           <div class="py-12 text-center">
-            <div class="sparkle mb-4 text-6xl">🌸</div>{" "}
+            <div class="sparkle mb-4 text-6xl">🌸</div>
             <p class="text-theme-text-secondary mb-6 text-lg">
               No files yet~ Upload via ShareX or API!
             </p>

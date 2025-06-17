@@ -179,7 +179,7 @@ export default component$(() => {
         <h3 class="text-gradient-cute mb-4 flex items-center gap-2 text-lg font-bold">
           <BarChart3 class="h-5 w-5" />
           Your Activity (30 Days)
-        </h3>{" "}
+        </h3>
         <DetailedAnalyticsChart
           data={data.value.userAnalytics}
           metric="totalViews"

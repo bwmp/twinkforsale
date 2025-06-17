@@ -469,7 +469,7 @@ export default component$(() => {
   return (
     <div class="min-h-screen p-4 sm:p-6">
       <div class="mx-auto max-w-7xl">
-        {" "}
+        
         {/* Header */}
         <div class="mb-6">
           <div class="mb-4">
@@ -573,7 +573,7 @@ export default component$(() => {
               Refresh
             </button>
           </div>
-        </div>{" "}
+        </div>
         {/* Monitoring Status */}
         <div class="mb-6">
           <div class="card-cute rounded-2xl p-4 sm:rounded-3xl sm:p-6">
@@ -614,7 +614,7 @@ export default component$(() => {
               </div>
             </div>
           </div>
-        </div>{" "}
+        </div>
         {/* Event Statistics */}
         <div class="mb-6">
           <div class="card-cute rounded-2xl p-4 sm:rounded-3xl sm:p-6">
@@ -649,7 +649,7 @@ export default component$(() => {
               </div>
             </div>
           </div>
-        </div>{" "}
+        </div>
         {/* Events List */}
         <div class="mb-6">
           <div class="card-cute rounded-2xl p-4 sm:rounded-3xl sm:p-6">
@@ -764,7 +764,7 @@ export default component$(() => {
               </div>
             )}
           </div>
-        </div>{" "}
+        </div>
         {/* Footer */}
         <div class="px-4 text-center text-xs text-gray-500 sm:text-sm">
           <p>Last updated: {data.lastUpdated?.toLocaleString()}</p>

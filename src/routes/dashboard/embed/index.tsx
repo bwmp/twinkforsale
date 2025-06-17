@@ -250,7 +250,7 @@ export default component$(() => {
   });
   return (
     <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      {" "}
+      
       <div class="mb-6 text-center sm:mb-8">
         <h1 class="text-gradient-cute mb-3 flex flex-wrap items-center justify-center gap-2 text-3xl font-bold sm:text-4xl">
           Discord Embed Settings~
@@ -268,7 +268,7 @@ export default component$(() => {
           </h2>
           <Form action={updateAction} onSubmit$={generatePreview}>
             <div class="space-y-4 sm:space-y-6">
-              {" "}
+              
               <div>
                 <label class="text-theme-text-secondary mb-2 block text-xs font-medium sm:text-sm">
                   Embed Title~ 💝
@@ -285,11 +285,11 @@ export default component$(() => {
                   }}
                 />
                 <p class="text-theme-text-muted mt-2 pl-3 text-xs sm:pl-4">
-                  Use placeholders: {"{filename}"}, {"{filesize}"},{" "}
-                  {"{filetype}"}, {"{uploaddate}"}, {"{views}"}, {"{username}"},{" "}
+                  Use placeholders: {"{filename}"}, {"{filesize}"},
+                  {"{filetype}"}, {"{uploaddate}"}, {"{views}"}, {"{username}"},
                   {"{totalfiles}"}, {"{totalstorage}"}, {"{totalviews}"}~ ✨
                 </p>
-              </div>{" "}
+              </div>
               <div>
                 <label class="text-theme-text-secondary mb-2 block text-xs font-medium sm:text-sm">
                   Description~ 📝
@@ -308,11 +308,11 @@ export default component$(() => {
                   }}
                 />
                 <p class="text-theme-text-muted mt-2 pl-3 text-xs sm:pl-4">
-                  Use placeholders: {"{filename}"}, {"{filesize}"},{" "}
-                  {"{filetype}"}, {"{uploaddate}"}, {"{views}"}, {"{username}"},{" "}
+                  Use placeholders: {"{filename}"}, {"{filesize}"},
+                  {"{filetype}"}, {"{uploaddate}"}, {"{views}"}, {"{username}"},
                   {"{totalfiles}"}, {"{totalstorage}"}, {"{totalviews}"}~ ✨
                 </p>
-              </div>{" "}
+              </div>
               <div>
                 <label class="text-theme-text-secondary mb-2 block text-xs font-medium sm:text-sm">
                   Embed Color~ 🎨
@@ -344,7 +344,7 @@ export default component$(() => {
                     generatePreview();
                   }}
                 />
-              </div>{" "}
+              </div>
               <div>
                 <label class="text-theme-text-secondary mb-2 block text-xs font-medium sm:text-sm">
                   Footer Text~ 📄
@@ -439,7 +439,7 @@ export default component$(() => {
                   Generate adorable URLs like "bunny-sparkle-123" instead of
                   random characters~ (◕‿◕)♡
                 </p>
-              </div>{" "}
+              </div>
               <button
                 type="submit"
                 class="btn-cute text-theme-text-primary w-full rounded-full px-4 py-2 text-sm font-medium transition-all duration-300 sm:px-6 sm:py-3 sm:text-base"
@@ -470,7 +470,7 @@ export default component$(() => {
         <div class="card-cute rounded-3xl p-4 sm:p-6">
           <h2 class="text-gradient-cute mb-4 flex items-center text-lg font-bold sm:mb-6 sm:text-xl">
             Discord Embed Preview~<span class="sparkle ml-2">✨</span>
-          </h2>{" "}
+          </h2>
           <div class="glass rounded-2xl border-l-4 p-3 sm:p-4">
             <div class="text-theme-text-muted mb-3 flex items-center text-xs">
               Example embed structure~ 📋 <span class="ml-1">💕</span>

@@ -295,7 +295,7 @@ export default component$(() => {
   return (
     <div class="min-h-screen p-4 sm:p-6">
       <div class="mx-auto max-w-7xl">
-        {" "}
+        
         {/* Header */}
         <div class="mb-6">
           <div class="mb-4">
@@ -392,7 +392,7 @@ export default component$(() => {
               Refresh Now
             </button>
           </div>
-        </div>{" "}
+        </div>
         {/* Status Overview */}
         <div class="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
           {/* Database Status */}
@@ -469,7 +469,7 @@ export default component$(() => {
               <CheckCircle class="h-4 w-4 flex-shrink-0 text-green-500 sm:h-5 sm:w-5" />
             </div>
           </div>
-        </div>{" "}
+        </div>
         {/* Key Metrics */}
         <div class="mb-6 grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
           {/* System Performance */}
@@ -563,7 +563,7 @@ export default component$(() => {
               </div>
             </div>
           </div>
-        </div>{" "}
+        </div>
         {/* Storage & User Analytics */}
         <div class="mb-6 grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
           {/* Storage Breakdown */}
@@ -699,7 +699,7 @@ export default component$(() => {
               </div>
             </div>
           </div>
-        </div>{" "}
+        </div>
         {/* Top Active Users */}
         <div class="mb-6">
           <div class="card-cute rounded-2xl p-4 sm:rounded-3xl sm:p-6">
@@ -765,7 +765,7 @@ export default component$(() => {
               </div>
             )}
           </div>
-        </div>{" "}
+        </div>
         {/* System Events */}
         <div class="mb-6">
           <div class="card-cute rounded-2xl p-4 sm:rounded-3xl sm:p-6">
@@ -831,7 +831,7 @@ export default component$(() => {
                         </div>
                         {event.user && (
                           <div class="text-theme-text-secondary mt-1 text-xs">
-                            User:{" "}
+                            User:
                             <span class="truncate">{event.user.email}</span>
                           </div>
                         )}
@@ -868,15 +868,15 @@ export default component$(() => {
               </div>
             )}
           </div>
-        </div>{" "}
+        </div>
         {/* Footer */}
         <div class="px-4 text-center text-xs text-gray-500 sm:text-sm">
           <p>
-            Last updated: {data.lastUpdated?.toLocaleString()} •{" "}
+            Last updated: {data.lastUpdated?.toLocaleString()} •
             {autoRefresh.value ? "Auto-refreshing every 30s" : "Manual refresh"}
           </p>
           <p class="mt-1">
-            Environment: {data.system?.environment} • Platform:{" "}
+            Environment: {data.system?.environment} • Platform:
             {data.system?.platform}
           </p>
         </div>

@@ -56,8 +56,8 @@ export const ImagePreview = component$<ImagePreviewProps>(
         class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm transition-opacity duration-300"
         onClick$={handleBackdropClick}
       >
-        {" "}
-        {/* Modal Content */}{" "}
+        
+        {/* Modal Content */}
         <div
           class="glass border-theme-card-border relative max-h-[95vh] max-w-[95vw] overflow-hidden rounded-3xl border"
           onClick$={(event) => event.stopPropagation()}
@@ -108,7 +108,7 @@ export const ImagePreview = component$<ImagePreviewProps>(
             {/* Loading State */}
             {!imageLoaded.value && (
               <div class="absolute inset-0 flex items-center justify-center">
-                {" "}
+                
                 <div class="flex flex-col items-center space-y-3">
                   <div class="border-theme-accent h-8 w-8 animate-spin rounded-full border-2 border-t-transparent"></div>
                   <p class="text-theme-text-secondary text-sm">Loading image...</p>
@@ -131,15 +131,15 @@ export const ImagePreview = component$<ImagePreviewProps>(
               // Ensure GIFs play automatically
               style="image-rendering: auto;"
             />
-          </div>{" "}
+          </div>
           {/* Footer */}
           <div class="border-theme-card-border border-t bg-slate-900/50 p-3">
             <div class="flex items-center justify-center text-center">
               <p class="text-theme-text-secondary text-xs">
-                Press{" "}
+                Press
                 <kbd class="bg-theme-accent-primary/20 text-theme-accent-primary rounded px-1 py-0.5">
                   ESC
-                </kbd>{" "}
+                </kbd>
                 to close
               </p>
             </div>

@@ -516,7 +516,7 @@ export default component$(() => {
                 <Sparkle class="h-3 w-3 sm:h-4 sm:w-4" />
               </p>
               <p class="text-theme-text-primary text-lg font-bold sm:text-xl">
-                {formatFileSize(userData.value.user.storageUsed)} /{" "}
+                {formatFileSize(userData.value.user.storageUsed)} /
                 {formatFileSize(userData.value.effectiveStorageLimit)}
               </p>
             </div>
@@ -551,7 +551,7 @@ export default component$(() => {
               All Files~ 📋 <span class="sparkle ml-2">✨</span>
               {searchQuery.value.trim() && (
                 <span class="text-theme-text-muted ml-2 text-sm font-normal">
-                  ({filteredAndSortedUploads.value.length} of{" "}
+                  ({filteredAndSortedUploads.value.length} of
                   {userData.value.user.uploads.length} files)
                 </span>
               )}
@@ -695,7 +695,7 @@ export default component$(() => {
                     >
                       Views~ <Eye class="inline h-4 w-4" />
                       {getSortIcon("views")}
-                    </th>{" "}
+                    </th>
                     <th
                       class="text-theme-text-muted hover:text-theme-text-secondary cursor-pointer px-3 py-3 text-left text-xs font-medium tracking-wider uppercase transition-colors sm:px-6"
                       onClick$={() => handleSort("downloads")}
@@ -748,7 +748,7 @@ export default component$(() => {
                             <Square class="h-4 w-4" />
                           )}
                         </button>
-                      </td>{" "}
+                      </td>
                       <td class="px-3 py-4 sm:px-6">
                         <div class="flex items-center space-x-2 sm:space-x-3">
                           <div class="flex-shrink-0">
@@ -785,7 +785,7 @@ export default component$(() => {
                             <TrendingUp class="h-4 w-4" />
                           </div>
                         </div>
-                      </td>{" "}
+                      </td>
                       <td class="text-theme-text-secondary px-3 py-4 text-sm sm:px-6">
                         <div class="flex items-center gap-2">
                           <span>{upload.downloads}</span>
@@ -813,7 +813,7 @@ export default component$(() => {
                             <div class="flex items-center gap-1 text-xs">
                               <Clock class="h-3 w-3" />
                               <span>
-                                Expires:{" "}
+                                Expires:
                                 {new Date(
                                   upload.expiresAt,
                                 ).toLocaleDateString()}
@@ -834,7 +834,7 @@ export default component$(() => {
                             </span>
                           )}
                         </div>
-                      </td>{" "}
+                      </td>
                       <td class="px-3 py-4 sm:px-6">
                         <div class="flex flex-col space-y-1 sm:flex-row sm:space-y-0 sm:space-x-1">
                           <button
@@ -898,7 +898,7 @@ export default component$(() => {
                           <Square class="h-5 w-5" />
                         )}
                       </button>
-                    </div>{" "}
+                    </div>
                     {/* File Preview */}
                     <div class="bg-gradient-to-br from-theme-accent-primary/20 to-theme-accent-secondary/20 mb-3 flex aspect-square items-center justify-center overflow-hidden rounded-xl">
                       <FileTypeIcon
@@ -928,7 +928,7 @@ export default component$(() => {
                           {new Date(upload.createdAt).toLocaleDateString()}
                         </span>
                       </div>
-                      {/* Analytics */}{" "}
+                      {/* Analytics */}
                       <div class="space-y-2">
                         <div class="flex items-center justify-between">
                           <div class="flex items-center gap-1">
@@ -975,7 +975,7 @@ export default component$(() => {
                               <div class="flex items-center gap-1 text-xs">
                                 <Clock class="text-theme-accent-tertiary h-3 w-3" />
                                 <span class="text-theme-text-secondary">
-                                  Expires:{" "}
+                                  Expires:
                                   {new Date(
                                     upload.expiresAt,
                                   ).toLocaleDateString()}
@@ -1005,7 +1005,7 @@ export default component$(() => {
                         >
                           <Copy class="mr-1 inline h-3 w-3" />
                           Copy
-                        </button>{" "}
+                        </button>
                         <a
                           href={`/f/${upload.shortCode}`}
                           target="_blank"

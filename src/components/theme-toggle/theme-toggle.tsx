@@ -10,6 +10,57 @@ export interface ThemeToggleProps {
   class?: string;
 }
 
+export const themeOptions: Array<{
+  value: ThemeName;
+  label: string;
+  icon: any;
+  description: string;
+  gradient: string;
+}> = [
+  {
+    value: "auto",
+    label: "Auto",
+    icon: Sparkles,
+    description: "Follows system preference",
+    gradient: "from-slate-500 to-slate-600",
+  },
+  {
+    value: "dark",
+    label: "Dark",
+    icon: Moon,
+    description: "Classic dark theme",
+    gradient: "from-slate-800 to-slate-900",
+  },
+  {
+    value: "light",
+    label: "Light",
+    icon: Sun,
+    description: "Clean light theme",
+    gradient: "from-yellow-400 to-orange-500",
+  },
+  {
+    value: "pastel",
+    label: "Pastel",
+    icon: Heart,
+    description: "Soft pastel vibes",
+    gradient: "from-pink-300 to-purple-400",
+  },
+  {
+    value: "neon",
+    label: "Neon",
+    icon: Zap,
+    description: "Cyberpunk aesthetic",
+    gradient: "from-pink-500 to-violet-600",
+  },
+  {
+    value: "valentine",
+    label: "Valentine",
+    icon: Heart,
+    description: "Romantic pink theme",
+    gradient: "from-rose-400 to-pink-600",
+  },
+];
+
 export const ThemeToggle = component$<ThemeToggleProps>(
   ({ variant = "compact", showLabel = false, class: className = "" }) => {
     const currentTheme = useSignal<ThemeName>("dark");
@@ -40,57 +91,6 @@ export const ThemeToggle = component$<ThemeToggleProps>(
         return () => observer.disconnect();
       }
     });
-
-    const themeOptions: Array<{
-      value: ThemeName;
-      label: string;
-      icon: any;
-      description: string;
-      gradient: string;
-    }> = [
-      {
-        value: "auto",
-        label: "Auto",
-        icon: Sparkles,
-        description: "Follows system preference",
-        gradient: "from-slate-500 to-slate-600",
-      },
-      {
-        value: "dark",
-        label: "Dark",
-        icon: Moon,
-        description: "Classic dark theme",
-        gradient: "from-slate-800 to-slate-900",
-      },
-      {
-        value: "light",
-        label: "Light",
-        icon: Sun,
-        description: "Clean light theme",
-        gradient: "from-yellow-400 to-orange-500",
-      },
-      {
-        value: "pastel",
-        label: "Pastel",
-        icon: Heart,
-        description: "Soft pastel vibes",
-        gradient: "from-pink-300 to-purple-400",
-      },
-      {
-        value: "neon",
-        label: "Neon",
-        icon: Zap,
-        description: "Cyberpunk aesthetic",
-        gradient: "from-pink-500 to-violet-600",
-      },
-      {
-        value: "valentine",
-        label: "Valentine",
-        icon: Heart,
-        description: "Romantic pink theme",
-        gradient: "from-rose-400 to-pink-600",
-      },
-    ];
 
     const currentThemeOption =
       themeOptions.find((option) => option.value === currentTheme.value) ||

@@ -186,7 +186,7 @@ export default component$(() => {
             Create New API Key
           </h2>
           <div class="flex flex-col gap-3 sm:flex-row sm:gap-4">
-            {" "}
+            
             <input
               type="text"
               placeholder="API Key Name (e.g., ShareX, Development) uwu"
@@ -235,7 +235,7 @@ export default component$(() => {
                 onClick$={() => copyToClipboard(showNewKey.value!.key)}
                 class="btn-cute text-theme-text-primary w-full rounded-full px-3 py-2 text-xs sm:w-auto sm:px-4 sm:text-sm"
               >
-                {" "}
+                
                 Copy 📋
               </button>
             </div>
@@ -258,7 +258,7 @@ export default component$(() => {
           <div class="py-8 text-center sm:py-12">
             <div class="glass mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full sm:h-16 sm:w-16">
               <div class="text-xl sm:text-2xl">🔑</div>
-            </div>{" "}
+            </div>
             <h3 class="text-theme-text-primary mb-2 text-base font-medium sm:text-lg">
               No API Keys Yet! ✨
             </h3>
@@ -269,7 +269,7 @@ export default component$(() => {
           </div>
         ) : (
           <div class="space-y-3 sm:space-y-4">
-            {" "}
+            
             {apiKeysData.value.apiKeys.map((apiKey) => (
               <div
                 key={apiKey.id}
@@ -282,12 +282,12 @@ export default component$(() => {
                     </h3>
                     <div class="text-theme-text-secondary flex flex-col gap-2 text-xs sm:flex-row sm:items-center sm:gap-4 sm:text-sm">
                       <span>
-                        Created:{" "}
+                        Created:
                         {new Date(apiKey.createdAt).toLocaleDateString()}
                       </span>
                       {apiKey.lastUsed && (
                         <span>
-                          Last used:{" "}
+                          Last used:
                           {new Date(apiKey.lastUsed).toLocaleDateString()}
                         </span>
                       )}
@@ -320,7 +320,7 @@ export default component$(() => {
             ))}
           </div>
         )}
-      </div>{" "}
+      </div>
       {/* ShareX Integration Info */}
       {apiKeysData.value.user.isApproved && (
         <div class="bg-gradient-to-br from-theme-accent-tertiary/20 to-theme-accent-quaternary/20 border-theme-accent-tertiary/30 glass mt-6 rounded-3xl border p-4 sm:mt-8 sm:p-6">
@@ -329,13 +329,13 @@ export default component$(() => {
           </h3>
           <p class="text-theme-text-secondary mb-4 text-sm sm:text-base">
             Use your API key to configure ShareX for automatic uploads~ Visit
-            the{" "}
+            the
             <a
               href="/dashboard/embed"
               class="text-theme-accent-secondary hover:text-theme-accent-tertiary font-medium underline"
             >
               Setup page
-            </a>{" "}
+            </a>
             to download ShareX configuration files! (◕‿◕)♡
           </p>
           <div class="glass border-theme-accent-quaternary/20 rounded-2xl border p-3 sm:p-4">

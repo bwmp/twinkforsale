@@ -315,7 +315,7 @@ export default component$(() => {
               </p>
             </div>
           </div>
-        </div>{" "}
+        </div>
         <div class="card-cute rounded-2xl p-4">
           <div class="flex items-center gap-3">
             <div class="bg-gradient-to-br from-theme-accent-quaternary to-theme-accent-primary rounded-full p-2">
@@ -333,7 +333,7 @@ export default component$(() => {
               </p>
             </div>
           </div>
-        </div>{" "}
+        </div>
       </div>
 
       {/* Additional Insights */}
@@ -386,7 +386,7 @@ export default component$(() => {
           <h3 class="text-gradient-cute mb-4 flex items-center gap-2 text-lg font-bold">
             <BarChart3 class="h-5 w-5" />
             Views Over Time (30 Days)
-          </h3>{" "}
+          </h3>
           <DetailedAnalyticsChart
             data={data.value.analytics}
             metric="totalViews"
@@ -462,7 +462,7 @@ export default component$(() => {
 
         {/* Device Types */}
         <div class="card-cute rounded-3xl p-6">
-          {" "}
+          
           <h3 class="text-gradient-cute mb-4 flex items-center gap-2 text-lg font-bold">
             <BarChart3 class="h-5 w-5" />
             Device Types
@@ -514,7 +514,7 @@ export default component$(() => {
                   key={index}
                   class="border-theme-card-border border-b pb-2 last:border-b-0 last:pb-0"
                 >
-                  {" "}
+                  
                   <div class="flex items-center justify-between text-sm">
                     <span class="text-theme-text-primary">{log.ipAddress}</span>
                     <span class="text-theme-text-secondary">
@@ -549,7 +549,7 @@ export default component$(() => {
                   key={index}
                   class="border-theme-card-border border-b pb-2 last:border-b-0 last:pb-0"
                 >
-                  {" "}
+                  
                   <div class="flex items-center justify-between text-sm">
                     <span class="text-theme-text-primary">{log.ipAddress}</span>
                     <span class="text-theme-text-secondary">

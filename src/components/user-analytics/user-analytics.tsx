@@ -68,7 +68,7 @@ export const UserAnalytics = component$<UserAnalyticsProps>(
 
     return (
       <details class="group mt-3" open={isExpanded.value}>
-        {" "}
+        
         <summary
           class="text-theme-accent-primary hover:text-theme-text-primary flex cursor-pointer items-center gap-1 text-xs font-medium"
           onClick$={() => {
@@ -79,7 +79,7 @@ export const UserAnalytics = component$<UserAnalyticsProps>(
           📊 Analytics for {userName}
         </summary>
         <div class="glass border-theme-card-border mt-3 rounded-xl border p-3">
-          {" "}
+          
           {isLoading.value ? (
             <div class="py-4 text-center">
               <div class="border-theme-accent mx-auto mb-2 h-4 w-4 animate-spin rounded-full border-2 border-t-transparent"></div>
@@ -89,7 +89,7 @@ export const UserAnalytics = component$<UserAnalyticsProps>(
             <div class="space-y-3">
               {/* Mini Charts */}
               <div class="grid grid-cols-3 gap-2">
-                {" "}
+                
                 {/* Views Chart */}
                 <div class="text-center">
                   <div class="text-theme-accent-primary mb-1 text-xs">Views</div>
@@ -188,7 +188,7 @@ export const UserAnalytics = component$<UserAnalyticsProps>(
                     height={chartHeight}
                     class="border-theme-card-border w-full rounded border bg-black/20"
                   >
-                    {" "}
+                    
                     <polyline
                       points={generateMiniChart("uploadsCount")}
                       fill="none"
@@ -226,7 +226,7 @@ export const UserAnalytics = component$<UserAnalyticsProps>(
                       ?.uploadsCount || 0}
                   </div>
                 </div>
-              </div>{" "}
+              </div>
               {/* Summary Stats */}
               <div class="border-theme-card-border border-t pt-2">
                 <div class="grid grid-cols-3 gap-2 text-xs">
@@ -236,7 +236,7 @@ export const UserAnalytics = component$<UserAnalyticsProps>(
                       {analyticsData.value.reduce(
                         (sum, d) => sum + d.totalViews,
                         0,
-                      )}{" "}
+                      )}
                       views
                     </div>
                   </div>
@@ -248,7 +248,7 @@ export const UserAnalytics = component$<UserAnalyticsProps>(
                           (sum, d) => sum + d.totalViews,
                           0,
                         ) / 7,
-                      )}{" "}
+                      )}
                       views
                     </div>
                   </div>
@@ -257,7 +257,7 @@ export const UserAnalytics = component$<UserAnalyticsProps>(
                     <div class="text-theme-text-primary font-medium">
                       {Math.max(
                         ...analyticsData.value.map((d) => d.totalViews),
-                      )}{" "}
+                      )}
                       views
                     </div>
                   </div>

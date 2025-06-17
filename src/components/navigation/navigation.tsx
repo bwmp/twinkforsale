@@ -71,7 +71,7 @@ export default component$(() => {
           >
             <Key class="h-4 w-4" />
             API Keys
-          </Link>{" "}          <Link
+          </Link>          <Link
             href="/dashboard/embed"
             class={getNavLinkClasses(isCurrentPage("/dashboard/embed"))}
           >
@@ -142,7 +142,7 @@ export default component$(() => {
           >
             <Key class="h-5 w-5" />
             API Keys
-          </Link>{" "}
+          </Link>
           <Link
             href="/dashboard/embed"
             class={getNavLinkClasses(isCurrentPage("/dashboard/embed"))}

@@ -130,7 +130,7 @@ export const DetailedAnalyticsChart = component$<DetailedAnalyticsChartProps>(
             class={`${themeClasses.stroke} stroke-2`}
             stroke-linecap="round"
             stroke-linejoin="round"
-          />{" "}
+          />
           {/* Data points */}
           {data.map((d, index) => {
             const x = padding + (index / (data.length - 1)) * innerWidth;
@@ -194,7 +194,7 @@ export const DetailedAnalyticsChart = component$<DetailedAnalyticsChartProps>(
                 </text>
               );
             })}
-          </g>{" "}
+          </g>
           {/* Gradient definition */}
           <defs>
             <linearGradient
@@ -219,7 +219,7 @@ export const DetailedAnalyticsChart = component$<DetailedAnalyticsChartProps>(
             <span class="font-medium">Max:</span> {maxValue}
           </div>
           <div class="text-theme-text-secondary">
-            <span class="font-medium">Total:</span>{" "}
+            <span class="font-medium">Total:</span>
             {values.reduce((a, b) => a + b, 0)}
           </div>
         </div>
