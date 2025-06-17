@@ -60,7 +60,7 @@ import {
   getGradientCSS,
   type GradientConfig,
 } from "~/components/gradient-config-panel";
-import { autoPopulateDiscordId } from "~/lib/discord";
+import { autoPopulateDiscordId, getLanyardData } from "~/lib/discord";
 
 export const useBioData = routeLoader$(async (requestEvent) => {
   const session = requestEvent.sharedMap.get("session");
@@ -423,9 +423,12 @@ export default component$(() => {
   const textColor = useSignal(bioData.value.user.bioTextColor);
   const accentColor = useSignal(bioData.value.user.bioAccentColor);
   const customCss = useSignal(bioData.value.user.bioCustomCss || "");
-  const spotifyTrack = useSignal(bioData.value.user.bioSpotifyTrack || "");
-  const isPublic = useSignal(bioData.value.user.bioIsPublic);
+  const spotifyTrack = useSignal(bioData.value.user.bioSpotifyTrack || "");  const isPublic = useSignal(bioData.value.user.bioIsPublic);
   const showDiscord = useSignal(bioData.value.user.bioShowDiscord);
+  
+  // Discord error tracking
+  const discordError = useSignal<string | null>(null);
+  const discordTesting = useSignal(false);
 
   // Parse Discord configuration
   const parseDiscordConfig = () => {
@@ -446,6 +449,37 @@ export default component$(() => {
   };
 
   const discordConfig = useSignal(parseDiscordConfig());
+
+  // Function to test Discord connectivity
+  const testDiscordConnection = $(async () => {
+    if (!bioData.value.user.bioDiscordUserId) {
+      discordError.value = "No Discord user ID found. Please log in with Discord first.";
+      return;
+    }
+
+    discordTesting.value = true;
+    discordError.value = null;
+
+    try {
+      const result = await getLanyardData(bioData.value.user.bioDiscordUserId);
+      if (!result.success) {
+        discordError.value = result.error || "Failed to connect to Discord. Please check if you've joined our Discord server (https://discord.gg/TDsQpa9tdT) or invited the bot to your server.";
+      } else {
+        discordError.value = null;
+      }
+    } catch (error) {
+      discordError.value = "Error testing Discord connection. Please try again.";
+      console.error("Discord test error:", error);
+    } finally {
+      discordTesting.value = false;
+    }  });
+
+  // Auto-test Discord connection on load if enabled
+  useTask$(async () => {
+    if (showDiscord.value && bioData.value.user.bioDiscordUserId) {
+      await testDiscordConnection();
+    }
+  });
 
   // Parse and initialize particle configuration
   const parseParticleConfig = (): ParticleConfig => {
@@ -615,8 +649,9 @@ export default component$(() => {
         colors: ["#8B5CF6", "#EC4899"],
         enabled: false,
       };
-    } // Reset Discord settings
+    }    // Reset Discord settings
     showDiscord.value = bioData.value.user.bioShowDiscord;
+    discordError.value = null; // Clear Discord errors on reset
     try {
       if (bioData.value.user.bioDiscordConfig) {
         discordConfig.value = JSON.parse(bioData.value.user.bioDiscordConfig);
@@ -1029,11 +1064,19 @@ export default component$(() => {
                         <div class="flex items-center justify-between">
                           <label class="text-theme-text-secondary flex items-center gap-2 text-sm font-medium">
                             Show Discord Profile
-                          </label>
-                          <button
+                          </label>                          <button
                             type="button"
-                            onClick$={() => {
-                              showDiscord.value = !showDiscord.value;
+                            onClick$={async () => {
+                              const newValue = !showDiscord.value;
+                              showDiscord.value = newValue;
+                              
+                              // Test Discord connection when enabling
+                              if (newValue) {
+                                await testDiscordConnection();
+                              } else {
+                                // Clear errors when disabling
+                                discordError.value = null;
+                              }
                             }}
                             class={`focus:ring-theme-accent-primary relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:ring-2 focus:ring-offset-2 focus:outline-none ${
                               showDiscord.value
@@ -1048,8 +1091,45 @@ export default component$(() => {
                                   : "translate-x-1"
                               }`}
                             />
+                          </button>                        </div>
+
+                        {/* Discord Connection Test Button */}
+                        <div class="flex items-center gap-3 pt-2">
+                          <button
+                            type="button"
+                            onClick$={testDiscordConnection}
+                            disabled={discordTesting.value}
+                            class="btn-secondary text-xs px-3 py-1.5 flex items-center gap-2"
+                          >
+                            {discordTesting.value ? (
+                              <>
+                                <div class="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin" />
+                                Testing...
+                              </>
+                            ) : (
+                              <>
+                                🔍 Test Connection
+                              </>
+                            )}
                           </button>
                         </div>
+
+                        {/* Discord Error Display */}
+                        {discordError.value && (
+                          <div class="rounded-lg bg-red-500/10 p-3 border border-red-500/20">
+                            <div class="flex items-start gap-2">
+                              <div class="text-red-400 text-lg">⚠️</div>
+                              <div>
+                                <p class="text-red-400 text-sm font-medium mb-1">
+                                  Discord Connection Failed
+                                </p>
+                                <p class="text-red-300 text-xs">
+                                  {discordError.value}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
 
                         {showDiscord.value && (
                           <div class="space-y-3 pt-2">

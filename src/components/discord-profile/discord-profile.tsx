@@ -57,17 +57,16 @@ export const DiscordProfile = component$<DiscordProfileProps>(  ({ discordId, co
         // Try WebSocket connection first
         if (!useFallbackPolling) {
           const cleanup = connectLanyardSocket(
-            discordId,
-            (data) => {
+            discordId,            (data) => {
               console.log("Received Lanyard data via WebSocket:", data);
-              if (data.success) {
+              if (data.success && data.data?.discord_user) {
                 lanyardData.value = data;
                 connectionStatus.value = "connected";
                 loading.value = false;
                 error.value = null;
               } else {
                 connectionStatus.value = "error";
-                error.value = "Failed to fetch Discord data";
+                error.value = data.error || "Failed to fetch Discord data";
               }
             },
             (errorMsg) => {
@@ -86,8 +85,7 @@ export const DiscordProfile = component$<DiscordProfileProps>(  ({ discordId, co
         }
 
         function fallbackToPolling() {
-          console.log("Using HTTP polling fallback");
-          const fetchData = async () => {
+          console.log("Using HTTP polling fallback");          const fetchData = async () => {
             try {
               const data = await getLanyardData(discordId);
               if (data.success) {
@@ -97,7 +95,7 @@ export const DiscordProfile = component$<DiscordProfileProps>(  ({ discordId, co
                 error.value = null;
               } else {
                 connectionStatus.value = "error";
-                error.value = "Failed to fetch Discord data";
+                error.value = data.error || "Failed to fetch Discord data";
               }
             } catch (err) {
               connectionStatus.value = "error";
@@ -138,16 +136,17 @@ export const DiscordProfile = component$<DiscordProfileProps>(  ({ discordId, co
           </div>
         </div>
       );
-    }
-
-    if (
+    }    if (
       error.value ||
       !lanyardData.value?.success ||
       !lanyardData.value?.data
     ) {
       return (
         <div class={`rounded-lg bg-red-500/10 p-4 text-red-400 ${className}`}>
-          <p class="text-sm">Discord profile unavailable</p>
+          <p class="text-sm font-medium mb-2">Discord Profile Unavailable</p>
+          {error.value && (
+            <p class="text-xs text-red-300">{error.value}</p>
+          )}
         </div>
       );
     }

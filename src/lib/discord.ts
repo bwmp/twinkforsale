@@ -2,6 +2,7 @@ import { db } from "~/lib/db";
 
 export interface LanyardData {
   success: boolean;
+  error?: string;
   data?: {
     discord_user: {
       id: string;
@@ -96,17 +97,33 @@ export async function getDiscordIdFromUser(userId: string): Promise<string | nul
  */
 export async function getLanyardData(discordId: string): Promise<LanyardData> {
   try {
-    const response = await fetch(`https://api.lanyard.rest/v1/users/${discordId}`, {
+    const response = await fetch(`https://lanyard.twink.forsale/v1/users/${discordId}`, {
       headers: {
         "User-Agent": "twink.forsale/1.0",
       },
     });
 
-    if (!response.ok) {
+    if (response.status === 404) {
+      return { 
+        success: false, 
+        error: "Discord user not found. You need to either join our Discord server (https://discord.gg/TDsQpa9tdT) or invite the bot to your Discord server to use this feature." 
+      };
+    }
+
+    if (!response.ok || response.status !== 200) {
       return { success: false };
     }
 
     const data = await response.json();
+    
+    // Check if discord_user data is missing
+    if (!data.data?.discord_user) {
+      return { 
+        success: false, 
+        error: "Discord user data not available. You need to either join our Discord server (https://discord.gg/TDsQpa9tdT) or invite the bot to your Discord server to use this feature." 
+      };
+    }
+    
     return data;
   } catch (error) {
     console.error("Error fetching Lanyard data:", error);
@@ -129,7 +146,7 @@ export function connectLanyardSocket(
 
   const connect = () => {
     try {
-      ws = new WebSocket("wss://api.lanyard.rest/socket");
+      ws = new WebSocket("wss://lanyard.twink.forsale/socket");
 
       ws.onopen = () => {
         console.log("Lanyard WebSocket connected");
@@ -154,9 +171,17 @@ export function connectLanyardSocket(
                 ws?.send(JSON.stringify({ op: 3 }));
               }, message.d.heartbeat_interval);
               break;
-              
-            case 0: // Event
+                case 0: // Event
               if (message.t === "INIT_STATE" || message.t === "PRESENCE_UPDATE") {
+                // Check if discord_user data is missing
+                if (!message.d?.discord_user) {
+                  onData({
+                    success: false,
+                    error: "Discord user data not available. You need to either join the Lanyard Discord server (https://discord.gg/lanyard) or invite the Lanyard bot to your Discord server to use this feature."
+                  });
+                  return;
+                }
+                
                 onData({
                   success: true,
                   data: message.d
