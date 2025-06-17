@@ -13,7 +13,7 @@ import {
 import { BioLinkIcon } from "~/components/bio-link-icon";
 import { DiscordProfile } from "~/components/discord-profile";
 import { getLanyardData, getDiscordAvatarUrl } from "~/lib/discord";
-import { sanitizeCSS } from "~/lib/css-sanitizer";
+// import { sanitizeCSS } from "~/lib/css-sanitizer";
 
 export interface BioPageData {
   displayName?: string | null;
