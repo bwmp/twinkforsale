@@ -30,8 +30,8 @@ export default component$(() => {
   };
 
   const buttonClasses =
-    "lum-btn text-sm font-medium lum-bg-transparent";
-  const getNavLinkClasses = (isActive: boolean, isMobile = false) => {
+    "lum-btn text-sm font-medium lum-bg-transparent rounded-lum-2 lg:rounded-lum";
+  const getNavLinkClasses = (isActive: boolean) => {
     const activeClasses = isActive
       ? "btn-cute shadow-lg"
       : "text-theme-text-secondary hover:text-theme-text-primary";
@@ -124,37 +124,35 @@ export default component$(() => {
         <div q:slot="mobile" class="space-y-2">
           <Link
             href="/dashboard"
-            class={getNavLinkClasses(isDashboardExact(), true)}
+            class={getNavLinkClasses(isDashboardExact())}
           >
             <Home class="h-5 w-5" />
             Dashboard
           </Link>
           <Link
             href="/dashboard/uploads"
-            class={getNavLinkClasses(isCurrentPage("/dashboard/uploads"), true)}
+            class={getNavLinkClasses(isCurrentPage("/dashboard/uploads"))}
           >
             <Upload class="h-5 w-5" />
             Files
           </Link>
           <Link
             href="/dashboard/api-keys"
-            class={getNavLinkClasses(
-              isCurrentPage("/dashboard/api-keys"),
-              true,
-            )}
+            class={getNavLinkClasses(isCurrentPage("/dashboard/api-keys"))}
           >
             <Key class="h-5 w-5" />
             API Keys
-          </Link>{" "}          <Link
+          </Link>{" "}
+          <Link
             href="/dashboard/embed"
-            class={getNavLinkClasses(isCurrentPage("/dashboard/embed"), true)}
+            class={getNavLinkClasses(isCurrentPage("/dashboard/embed"))}
           >
             <Sparkle class="h-5 w-5" />
             Embed
           </Link>
           <Link
             href="/dashboard/settings"
-            class={getNavLinkClasses(isCurrentPage("/dashboard/settings"), true)}
+            class={getNavLinkClasses(isCurrentPage("/dashboard/settings"))}
           >
             <Settings class="h-5 w-5" />
             Settings
