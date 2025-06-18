@@ -446,7 +446,6 @@ export default component$(() => {
 
   // CSS security warning
   const cssWarning = useSignal<string | null>(null);
-
   // Parse Discord configuration
   const parseDiscordConfig = () => {
     try {
@@ -461,6 +460,8 @@ export default component$(() => {
       showStatus: true,
       showActivity: true,
       showSpotify: true,
+      showBadges: true,
+      showGuild: true,
       refreshInterval: 30,
     };
   };
@@ -1212,9 +1213,7 @@ export default component$(() => {
                                 <span class="text-theme-text-secondary text-sm">
                                   Activity
                                 </span>
-                              </label>
-
-                              <label class="flex items-center space-x-2">
+                              </label>                              <label class="flex items-center space-x-2">
                                 <input
                                   type="checkbox"
                                   checked={discordConfig.value.showSpotify}
@@ -1230,6 +1229,42 @@ export default component$(() => {
                                 />
                                 <span class="text-theme-text-secondary text-sm">
                                   Spotify
+                                </span>
+                              </label>
+
+                              <label class="flex items-center space-x-2">
+                                <input
+                                  type="checkbox"
+                                  checked={discordConfig.value.showBadges ?? true}
+                                  onChange$={(e) => {
+                                    discordConfig.value = {
+                                      ...discordConfig.value,
+                                      showBadges: (e.target as HTMLInputElement)
+                                        .checked,
+                                    };
+                                  }}
+                                  class="border-theme-card-border bg-theme-bg-secondary text-theme-accent-primary focus:ring-theme-accent-primary rounded"
+                                />
+                                <span class="text-theme-text-secondary text-sm">
+                                  Badges
+                                </span>
+                              </label>
+
+                              <label class="flex items-center space-x-2">
+                                <input
+                                  type="checkbox"
+                                  checked={discordConfig.value.showGuild ?? true}
+                                  onChange$={(e) => {
+                                    discordConfig.value = {
+                                      ...discordConfig.value,
+                                      showGuild: (e.target as HTMLInputElement)
+                                        .checked,
+                                    };
+                                  }}
+                                  class="border-theme-card-border bg-theme-bg-secondary text-theme-accent-primary focus:ring-theme-accent-primary rounded"
+                                />
+                                <span class="text-theme-text-secondary text-sm">
+                                  Guild
                                 </span>
                               </label>
                             </div>

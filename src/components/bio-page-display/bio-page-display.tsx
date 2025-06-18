@@ -97,7 +97,7 @@ export const BioPageDisplay = component$<BioPageDisplayProps>(
       : { backgroundColor: bioData.backgroundColor };
     return (
       <div
-        class={`bio-container relative flex flex-col ${className} ${isPreview ? "" : "min-h-screen"}`}
+        class={`bio-container relative flex flex-col gap-3 ${className} ${isPreview ? "" : "min-h-screen"}`}
         style={{
           ...backgroundStyle,
           color: bioData.textColor,
@@ -129,9 +129,9 @@ export const BioPageDisplay = component$<BioPageDisplayProps>(
             class="absolute inset-0 bg-black/40"
             style={{ backgroundColor: `${bioData.backgroundColor}80` }}
           />
-        )}
+        )}{" "}
         {/* Main content - centered */}
-        <div class="flex flex-1 items-center justify-center p-6">
+        <div class="flex items-center justify-center p-6">
           <div
             class="bio-content relative z-10 mx-auto w-full max-w-xl rounded-3xl border border-white/10 bg-black/20 p-8 text-center shadow-2xl backdrop-blur-sm"
             style={{ backgroundColor: `${bioData.backgroundColor}15` }}
@@ -222,21 +222,8 @@ export const BioPageDisplay = component$<BioPageDisplayProps>(
                     </p>
                   </div>
                 )
-              )}
+              )}{" "}
             </div>
-            {/* Discord Profile */}
-            {bioData.showDiscord && bioData.discordUserId && (
-              <div class="discord-section mb-8">
-                <DiscordProfile
-                  discordId={bioData.discordUserId}
-                  config={
-                    bioData.discordConfig
-                      ? JSON.parse(bioData.discordConfig)
-                      : undefined
-                  }
-                />
-              </div>
-            )}
             {/* Spotify Embed */}
             {spotifyEmbed && (
               <div class="spotify-section mt-8">
@@ -260,7 +247,6 @@ export const BioPageDisplay = component$<BioPageDisplayProps>(
                       src={`https://open.spotify.com/embed/${spotifyEmbed.type}/${spotifyEmbed.id}?utm_source=generator&theme=0`}
                       width="100%"
                       height="152"
-                      frameBorder="0"
                       allowFullscreen
                       allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
                       loading="lazy"
@@ -272,6 +258,21 @@ export const BioPageDisplay = component$<BioPageDisplayProps>(
             )}
           </div>
         </div>
+        {/* Discord Profile - Separate box under main bio */}
+        {bioData.showDiscord && bioData.discordUserId && (
+          <div class="-mt-4 flex justify-center px-6 pb-6">
+            <div class="w-full max-w-xl">
+              <DiscordProfile
+                discordId={bioData.discordUserId}
+                config={
+                  bioData.discordConfig
+                    ? JSON.parse(bioData.discordConfig)
+                    : undefined
+                }
+              />
+            </div>
+          </div>
+        )}
         {/* Powered by footer - fixed at bottom */}
         {!isPreview && (
           <div class="powered-by relative z-10 p-6 text-center">
