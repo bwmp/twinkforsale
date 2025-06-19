@@ -1,4 +1,4 @@
-import { component$, useResource$, Resource, useSignal } from "@builder.io/qwik";
+import { component$, useResource$, Resource } from "@builder.io/qwik";
 import { getLanyardData, getDiscordAvatarUrl } from "~/lib/discord";
 
 export interface AsyncDiscordAvatarProps {
@@ -9,15 +9,15 @@ export interface AsyncDiscordAvatarProps {
 
 export const AsyncDiscordAvatar = component$<AsyncDiscordAvatarProps>(
   ({ discordUserId, size = 128, class: className = "" }) => {
-    const avatarResource = useResource$<string | null>(async ({ track, cleanup }) => {
+    const avatarResource = useResource$<string | null>(async ({ track }) => {
       // This runs in the background and doesn't block page render
       track(() => discordUserId);
-      
+
       if (!discordUserId) return null;
 
       try {
         const lanyardData = await getLanyardData(discordUserId);
-        
+
         if (lanyardData.success && lanyardData.data) {
           return getDiscordAvatarUrl(
             lanyardData.data.discord_user.id,
@@ -28,7 +28,7 @@ export const AsyncDiscordAvatar = component$<AsyncDiscordAvatarProps>(
       } catch (error) {
         console.warn("Failed to fetch Discord avatar:", error);
       }
-      
+
       return null;
     });
 
@@ -53,5 +53,5 @@ export const AsyncDiscordAvatar = component$<AsyncDiscordAvatarProps>(
         }}
       />
     );
-  }
+  },
 );

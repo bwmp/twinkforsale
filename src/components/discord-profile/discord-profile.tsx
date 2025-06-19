@@ -1,5 +1,4 @@
 import { component$, useSignal, useResource$, useVisibleTask$, Resource } from "@builder.io/qwik";
-import type { LanyardData } from "~/lib/discord";
 import {
   getLanyardData,
   connectLanyardSocket,

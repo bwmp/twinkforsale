@@ -1,8 +1,6 @@
 import {
   component$,
   type QRL,
-  useSignal,
-  useVisibleTask$,
 } from "@builder.io/qwik";
 import { Music } from "lucide-icons-qwik";
 import type { BioLink } from "@prisma/client";
@@ -14,7 +12,6 @@ import { BioLinkIcon } from "~/components/bio-link-icon";
 import { DiscordProfile } from "~/components/discord-profile";
 import { Markdown } from "~/components/markdown";
 import { AsyncDiscordAvatar } from "~/components/async-discord-avatar";
-import { getLanyardData, getDiscordAvatarUrl } from "~/lib/discord";
 // import { sanitizeCSS } from "~/lib/css-sanitizer";
 
 export interface BioPageData {
