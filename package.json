@@ -20,7 +20,7 @@
     "fmt.check": "prettier --check .",
     "lint": "eslint \"src/**/*.ts*\"",
     "postinstall": "prisma generate",
-    "preview": "qwik build preview && vite preview --open",
+    "preview": "qwik build preview && vite preview --host",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:migrate:prod": "prisma migrate deploy",
@@ -55,6 +55,12 @@
   "dependencies": {
     "@prisma/client": "^6.9.0",
     "diskusage": "^1.2.0",
-    "sharp": "^0.34.2"
+    "rehype-stringify": "^10.0.1",
+    "remark": "^15.0.1",
+    "remark-gfm": "^4.0.1",
+    "remark-parse": "^11.0.0",
+    "remark-rehype": "^11.1.2",
+    "sharp": "^0.34.2",
+    "unified": "^11.0.5"
   }
 }

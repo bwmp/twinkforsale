@@ -92,31 +92,53 @@ export const DiscordProfile = component$<DiscordProfileProps>(
         } else {
           // Use HTTP polling as fallback
           fallbackToPolling();
-        }
-
-        function fallbackToPolling() {
+        }        function fallbackToPolling() {
           console.log("Using HTTP polling fallback");
+          let fetchAttempts = 0;
+          const MAX_FETCH_ATTEMPTS = 3;
+          
           const fetchData = async () => {
             try {
+              fetchAttempts++;
               const data = await getLanyardData(discordId);
+              
               if (data.success) {
                 lanyardData.value = data;
                 connectionStatus.value = "connected";
                 loading.value = false;
                 error.value = null;
+                fetchAttempts = 0; // Reset on success
               } else {
                 connectionStatus.value = "error";
                 error.value = data.error || "Failed to fetch Discord data";
+                loading.value = false;
               }
             } catch (err) {
-              connectionStatus.value = "error";
-              error.value = "Error loading Discord profile";
-              console.error(err);
+              console.error("Error in fetchData:", err);
+              
+              if (fetchAttempts >= MAX_FETCH_ATTEMPTS) {
+                connectionStatus.value = "error";
+                error.value = "Unable to load Discord profile after multiple attempts";
+                loading.value = false;
+              } else {
+                // Retry after a short delay
+                setTimeout(fetchData, 2000);
+              }
             }
           };
 
-          // Initial fetch
-          fetchData();
+          // Initial fetch with timeout protection
+          const initialFetchTimeout = setTimeout(() => {
+            if (loading.value) {
+              loading.value = false;
+              connectionStatus.value = "error";
+              error.value = "Initial load timed out";
+            }
+          }, 15000); // 15 second timeout for initial load
+          
+          fetchData().finally(() => {
+            clearTimeout(initialFetchTimeout);
+          });
 
           // Set up polling interval (30 seconds)
           const interval = setInterval(fetchData, 30 * 1000);
@@ -208,6 +230,8 @@ export const DiscordProfile = component$<DiscordProfileProps>(
               src={bannerUrl}
               alt="Discord banner"
               class="h-full w-full object-cover"
+              width={600}
+              height={240}
               onError$={(e) => {
                 // If the DSTN banner fails to load, fall back to gradient
                 const target = e.target as HTMLImageElement;

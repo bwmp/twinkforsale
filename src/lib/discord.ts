@@ -124,11 +124,18 @@ export async function getDiscordIdFromUser(userId: string): Promise<string | nul
  */
 export async function getLanyardData(discordId: string): Promise<LanyardData> {
   try {
+    // Create an AbortController for timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
     const response = await fetch(`https://lanyard.twink.forsale/v1/users/${discordId}`, {
       headers: {
         "User-Agent": "twink.forsale/1.0",
       },
+      signal: controller.signal,
     });
+
+    clearTimeout(timeoutId);
 
     if (response.status === 404) {
       return {
@@ -138,7 +145,10 @@ export async function getLanyardData(discordId: string): Promise<LanyardData> {
     }
 
     if (!response.ok || response.status !== 200) {
-      return { success: false };
+      return { 
+        success: false, 
+        error: `Request failed with status ${response.status}` 
+      };
     }
 
     const data = await response.json();
@@ -154,7 +164,27 @@ export async function getLanyardData(discordId: string): Promise<LanyardData> {
     return data;
   } catch (error) {
     console.error("Error fetching Lanyard data:", error);
-    return { success: false };
+    
+    // Handle specific error types
+    if (error instanceof Error) {
+      if (error.name === 'AbortError') {
+        return { 
+          success: false, 
+          error: "Request timed out. Please try again later." 
+        };
+      }
+      if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+        return { 
+          success: false, 
+          error: "Network error. Please check your connection and try again." 
+        };
+      }
+    }
+    
+    return { 
+      success: false, 
+      error: "Failed to fetch Discord data. Please try again later." 
+    };
   }
 }
 
@@ -169,14 +199,41 @@ export function connectLanyardSocket(
   let ws: WebSocket | null = null;
   let heartbeatInterval: NodeJS.Timeout | null = null;
   let reconnectTimeout: NodeJS.Timeout | null = null;
+  let connectionTimeout: NodeJS.Timeout | null = null;
   let isReconnecting = false;
+  let connectionAttempts = 0;
+  const MAX_RECONNECT_ATTEMPTS = 3;
 
   const connect = () => {
     try {
+      // Don't try to reconnect indefinitely
+      if (connectionAttempts >= MAX_RECONNECT_ATTEMPTS) {
+        console.log("Max reconnection attempts reached, giving up");
+        onError?.("Failed to establish WebSocket connection after multiple attempts");
+        return;
+      }
+
+      connectionAttempts++;
       ws = new WebSocket("wss://lanyard.twink.forsale/socket");
+
+      // Set a connection timeout
+      connectionTimeout = setTimeout(() => {
+        if (ws && ws.readyState === WebSocket.CONNECTING) {
+          console.log("WebSocket connection timeout");
+          ws.close();
+          onError?.("WebSocket connection timed out");
+        }
+      }, 10000); // 10 second connection timeout
 
       ws.onopen = () => {
         console.log("Lanyard WebSocket connected");
+        connectionAttempts = 0; // Reset on successful connection
+        
+        if (connectionTimeout) {
+          clearTimeout(connectionTimeout);
+          connectionTimeout = null;
+        }
+        
         // Subscribe to user
         ws?.send(JSON.stringify({
           op: 2,
@@ -251,15 +308,19 @@ export function connectLanyardSocket(
 
   // Initial connection
   connect();
-
   // Return cleanup function
   return () => {
     isReconnecting = true; // Prevent reconnection
+    connectionAttempts = MAX_RECONNECT_ATTEMPTS; // Prevent further attempts
+    
     if (heartbeatInterval) {
       clearInterval(heartbeatInterval);
     }
     if (reconnectTimeout) {
       clearTimeout(reconnectTimeout);
+    }
+    if (connectionTimeout) {
+      clearTimeout(connectionTimeout);
     }
     if (ws) {
       ws.close();

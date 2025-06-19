@@ -12,6 +12,7 @@ import {
 } from "~/components/particle-background";
 import { BioLinkIcon } from "~/components/bio-link-icon";
 import { DiscordProfile } from "~/components/discord-profile";
+import { Markdown } from "~/components/markdown";
 import { getLanyardData, getDiscordAvatarUrl } from "~/lib/discord";
 // import { sanitizeCSS } from "~/lib/css-sanitizer";
 
@@ -43,12 +44,18 @@ export interface BioPageDisplayProps {
 export const BioPageDisplay = component$<BioPageDisplayProps>(
   ({ bioData, isPreview = false, onLinkClick, class: className = "" }) => {
     const activeLinks = bioData.bioLinks.filter((link) => link.isActive);
-    const discordAvatarUrl = useSignal<string | null>(null); // Fetch Discord avatar as fallback if no profile image is provided
-    // eslint-disable-next-line qwik/no-use-visible-task
+    const discordAvatarUrl = useSignal<string | null>(null); // Fetch Discord avatar as fallback if no profile image is provided    // eslint-disable-next-line qwik/no-use-visible-task
     useVisibleTask$(async () => {
       if (!bioData.profileImage && bioData.discordUserId) {
+        // Add timeout for Discord avatar fetching
+        const timeoutId = setTimeout(() => {
+          console.warn("Discord avatar fetch timed out");
+        }, 10000); // 10 second timeout
+        
         try {
           const lanyardData = await getLanyardData(bioData.discordUserId);
+          clearTimeout(timeoutId);
+          
           if (lanyardData.success && lanyardData.data) {
             const avatarUrl = getDiscordAvatarUrl(
               lanyardData.data.discord_user.id,
@@ -58,7 +65,9 @@ export const BioPageDisplay = component$<BioPageDisplayProps>(
             discordAvatarUrl.value = avatarUrl;
           }
         } catch (error) {
+          clearTimeout(timeoutId);
           console.warn("Failed to fetch Discord avatar:", error);
+          // Don't set an error state, just silently fail since this is a fallback
         }
       }
     });
@@ -149,12 +158,18 @@ export const BioPageDisplay = component$<BioPageDisplayProps>(
             {/* Display Name */}
             <h1 class="display-name mb-4 text-4xl font-bold tracking-tight">
               {bioData.displayName || "Your Name"}
-            </h1>
-            {/* Description */}
-            {bioData.description && (
-              <p class="bio-description mx-auto mb-8 max-w-md text-lg leading-relaxed whitespace-pre-wrap opacity-90">
-                {bioData.description}
-              </p>
+            </h1>{" "}            {/* Description */}
+            {bioData.description ? (
+              <Markdown 
+                content={bioData.description}
+                class="bio-description mx-auto mb-8 max-w-md text-lg leading-relaxed opacity-90"
+              />
+            ) : (
+              isPreview && (
+                <p class="bio-description mx-auto mb-8 max-w-md text-lg leading-relaxed opacity-50">
+                  Your description will appear here
+                </p>
+              )
             )}
             {/* Bio Links */}
             <div class="bio-links mb-8">
