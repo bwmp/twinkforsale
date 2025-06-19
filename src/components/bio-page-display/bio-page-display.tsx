@@ -13,6 +13,7 @@ import {
 import { BioLinkIcon } from "~/components/bio-link-icon";
 import { DiscordProfile } from "~/components/discord-profile";
 import { Markdown } from "~/components/markdown";
+import { AsyncDiscordAvatar } from "~/components/async-discord-avatar";
 import { getLanyardData, getDiscordAvatarUrl } from "~/lib/discord";
 // import { sanitizeCSS } from "~/lib/css-sanitizer";
 
@@ -42,35 +43,7 @@ export interface BioPageDisplayProps {
 }
 
 export const BioPageDisplay = component$<BioPageDisplayProps>(
-  ({ bioData, isPreview = false, onLinkClick, class: className = "" }) => {
-    const activeLinks = bioData.bioLinks.filter((link) => link.isActive);
-    const discordAvatarUrl = useSignal<string | null>(null); // Fetch Discord avatar as fallback if no profile image is provided    // eslint-disable-next-line qwik/no-use-visible-task
-    useVisibleTask$(async () => {
-      if (!bioData.profileImage && bioData.discordUserId) {
-        // Add timeout for Discord avatar fetching
-        const timeoutId = setTimeout(() => {
-          console.warn("Discord avatar fetch timed out");
-        }, 10000); // 10 second timeout
-        
-        try {
-          const lanyardData = await getLanyardData(bioData.discordUserId);
-          clearTimeout(timeoutId);
-          
-          if (lanyardData.success && lanyardData.data) {
-            const avatarUrl = getDiscordAvatarUrl(
-              lanyardData.data.discord_user.id,
-              lanyardData.data.discord_user.avatar,
-              128,
-            );
-            discordAvatarUrl.value = avatarUrl;
-          }
-        } catch (error) {
-          clearTimeout(timeoutId);
-          console.warn("Failed to fetch Discord avatar:", error);
-          // Don't set an error state, just silently fail since this is a fallback
-        }
-      }
-    });
+  ({ bioData, isPreview = false, onLinkClick, class: className = "" }) => {    const activeLinks = bioData.bioLinks.filter((link) => link.isActive);
 
     // Parse particle configuration
     const parseParticleConfig = (): ParticleConfig | null => {
@@ -144,17 +117,22 @@ export const BioPageDisplay = component$<BioPageDisplayProps>(
           <div
             class="bio-content relative z-10 mx-auto w-full max-w-xl rounded-3xl border border-white/10 bg-black/20 p-8 text-center shadow-2xl backdrop-blur-sm"
             style={{ backgroundColor: `${bioData.backgroundColor}15` }}
-          >
-            {/* Profile Image */}
-            {(bioData.profileImage || discordAvatarUrl.value) && (
+          >            {/* Profile Image */}
+            {bioData.profileImage ? (
               <img
-                src={bioData.profileImage || discordAvatarUrl.value || ""}
+                src={bioData.profileImage}
                 alt="Profile"
                 class="profile-image mx-auto mb-6 h-32 w-32 rounded-full border-4 border-white/20 object-cover shadow-lg"
                 width="128"
                 height="128"
               />
-            )}
+            ) : bioData.discordUserId ? (
+              <AsyncDiscordAvatar
+                discordUserId={bioData.discordUserId}
+                size={128}
+                class="profile-image mx-auto mb-6 h-32 w-32 border-4 border-white/20 shadow-lg"
+              />
+            ) : null}
             {/* Display Name */}
             <h1 class="display-name mb-4 text-4xl font-bold tracking-tight">
               {bioData.displayName || "Your Name"}
