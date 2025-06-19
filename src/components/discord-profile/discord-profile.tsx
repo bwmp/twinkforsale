@@ -51,11 +51,6 @@ export const DiscordProfile = component$<DiscordProfileProps>(
             try {
               const wsCleanup = connectLanyardSocket(
                 discordId,
-                (newData) => {
-                  console.log("Received real-time Lanyard data via WebSocket");
-                  // Note: We can't directly update the resource value, 
-                  // but the WebSocket will provide real-time updates
-                },
                 (error) => {
                   console.warn("WebSocket error:", error);
                 }
