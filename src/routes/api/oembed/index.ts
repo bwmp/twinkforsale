@@ -76,10 +76,10 @@ export const onGet: RequestHandler = async ({ url, json }) => {
     }
 
     const embedTitle = replacePlaceholders(upload.user?.embedTitle, userStats) || "File Upload";
-    const embedAuthor = upload.user?.embedAuthor || upload.user?.name;
+    const embedAuthor = replacePlaceholders(upload.user?.embedAuthor) || upload.user?.name;
 
     // Build provider name with user stats if enabled
-    let providerName = upload.user?.embedFooter || "twink.forsale";
+    let providerName = replacePlaceholders(upload.user?.embedFooter) || "twink.forsale";
     if (upload.user?.showUserStats && userStats) {
       const storageUsedMB = (userStats.totalStorage / 1024 / 1024).toFixed(2);
       providerName = `📁 ${userStats.totalFiles} files   💾 ${storageUsedMB} MB   👁️ ${userStats.totalViews.toLocaleString()} views`;

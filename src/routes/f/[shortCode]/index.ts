@@ -32,8 +32,8 @@ function generateDiscordEmbed(upload: Upload, user: any, baseUrl: string, userSt
   const embedTitle = replacePlaceholders(user?.embedTitle) || "File Upload";
   const embedDescription = replacePlaceholders(user?.embedDescription) || "Uploaded via twink.forsale";
   const embedColor = user?.embedColor || "#8B5CF6";
-  const embedAuthor = user?.embedAuthor || user?.name;
-  const embedFooter = user?.embedFooter || "twink.forsale";
+  const embedAuthor = replacePlaceholders(user?.embedAuthor) || user?.name;
+  const embedFooter = replacePlaceholders(user?.embedFooter) || "twink.forsale";
   const showFileInfo = user?.showFileInfo !== false;
   const showUploadDate = user?.showUploadDate !== false;
   const showUserStats = user?.showUserStats === true;  // Build description with optional file info

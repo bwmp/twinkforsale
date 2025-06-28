@@ -10,7 +10,6 @@ import { ColorPicker, Toggle } from "@luminescent/ui-qwik";
 import { db } from "~/lib/db";
 export const useUserLoader = routeLoader$(async (requestEvent) => {
   // Import server-side dependencies inside the loader
-  
 
   const session = requestEvent.sharedMap.get("session");
 
@@ -37,7 +36,8 @@ export const useUserLoader = routeLoader$(async (requestEvent) => {
       embedAuthor: user.embedAuthor,
       embedFooter: user.embedFooter,
       showFileInfo: Boolean(user.showFileInfo),
-      showUploadDate: Boolean(user.showUploadDate),      showUserStats: Boolean(user.showUserStats),
+      showUploadDate: Boolean(user.showUploadDate),
+      showUserStats: Boolean(user.showUserStats),
       customDomain: user.customDomain,
       useCustomWords: Boolean(user.useCustomWords),
     },
@@ -47,7 +47,6 @@ export const useUserLoader = routeLoader$(async (requestEvent) => {
 export const useUpdateEmbedSettings = routeAction$(
   async (values, requestEvent) => {
     // Import server-side dependencies inside the action
-    
 
     const session = requestEvent.sharedMap.get("session");
 
@@ -72,7 +71,8 @@ export const useUpdateEmbedSettings = routeAction$(
         embedAuthor: values.embedAuthor || null,
         embedFooter: values.embedFooter || null,
         showFileInfo: Boolean(values.showFileInfo),
-        showUploadDate: Boolean(values.showUploadDate),        showUserStats: Boolean(values.showUserStats),
+        showUploadDate: Boolean(values.showUploadDate),
+        showUserStats: Boolean(values.showUserStats),
         customDomain: values.customDomain || null,
         useCustomWords: Boolean(values.useCustomWords),
       },
@@ -100,7 +100,8 @@ export const useUpdateEmbedSettings = routeAction$(
     showUserStats: z.preprocess(
       (val) => val === "on" || val === true,
       z.boolean().default(false),
-    ),    customDomain: z.string().optional(),
+    ),
+    customDomain: z.string().optional(),
     useCustomWords: z.preprocess(
       (val) => val === "on" || val === true,
       z.boolean().default(false),
@@ -136,9 +137,7 @@ export default component$(() => {
     const description = user.embedDescription || "Uploaded via twink.forsale";
     const color = user.embedColor || "#8B5CF6";
     const author = user.embedAuthor || user.name || "User";
-    const footer = user.embedFooter || "twink.forsale";
-
-    // Replace placeholders with example values for initial preview
+    const footer = user.embedFooter || "twink.forsale";    // Replace placeholders with example values for initial preview
     const replacedTitle = title
       .replace(/\{filename\}/g, "example-image.png")
       .replace(/\{filesize\}/g, "2.34 MB")
@@ -161,17 +160,38 @@ export default component$(() => {
       .replace(/\{totalstorage\}/g, "2.1 GB")
       .replace(/\{totalviews\}/g, "5,432");
 
+    const replacedAuthor = author
+      .replace(/\{filename\}/g, "example-image.png")
+      .replace(/\{filesize\}/g, "2.34 MB")
+      .replace(/\{filetype\}/g, "image/png")
+      .replace(/\{uploaddate\}/g, new Date().toLocaleDateString())
+      .replace(/\{views\}/g, "42")
+      .replace(/\{username\}/g, user.name || "User")
+      .replace(/\{totalfiles\}/g, "127")
+      .replace(/\{totalstorage\}/g, "2.1 GB")
+      .replace(/\{totalviews\}/g, "5,432");
+
     if (user.showFileInfo) {
       initialDesc += "\\n\\n📁 **example-image.png**\\n📏 2.34 MB • image/png";
     }
     if (user.showUploadDate) {
       initialDesc += "\\n📅 Uploaded " + new Date().toLocaleDateString();
-    }
-
-    // Set initial footer based on user stats setting
+    }    // Set initial footer based on user stats setting
     let initialFooter = footer;
     if (user.showUserStats) {
       initialFooter = "📁 127 files   💾 2.1 GB   👁️ 5,432 views";
+    } else {
+      // Apply placeholder replacements to footer if not using user stats
+      initialFooter = footer
+        .replace(/\{filename\}/g, "example-image.png")
+        .replace(/\{filesize\}/g, "2.34 MB")
+        .replace(/\{filetype\}/g, "image/png")
+        .replace(/\{uploaddate\}/g, new Date().toLocaleDateString())
+        .replace(/\{views\}/g, "42")
+        .replace(/\{username\}/g, user.name || "User")
+        .replace(/\{totalfiles\}/g, "127")
+        .replace(/\{totalstorage\}/g, "2.1 GB")
+        .replace(/\{totalviews\}/g, "5,432");
     }
 
     previewCode.value = `{
@@ -180,7 +200,7 @@ export default component$(() => {
       "description": "${initialDesc}",
       "color": ${parseInt(color.slice(1), 16)},
       "author": {
-        "name": "${author}"
+        "name": "${replacedAuthor}"
       },
       "footer": {
         "text": "${initialFooter}"
@@ -195,9 +215,7 @@ export default component$(() => {
     const description = descriptionValue.value || "Uploaded via twink.forsale";
     const color = colorValue.value || "#8B5CF6";
     const author = authorValue.value || userData.value.user.name || "User";
-    const footer = footerValue.value || "twink.forsale";
-
-    // Replace placeholders with example values
+    const footer = footerValue.value || "twink.forsale";    // Replace placeholders with example values
     const replacedTitle = title
       .replace(/\{filename\}/g, "example-image.png")
       .replace(/\{filesize\}/g, "2.34 MB")
@@ -219,17 +237,38 @@ export default component$(() => {
       .replace(/\{totalfiles\}/g, "127")
       .replace(/\{totalstorage\}/g, "2.1 GB")
       .replace(/\{totalviews\}/g, "5,432");
+
+    const replacedAuthor = author
+      .replace(/\{filename\}/g, "example-image.png")
+      .replace(/\{filesize\}/g, "2.34 MB")
+      .replace(/\{filetype\}/g, "image/png")
+      .replace(/\{uploaddate\}/g, new Date().toLocaleDateString())
+      .replace(/\{views\}/g, "42")
+      .replace(/\{username\}/g, userData.value.user.name || "User")
+      .replace(/\{totalfiles\}/g, "127")
+      .replace(/\{totalstorage\}/g, "2.1 GB")
+      .replace(/\{totalviews\}/g, "5,432");
     if (showFileInfo.value) {
       desc += "\\n\\n📁 **example-image.png**\\n📏 2.34 MB • image/png";
     }
     if (showUploadDate.value) {
       desc += "\\n📅 Uploaded " + new Date().toLocaleDateString();
-    }
-
-    // Update footer based on user stats setting
+    }    // Update footer based on user stats setting
     let finalFooter = footer;
     if (showUserStats.value) {
       finalFooter = "📁 127 files   💾 2.1 GB   👁️ 5,432 views";
+    } else {
+      // Apply placeholder replacements to footer if not using user stats
+      finalFooter = footer
+        .replace(/\{filename\}/g, "example-image.png")
+        .replace(/\{filesize\}/g, "2.34 MB")
+        .replace(/\{filetype\}/g, "image/png")
+        .replace(/\{uploaddate\}/g, new Date().toLocaleDateString())
+        .replace(/\{views\}/g, "42")
+        .replace(/\{username\}/g, userData.value.user.name || "User")
+        .replace(/\{totalfiles\}/g, "127")
+        .replace(/\{totalstorage\}/g, "2.1 GB")
+        .replace(/\{totalviews\}/g, "5,432");
     }
 
     previewCode.value = `{
@@ -238,7 +277,7 @@ export default component$(() => {
       "description": "${desc}",
       "color": ${parseInt(color.slice(1), 16)},
       "author": {
-        "name": "${author}"
+        "name": "${replacedAuthor}"
       },
       "footer": {
         "text": "${finalFooter}"
@@ -250,7 +289,6 @@ export default component$(() => {
   });
   return (
     <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      {" "}
       <div class="mb-6 text-center sm:mb-8">
         <h1 class="text-gradient-cute mb-3 flex flex-wrap items-center justify-center gap-2 text-3xl font-bold sm:text-4xl">
           Discord Embed Settings~
@@ -268,7 +306,6 @@ export default component$(() => {
           </h2>
           <Form action={updateAction} onSubmit$={generatePreview}>
             <div class="space-y-4 sm:space-y-6">
-              {" "}
               <div>
                 <label class="text-theme-text-secondary mb-2 block text-xs font-medium sm:text-sm">
                   Embed Title~ 💝
@@ -285,11 +322,11 @@ export default component$(() => {
                   }}
                 />
                 <p class="text-theme-text-muted mt-2 pl-3 text-xs sm:pl-4">
-                  Use placeholders: {"{filename}"}, {"{filesize}"},{" "}
-                  {"{filetype}"}, {"{uploaddate}"}, {"{views}"}, {"{username}"},{" "}
+                  Use placeholders: {"{filename}"}, {"{filesize}"},
+                  {"{filetype}"}, {"{uploaddate}"}, {"{views}"}, {"{username}"},
                   {"{totalfiles}"}, {"{totalstorage}"}, {"{totalviews}"}~ ✨
                 </p>
-              </div>{" "}
+              </div>
               <div>
                 <label class="text-theme-text-secondary mb-2 block text-xs font-medium sm:text-sm">
                   Description~ 📝
@@ -308,11 +345,11 @@ export default component$(() => {
                   }}
                 />
                 <p class="text-theme-text-muted mt-2 pl-3 text-xs sm:pl-4">
-                  Use placeholders: {"{filename}"}, {"{filesize}"},{" "}
-                  {"{filetype}"}, {"{uploaddate}"}, {"{views}"}, {"{username}"},{" "}
+                  Use placeholders: {"{filename}"}, {"{filesize}"},
+                  {"{filetype}"}, {"{uploaddate}"}, {"{views}"}, {"{username}"},
                   {"{totalfiles}"}, {"{totalstorage}"}, {"{totalviews}"}~ ✨
                 </p>
-              </div>{" "}
+              </div>
               <div>
                 <label class="text-theme-text-secondary mb-2 block text-xs font-medium sm:text-sm">
                   Embed Color~ 🎨
@@ -326,8 +363,7 @@ export default component$(() => {
                     generatePreview();
                   }}
                 />
-              </div>
-              <div>
+              </div>              <div>
                 <label class="text-theme-text-secondary mb-2 block text-xs font-medium sm:text-sm">
                   Author Name~ ✏️
                 </label>
@@ -344,8 +380,12 @@ export default component$(() => {
                     generatePreview();
                   }}
                 />
-              </div>{" "}
-              <div>
+                <p class="text-theme-text-muted mt-2 pl-3 text-xs sm:pl-4">
+                  Use placeholders: {"{filename}"}, {"{filesize}"},
+                  {"{filetype}"}, {"{uploaddate}"}, {"{views}"}, {"{username}"},
+                  {"{totalfiles}"}, {"{totalstorage}"}, {"{totalviews}"}~ ✨
+                </p>
+              </div>              <div>
                 <label class="text-theme-text-secondary mb-2 block text-xs font-medium sm:text-sm">
                   Footer Text~ 📄
                 </label>
@@ -362,6 +402,11 @@ export default component$(() => {
                     generatePreview();
                   }}
                 />
+                <p class="text-theme-text-muted mt-2 pl-3 text-xs sm:pl-4">
+                  Use placeholders: {"{filename}"}, {"{filesize}"},
+                  {"{filetype}"}, {"{uploaddate}"}, {"{views}"}, {"{username}"},
+                  {"{totalfiles}"}, {"{totalstorage}"}, {"{totalviews}"}~ ✨
+                </p>
               </div>
               <div>
                 <label class="text-theme-text-secondary mb-2 block text-xs font-medium sm:text-sm">
@@ -376,11 +421,13 @@ export default component$(() => {
                 />
                 <p class="text-theme-text-muted mt-2 pl-3 text-xs sm:pl-4">
                   Override the domain shown in embeds (for custom domains)~ ✨
-                </p>              </div>
+                </p>
+              </div>
               <div class="space-y-3 sm:space-y-4">
                 <label class={toggleClasses}>
                   <Toggle
                     checkbox
+                    name="showFileInfo"
                     onColor="purple"
                     checked={showFileInfo.value}
                     onChange$={(e, el) => {
@@ -395,6 +442,7 @@ export default component$(() => {
                 <label class={toggleClasses}>
                   <Toggle
                     checkbox
+                    name="showUploadDate"
                     onColor="purple"
                     checked={showUploadDate.value}
                     onChange$={(e, el) => {
@@ -409,6 +457,7 @@ export default component$(() => {
                 <label class={toggleClasses}>
                   <Toggle
                     checkbox
+                    name="showUserStats"
                     onColor="purple"
                     checked={showUserStats.value}
                     onChange$={(e, el) => {
@@ -424,6 +473,7 @@ export default component$(() => {
                 <label class={toggleClasses}>
                   <Toggle
                     checkbox
+                    name="useCustomWords"
                     onColor="purple"
                     checked={useCustomWords.value}
                     onChange$={(e, el) => {
@@ -439,7 +489,28 @@ export default component$(() => {
                   Generate adorable URLs like "bunny-sparkle-123" instead of
                   random characters~ (◕‿◕)♡
                 </p>
-              </div>{" "}
+              </div>
+              {/* Hidden inputs to ensure checkbox values are always submitted */}
+              <input
+                type="hidden"
+                name="showFileInfo"
+                value={showFileInfo.value ? "on" : "off"}
+              />
+              <input
+                type="hidden"
+                name="showUploadDate"
+                value={showUploadDate.value ? "on" : "off"}
+              />
+              <input
+                type="hidden"
+                name="showUserStats"
+                value={showUserStats.value ? "on" : "off"}
+              />
+              <input
+                type="hidden"
+                name="useCustomWords"
+                value={useCustomWords.value ? "on" : "off"}
+              />
               <button
                 type="submit"
                 class="btn-cute text-theme-text-primary w-full rounded-full px-4 py-2 text-sm font-medium transition-all duration-300 sm:px-6 sm:py-3 sm:text-base"
@@ -450,7 +521,7 @@ export default component$(() => {
           </Form>
 
           {updateAction.value?.success && (
-            <div class="bg-gradient-to-br from-theme-accent-secondary/20 to-theme-accent-tertiary/20 border-theme-accent-secondary/30 glass mt-4 rounded-2xl border p-3 sm:mt-6 sm:p-4">
+            <div class="from-theme-accent-secondary/20 to-theme-accent-tertiary/20 border-theme-accent-secondary/30 glass mt-4 rounded-2xl border bg-gradient-to-br p-3 sm:mt-6 sm:p-4">
               <p class="text-theme-accent-secondary flex items-center text-xs sm:text-sm">
                 ✅ {updateAction.value.message}~ ✨
               </p>
@@ -458,7 +529,7 @@ export default component$(() => {
           )}
 
           {updateAction.value?.failed && (
-            <div class="bg-gradient-to-br from-theme-accent-primary/20 to-theme-accent-secondary/20 border-theme-accent-primary/30 glass mt-4 rounded-2xl border p-3 sm:mt-6 sm:p-4">
+            <div class="from-theme-accent-primary/20 to-theme-accent-secondary/20 border-theme-accent-primary/30 glass mt-4 rounded-2xl border bg-gradient-to-br p-3 sm:mt-6 sm:p-4">
               <p class="text-theme-accent-primary flex items-center text-xs sm:text-sm">
                 ❌ {updateAction.value.message}~ 💔
               </p>
@@ -470,7 +541,7 @@ export default component$(() => {
         <div class="card-cute rounded-3xl p-4 sm:p-6">
           <h2 class="text-gradient-cute mb-4 flex items-center text-lg font-bold sm:mb-6 sm:text-xl">
             Discord Embed Preview~<span class="sparkle ml-2">✨</span>
-          </h2>{" "}
+          </h2>
           <div class="glass rounded-2xl border-l-4 p-3 sm:p-4">
             <div class="text-theme-text-muted mb-3 flex items-center text-xs">
               Example embed structure~ 📋 <span class="ml-1">💕</span>
