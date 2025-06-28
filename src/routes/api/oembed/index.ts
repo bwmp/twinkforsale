@@ -47,7 +47,7 @@ export const onGet: RequestHandler = async ({ url, json }) => {
         .replace(/\{uploaddate\}/g, uploadDate)
         .replace(/\{views\}/g, upload.views.toString())
         .replace(/\{totalfiles\}/g, userStats?.totalFiles.toString() || '0')
-        .replace(/\{totalstorage\}/g, `${parseStorageSize(userStats!.totalStorage.toString())}`)
+        .replace(/\{totalstorage\}/g, `${parseStorageSize(userStats ? userStats.totalStorage.toString() : '0')}`)
         .replace(/\{totalviews\}/g, userStats?.totalViews.toLocaleString() || '0')
         .replace(/\{username\}/g, upload.user?.name || 'Anonymous');
     };
