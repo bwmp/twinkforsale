@@ -1,6 +1,7 @@
 import type { RequestHandler } from "@builder.io/qwik-city";
 import { db } from "~/lib/db";
 import { getEnvConfig } from "~/lib/env";
+import { parseStorageSize } from "~/lib/utils";
 
 export const onGet: RequestHandler = async ({ url, json }) => {
   const requestUrl = url.searchParams.get('url');
@@ -37,18 +38,16 @@ export const onGet: RequestHandler = async ({ url, json }) => {
     const replacePlaceholders = (text?: string | null, userStats?: { totalFiles: number, totalStorage: number, totalViews: number }) => {
       if (!text) return text;
 
-      const fileSize = (upload.size / 1024 / 1024).toFixed(2);
       const uploadDate = new Date(upload.createdAt).toLocaleDateString();
-      const storageUsedMB = userStats ? (userStats.totalStorage / 1024 / 1024).toFixed(2) : '0';
 
       return text
         .replace(/\{filename\}/g, upload.originalName)
-        .replace(/\{filesize\}/g, `${fileSize} MB`)
+        .replace(/\{filesize\}/g, `${parseStorageSize(upload.size.toString())}`)
         .replace(/\{filetype\}/g, upload.mimeType)
         .replace(/\{uploaddate\}/g, uploadDate)
         .replace(/\{views\}/g, upload.views.toString())
         .replace(/\{totalfiles\}/g, userStats?.totalFiles.toString() || '0')
-        .replace(/\{totalstorage\}/g, `${storageUsedMB} MB`)
+        .replace(/\{totalstorage\}/g, `${parseStorageSize(userStats!.totalStorage.toString())}`)
         .replace(/\{totalviews\}/g, userStats?.totalViews.toLocaleString() || '0')
         .replace(/\{username\}/g, upload.user?.name || 'Anonymous');
     };
@@ -81,8 +80,7 @@ export const onGet: RequestHandler = async ({ url, json }) => {
     // Build provider name with user stats if enabled
     let providerName = replacePlaceholders(upload.user?.embedFooter) || "twink.forsale";
     if (upload.user?.showUserStats && userStats) {
-      const storageUsedMB = (userStats.totalStorage / 1024 / 1024).toFixed(2);
-      providerName = `📁 ${userStats.totalFiles} files   💾 ${storageUsedMB} MB   👁️ ${userStats.totalViews.toLocaleString()} views`;
+      providerName = `📁 ${userStats.totalFiles} files   💾 ${parseStorageSize(userStats.totalStorage.toString())}   👁️ ${userStats.totalViews.toLocaleString()} views`;
     }
 
     // Build oEmbed response
@@ -103,7 +101,7 @@ export const onGet: RequestHandler = async ({ url, json }) => {
       oembedResponse.thumbnail_url = `${upload.url}?direct=true`;
       oembedResponse.thumbnail_width = upload.width || 400;
       oembedResponse.thumbnail_height = upload.height || 300;
-      
+
       // For GIFs, also add video-like properties for better platform support
       if (upload.mimeType === 'image/gif') {
         oembedResponse.type = "video"; // Some platforms prefer this for animated content
