@@ -603,11 +603,11 @@ export default component$(() => {
       isPublic.value !== bioData.value.user.bioIsPublic ||
       showDiscord.value !== bioData.value.user.bioShowDiscord ||
       JSON.stringify(particleConfig.value) !==
-        JSON.stringify(originalParticleConfig) ||
+      JSON.stringify(originalParticleConfig) ||
       JSON.stringify(gradientConfig.value) !==
-        JSON.stringify(originalGradientConfig) ||
+      JSON.stringify(originalGradientConfig) ||
       JSON.stringify(discordConfig.value) !==
-        JSON.stringify(originalDiscordConfig);
+      JSON.stringify(originalDiscordConfig);
 
     hasChanges.value = changed;
   });
@@ -1101,18 +1101,16 @@ export default component$(() => {
                                 discordError.value = null;
                               }
                             }}
-                            class={`focus:ring-theme-accent-primary relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:ring-2 focus:ring-offset-2 focus:outline-none ${
-                              showDiscord.value
+                            class={`focus:ring-theme-accent-primary relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:ring-2 focus:ring-offset-2 focus:outline-none ${showDiscord.value
                                 ? "bg-theme-accent-primary"
                                 : "bg-theme-card-border"
-                            }`}
+                              }`}
                           >
                             <span
-                              class={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                                showDiscord.value
+                              class={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${showDiscord.value
                                   ? "translate-x-6"
                                   : "translate-x-1"
-                              }`}
+                                }`}
                             />
                           </button>
                         </div>
@@ -1177,7 +1175,6 @@ export default component$(() => {
                                   Avatar
                                 </span>
                               </label>
-
                               <label class="flex items-center space-x-2">
                                 <input
                                   type="checkbox"
@@ -1195,7 +1192,6 @@ export default component$(() => {
                                   Status
                                 </span>
                               </label>
-
                               <label class="flex items-center space-x-2">
                                 <input
                                   type="checkbox"
@@ -1213,7 +1209,8 @@ export default component$(() => {
                                 <span class="text-theme-text-secondary text-sm">
                                   Activity
                                 </span>
-                              </label>                              <label class="flex items-center space-x-2">
+                              </label>{" "}
+                              <label class="flex items-center space-x-2">
                                 <input
                                   type="checkbox"
                                   checked={discordConfig.value.showSpotify}
@@ -1231,11 +1228,12 @@ export default component$(() => {
                                   Spotify
                                 </span>
                               </label>
-
                               <label class="flex items-center space-x-2">
                                 <input
                                   type="checkbox"
-                                  checked={discordConfig.value.showBadges ?? true}
+                                  checked={
+                                    discordConfig.value.showBadges ?? true
+                                  }
                                   onChange$={(e) => {
                                     discordConfig.value = {
                                       ...discordConfig.value,
@@ -1249,11 +1247,12 @@ export default component$(() => {
                                   Badges
                                 </span>
                               </label>
-
                               <label class="flex items-center space-x-2">
                                 <input
                                   type="checkbox"
-                                  checked={discordConfig.value.showGuild ?? true}
+                                  checked={
+                                    discordConfig.value.showGuild ?? true
+                                  }
                                   onChange$={(e) => {
                                     discordConfig.value = {
                                       ...discordConfig.value,
@@ -1396,8 +1395,8 @@ export default component$(() => {
               <button
                 type="button"
                 onClick$={() =>
-                  (backgroundEffectsCollapsed.value =
-                    !backgroundEffectsCollapsed.value)
+                (backgroundEffectsCollapsed.value =
+                  !backgroundEffectsCollapsed.value)
                 }
                 class="hover:bg-theme-bg-secondary/50 -m-2 mb-4 flex w-full items-center justify-between rounded-lg p-2 text-left transition-colors"
               >
@@ -1539,7 +1538,7 @@ export default component$(() => {
                   {/* Add New Link Form */}
                   {showNewLinkForm.value &&
                     bioData.value.bioLinks.length <
-                      bioData.value.bioLimits.maxBioLinks && (
+                    bioData.value.bioLimits.maxBioLinks && (
                       <div class="bg-theme-accent-primary/5 border-theme-accent-primary/20 mb-6 rounded-2xl border p-4">
                         <Form action={createBioLink}>
                           <div class="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -1612,15 +1611,15 @@ export default component$(() => {
                   {/* Max links reached message */}
                   {bioData.value.bioLinks.length >=
                     bioData.value.bioLimits.maxBioLinks && (
-                    <div class="mb-6 rounded-2xl border border-orange-500/20 bg-orange-500/10 p-4">
-                      <p class="text-sm text-orange-400">
-                        You've reached your maximum bio links limit (
-                        {bioData.value.bioLimits.maxBioLinks}).
-                        {bioData.value.bioLinks.length > 0 &&
-                          " Delete some links to add new ones."}
-                      </p>
-                    </div>
-                  )}
+                      <div class="mb-6 rounded-2xl border border-orange-500/20 bg-orange-500/10 p-4">
+                        <p class="text-sm text-orange-400">
+                          You've reached your maximum bio links limit (
+                          {bioData.value.bioLimits.maxBioLinks}).
+                          {bioData.value.bioLinks.length > 0 &&
+                            " Delete some links to add new ones."}
+                        </p>
+                      </div>
+                    )}
                   {/* Existing Links */}
                   <div class="space-y-3">
                     {bioData.value.bioLinks.map((link) => (

@@ -1,4 +1,4 @@
-import { component$, useSignal, $, type QRL, useOnDocument, useTask$ } from "@builder.io/qwik";
+import { component$, useSignal, $, type QRL } from "@builder.io/qwik";
 import { PREDEFINED_ICONS, COMMON_EMOJIS } from "~/lib/bio-icons";
 import { BioLinkIcon } from "~/components/bio-link-icon";
 
@@ -10,52 +10,27 @@ export interface IconSelectorProps {
 
 export const IconSelector = component$<IconSelectorProps>(
   ({ selectedIcon = "", onIconSelect, class: className = "" }) => {
-    const showSelector = useSignal(false);
+    const isOpen = useSignal(false);
     const customIconValue = useSignal("");
-    const selectorButtonRef = useSignal<HTMLButtonElement>();
-    const dropdownPosition = useSignal({ top: 0, left: 0, width: 0 });
 
-    // Calculate dropdown position when it opens
-    useTask$(({ track }) => {
-      track(() => showSelector.value);
-      
-      if (showSelector.value && selectorButtonRef.value) {
-        const rect = selectorButtonRef.value.getBoundingClientRect();
-        dropdownPosition.value = {
-          top: rect.bottom + window.scrollY + 4,
-          left: rect.left + window.scrollX,
-          width: rect.width
-        };
-      }
+    const handleIconSelect = $((icon: string) => {
+      onIconSelect(icon);
+      isOpen.value = false;
     });
 
-    // Close dropdown when clicking outside
-    useOnDocument('click', $((event) => {
-      if (showSelector.value && !(event.target as Element).closest('.icon-selector')) {
-        showSelector.value = false;
-      }
-    }));
-
-    const handleIconSelect = $(async (icon: string) => {
-      await onIconSelect(icon);
-      showSelector.value = false;
-    });
-
-    const handleCustomIconSubmit = $(async () => {
+    const handleCustomIconSubmit = $(() => {
       if (customIconValue.value.trim()) {
-        await onIconSelect(customIconValue.value.trim());
+        onIconSelect(customIconValue.value.trim());
         customIconValue.value = "";
-        showSelector.value = false;
+        isOpen.value = false;
       }
-    });
-
-    return (
-      <div class={`icon-selector relative ${className}`}>        {/* Current Icon Display + Toggle Button */}
+    });    return (
+      <div class={`relative ${className}`}>
+        {/* Trigger Button */}
         <button
-          ref={selectorButtonRef}
           type="button"
-          onClick$={() => (showSelector.value = !showSelector.value)}
-          class="flex h-10 w-full items-center gap-2 rounded-lg border border-theme-card-border bg-theme-bg-secondary px-3 py-2 text-left transition-all hover:bg-theme-bg-tertiary"
+          onClick$={() => (isOpen.value = !isOpen.value)}
+          class="flex h-10 w-full items-center gap-2 rounded-lg border border-theme-card-border bg-theme-bg-secondary px-3 py-2 text-left transition-all hover:bg-theme-bg-tertiary focus:outline-none focus:ring-2 focus:ring-theme-accent-primary/50"
         >
           <div class="flex h-6 w-6 items-center justify-center">
             {selectedIcon ? (
@@ -68,103 +43,112 @@ export const IconSelector = component$<IconSelectorProps>(
             {selectedIcon || "Select icon..."}
           </span>
           <span class="text-theme-text-muted text-xs">
-            {showSelector.value ? "▲" : "▼"}
+            {isOpen.value ? "▲" : "▼"}
           </span>
-        </button>        {/* Icon Selector Dropdown - Rendered with fixed positioning to escape parent constraints */}
-        {showSelector.value && (
-          <div 
-            class="fixed z-[99999] rounded-lg border border-theme-card-border bg-theme-bg-primary p-4 shadow-2xl backdrop-blur-sm"
-            style={{
-              top: `${dropdownPosition.value.top}px`,
-              left: `${dropdownPosition.value.left}px`,
-              width: `${dropdownPosition.value.width}px`
-            }}
-          >
-            <div class="space-y-4">
-              {/* Predefined Icons */}
-              <div>
-                <h4 class="text-theme-text-primary mb-2 text-sm font-medium">
-                  Platform Icons
-                </h4>
-                <div class="grid grid-cols-4 gap-2">
-                  {Object.keys(PREDEFINED_ICONS).map((iconName) => (
-                    <button
-                      key={iconName}
-                      type="button"
-                      onClick$={() => handleIconSelect(iconName)}
-                      class={`hover:bg-theme-accent-primary/10 flex h-10 w-10 items-center justify-center rounded-lg border transition-all ${
-                        selectedIcon === iconName
-                          ? "border-theme-accent-primary bg-theme-accent-primary/20"
-                          : "border-theme-card-border"
-                      }`}
-                      title={iconName}
-                    >
-                      <BioLinkIcon icon={iconName} size={16} />
-                    </button>
-                  ))}
+        </button>
+
+        {/* Dropdown */}
+        {isOpen.value && (
+          <>
+            {/* Backdrop */}
+            <div 
+              class="fixed inset-0 z-[9999]" 
+              onClick$={() => (isOpen.value = false)}
+            />
+              {/* Dropdown Content */}
+            <div class="absolute bottom-full left-0 right-0 z-[10000] mb-2 max-h-96 overflow-y-auto rounded-xl border border-theme-card-border bg-theme-bg-primary p-4 shadow-2xl">
+              <div class="space-y-4">
+                {/* Platform Icons */}
+                <div>
+                  <h4 class="text-theme-text-primary mb-2 text-sm font-medium">
+                    Platform Icons
+                  </h4>
+                  <div class="grid grid-cols-4 gap-2">
+                    {Object.keys(PREDEFINED_ICONS).map((iconName) => (
+                      <button
+                        key={iconName}
+                        type="button"
+                        onClick$={() => handleIconSelect(iconName)}
+                        class={`flex h-10 w-10 items-center justify-center rounded-lg border transition-all hover:bg-theme-accent-primary/10 ${
+                          selectedIcon === iconName
+                            ? "border-theme-accent-primary bg-theme-accent-primary/20"
+                            : "border-theme-card-border"
+                        }`}
+                        title={iconName}
+                      >
+                        <BioLinkIcon icon={iconName} size={16} />
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-              {/* Common Emojis */}
-              <div>
-                <h4 class="text-theme-text-primary mb-2 text-sm font-medium">
-                  Emojis
-                </h4>
-                <div class="grid grid-cols-8 gap-1">
-                  {COMMON_EMOJIS.map((emoji) => (
-                    <button
-                      key={emoji}
-                      type="button"
-                      onClick$={() => handleIconSelect(emoji)}
-                      class={`hover:bg-theme-accent-primary/10 flex h-8 w-8 items-center justify-center rounded border transition-all ${
-                        selectedIcon === emoji
-                          ? "border-theme-accent-primary bg-theme-accent-primary/20"
-                          : "border-theme-card-border"
-                      }`}
-                      title={emoji}
-                    >
-                      {emoji}
-                    </button>
-                  ))}
+
+                {/* Emojis */}
+                <div>
+                  <h4 class="text-theme-text-primary mb-2 text-sm font-medium">
+                    Emojis
+                  </h4>
+                  <div class="grid grid-cols-8 gap-1">
+                    {COMMON_EMOJIS.map((emoji) => (
+                      <button
+                        key={emoji}
+                        type="button"
+                        onClick$={() => handleIconSelect(emoji)}
+                        class={`flex h-8 w-8 items-center justify-center rounded border transition-all hover:bg-theme-accent-primary/10 ${
+                          selectedIcon === emoji
+                            ? "border-theme-accent-primary bg-theme-accent-primary/20"
+                            : "border-theme-card-border"
+                        }`}
+                        title={emoji}
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-              {/* Custom Icon Input */}
-              <div>
-                <h4 class="text-theme-text-primary mb-2 text-sm font-medium">
-                  Custom Icon
-                </h4>
-                <div class="flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="Enter emoji or icon name..."
-                    value={customIconValue.value}
-                    onInput$={(e) =>
-                      (customIconValue.value = (
-                        e.target as HTMLInputElement
-                      ).value)
-                    }
-                    class="border-theme-card-border bg-theme-bg-secondary flex-1 rounded border px-2 py-1 text-sm"
-                  />
+
+                {/* Custom Icon Input */}
+                <div>
+                  <h4 class="text-theme-text-primary mb-2 text-sm font-medium">
+                    Custom Icon
+                  </h4>
+                  <div class="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Enter emoji or icon name..."
+                      value={customIconValue.value}
+                      onInput$={(e) =>
+                        (customIconValue.value = (e.target as HTMLInputElement).value)
+                      }
+                      onKeyDown$={(e) => {
+                        if (e.key === "Enter") {
+                          handleCustomIconSubmit();
+                        }
+                      }}
+                      class="flex-1 rounded border border-theme-card-border bg-theme-bg-secondary px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-theme-accent-primary/50"
+                    />
+                    <button
+                      type="button"
+                      onClick$={handleCustomIconSubmit}
+                      class="rounded bg-theme-accent-primary px-3 py-1 text-sm text-white transition-all hover:bg-theme-accent-primary/80"
+                    >
+                      Add
+                    </button>
+                  </div>
+                </div>
+
+                {/* Clear Selection */}
+                <div class="border-t border-theme-card-border pt-3">
                   <button
                     type="button"
-                    onClick$={handleCustomIconSubmit}
-                    class="bg-theme-accent-primary hover:bg-theme-accent-primary/80 rounded px-3 py-1 text-sm text-white transition-all"
+                    onClick$={() => handleIconSelect("")}
+                    class="w-full rounded border border-theme-card-border py-2 text-sm text-theme-text-secondary transition-all hover:bg-theme-bg-secondary"
                   >
-                    Add
+                    No Icon
                   </button>
                 </div>
-              </div>{" "}
-              {/* Clear Selection */}
-              <div class="border-theme-card-border border-t pt-3">
-                <button
-                  type="button"
-                  onClick$={() => handleIconSelect("")}
-                  class="border-theme-card-border text-theme-text-secondary hover:bg-theme-bg-secondary w-full rounded border py-2 text-sm transition-all"
-                >
-                  No Icon
-                </button>
               </div>
             </div>
-          </div>
+          </>
         )}
       </div>
     );
