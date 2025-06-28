@@ -16,6 +16,7 @@ import { UserAnalytics } from "~/components/user-analytics/user-analytics";
 import { db } from "~/lib/db";
 import { getEnvConfig } from "~/lib/env";
 import { getAnalyticsData } from "~/lib/analytics";
+import { formatBytes } from "~/lib/utils";
 export const useUserData = routeLoader$(async ({ sharedMap, redirect }) => {
   // Import server-side dependencies inside the loader
 
@@ -166,19 +167,9 @@ export default component$(() => {
   const updateUser = useUpdateUser();
   const searchQuery = useSignal("");
   const approvalFilter = useSignal("all"); // all, approved, pending
-  const adminFilter = useSignal("all"); // all, admin, user
+  const adminFilter = useSignal("all"); // all, admin, user  const sortBy = useSignal("createdAt"); // createdAt, name, uploads, storageUsed, email
   const sortBy = useSignal("createdAt"); // createdAt, name, uploads, storageUsed, email
   const sortOrder = useSignal("desc"); // asc, desc
-
-  const formatBytes = (bytes: number): string => {
-    if (bytes === 0) return "0 Bytes";
-
-    const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
-  };
 
   const getEffectiveStorageLimit = (user: any): number => {
     return (
@@ -277,7 +268,7 @@ export default component$(() => {
       <div class="mb-6 text-center sm:mb-8">
         <h1 class="text-gradient-cute mb-3 flex flex-wrap items-center justify-center gap-2 text-3xl font-bold sm:gap-3 sm:text-4xl">
           Admin Dashboard
-        </h1>{" "}
+        </h1>
         <p class="text-theme-text-secondary px-4 text-base sm:text-lg">
           Manage your twink community~ Approve users and keep everything safe!
           (◕‿◕)♡
@@ -303,14 +294,14 @@ export default component$(() => {
             </span>
           </div>
         </div>
-      )}{" "}
+      )}
       {/* Stats Cards */}
       <div class="mb-6 grid grid-cols-2 gap-3 sm:mb-8 sm:gap-6 md:grid-cols-4">
         <div class="card-cute rounded-3xl p-4 sm:p-6">
           <div class="flex items-center">
             <div class="rounded-full bg-gradient-to-br from-pink-500 to-purple-500 p-2 sm:p-3">
               <Users class="h-4 w-4 text-white sm:h-6 sm:w-6" />
-            </div>{" "}
+            </div>
             <div class="ml-3 sm:ml-4">
               <p class="text-theme-text-secondary text-xs font-medium sm:text-sm">
                 Total Users
@@ -326,7 +317,7 @@ export default component$(() => {
           <div class="flex items-center">
             <div class="rounded-full bg-gradient-to-br from-green-500 to-emerald-500 p-2 sm:p-3">
               <CheckCircle class="h-4 w-4 text-white sm:h-6 sm:w-6" />
-            </div>{" "}
+            </div>
             <div class="ml-3 sm:ml-4">
               <p class="text-theme-text-secondary text-xs font-medium sm:text-sm">
                 Approved
@@ -342,7 +333,7 @@ export default component$(() => {
           <div class="flex items-center">
             <div class="rounded-full bg-gradient-to-br from-yellow-500 to-orange-500 p-2 sm:p-3">
               <Ban class="h-4 w-4 text-white sm:h-6 sm:w-6" />
-            </div>{" "}
+            </div>
             <div class="ml-3 sm:ml-4">
               <p class="text-theme-text-secondary text-xs font-medium sm:text-sm">
                 Pending
@@ -358,7 +349,7 @@ export default component$(() => {
           <div class="flex items-center">
             <div class="rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 p-2 sm:p-3">
               <Users class="h-4 w-4 text-white sm:h-6 sm:w-6" />
-            </div>{" "}
+            </div>
             <div class="ml-3 sm:ml-4">
               <p class="text-theme-text-secondary text-xs font-medium sm:text-sm">
                 New Users (7d)
@@ -377,7 +368,7 @@ export default component$(() => {
       <div class="mb-6 sm:mb-8">
         <h2 class="text-gradient-cute mb-4 flex items-center gap-2 text-xl font-bold sm:mb-6 sm:text-2xl">
           Analytics Overview - Last 7 Days
-        </h2>{" "}
+        </h2>
         <div class="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-4">
           <AnalyticsChart
             data={userData.value?.analyticsData || []}
@@ -409,7 +400,7 @@ export default component$(() => {
       <div class="mb-6 sm:mb-8">
         <h2 class="text-gradient-cute mb-4 flex items-center justify-center gap-2 text-center text-xl font-bold sm:mb-6 sm:text-2xl">
           Admin Actions~ ⚙️
-        </h2>{" "}
+        </h2>
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <Link
             href="/admin/domains"
@@ -476,19 +467,18 @@ export default component$(() => {
         <div class="mb-4 flex flex-col gap-4">
           <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <h2 class="text-gradient-cute flex items-center gap-2 text-lg font-bold sm:text-xl">
-              User Management{" "}
+              User Management
               {(searchQuery.value.trim() ||
                 approvalFilter.value !== "all" ||
                 adminFilter.value !== "all") && (
                 <span class="text-theme-accent-primary text-sm font-normal">
-                  ({filteredUsers.value.length} of{" "}
+                  ({filteredUsers.value.length} of
                   {userData.value?.users.length || 0} users)
                 </span>
               )}
             </h2>
             {/* Search Input */}
             <div class="relative w-full max-w-md sm:w-auto">
-              {" "}
               <div class="pointer-events-none absolute inset-y-0 left-0 z-10 flex items-center pl-3">
                 <Search class="text-theme-accent-primary h-4 w-4 drop-shadow-sm" />
               </div>
@@ -506,9 +496,9 @@ export default component$(() => {
           </div>
           {/* Filters and Sorting */}
           <div class="flex flex-wrap items-center gap-3 sm:gap-4">
-            {/* Approval Status Filter */}{" "}
+            {/* Approval Status Filter */}
             <div class="flex items-center gap-2">
-              <Filter class="text-theme-accent-primary h-4 w-4" />{" "}
+              <Filter class="text-theme-accent-primary h-4 w-4" />
               <select
                 value={approvalFilter.value}
                 onChange$={(e) => {
@@ -535,7 +525,6 @@ export default component$(() => {
             </div>
             {/* Admin Status Filter */}
             <div class="flex items-center gap-2">
-              {" "}
               <select
                 value={adminFilter.value}
                 onChange$={(e) => {
@@ -556,7 +545,7 @@ export default component$(() => {
             </div>
             {/* Sort By */}
             <div class="flex items-center gap-2">
-              <ArrowUpDown class="text-theme-accent-primary h-4 w-4" />{" "}
+              <ArrowUpDown class="text-theme-accent-primary h-4 w-4" />
               <select
                 value={sortBy.value}
                 onChange$={(e) => {
@@ -598,7 +587,7 @@ export default component$(() => {
               class="glass border-theme-card-border text-theme-text-primary hover:border-theme-accent-primary/40 rounded-full border bg-transparent px-3 py-1 text-sm transition-all duration-300 focus:outline-none"
             >
               {sortOrder.value === "asc" ? "↑ Ascending" : "↓ Descending"}
-            </button>{" "}
+            </button>
             {/* Clear Filters */}
             {(searchQuery.value.trim() ||
               approvalFilter.value !== "all" ||
@@ -613,13 +602,13 @@ export default component$(() => {
                   sortBy.value = "createdAt";
                   sortOrder.value = "desc";
                 }}
-                class="bg-gradient-to-br from-theme-deny to-theme-deny-hover border-theme-error text-theme-error hover:bg-gradient-to-br from-theme-deny to-theme-deny-hover-hover rounded-full border px-3 py-1 text-sm font-medium transition-all duration-300"
+                class="from-theme-deny to-theme-deny-hover border-theme-error text-theme-error rounded-full border bg-gradient-to-br px-3 py-1 text-sm font-medium transition-all duration-300 hover:bg-gradient-to-br"
               >
                 🗑️ Clear Filters
               </button>
             )}
           </div>
-          {/* Quick Filter Buttons */}{" "}
+          {/* Quick Filter Buttons */}
           <div class="flex flex-wrap gap-2 text-xs">
             <span class="text-theme-accent-primary font-medium">
               Quick filters:
@@ -634,7 +623,7 @@ export default component$(() => {
               class="glass border-theme-card-border text-theme-accent-primary hover:border-theme-accent-primary/40 rounded-full border px-2 py-1 text-xs transition-all duration-300"
             >
               ⏳ Pending Approval
-            </button>{" "}
+            </button>
             <button
               onClick$={() => {
                 approvalFilter.value = "all";
@@ -714,7 +703,7 @@ export default component$(() => {
                             width="40"
                             height="40"
                           />
-                        )}{" "}
+                        )}
                         <div class="min-w-0 flex-1">
                           <div class="text-theme-text-primary truncate text-sm font-medium sm:text-base">
                             {user.name || "Anonymous Cutie"}
@@ -728,7 +717,7 @@ export default component$(() => {
                             </div>
                           )}
                           <div class="text-theme-accent-primary mt-1 text-xs">
-                            Joined{" "}
+                            Joined
                             {new Date(user.createdAt).toLocaleDateString()}
                           </div>
                           <div class="text-theme-accent-primary mt-1 text-xs">
@@ -739,24 +728,23 @@ export default component$(() => {
 
                       {/* Status & Activity */}
                       <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
-                        {" "}
                         {/* Status Badge */}
                         <div class="flex flex-col items-start sm:items-center">
                           <span
                             class={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
                               user.isApproved
-                                ? "bg-gradient-to-br from-theme-confirm to-theme-confirm-hover border-theme-success text-theme-success"
-                                : "bg-gradient-to-br from-theme-[#f59e0b] to-theme-[#d97706] border-theme-warning text-theme-warning"
+                                ? "from-theme-confirm to-theme-confirm-hover border-theme-success text-theme-success bg-gradient-to-br"
+                                : "from-theme-[#f59e0b] to-theme-[#d97706] border-theme-warning text-theme-warning bg-gradient-to-br"
                             }`}
                           >
                             {user.isApproved ? "✅ Approved" : "⏳ Pending"}
-                          </span>{" "}
+                          </span>
                           {user.approvedAt && (
                             <div class="text-theme-accent-primary mt-1 text-xs">
                               by {user.approvedBy?.name || "Admin"}
                             </div>
                           )}
-                        </div>{" "}
+                        </div>
                         {/* Role Badge */}
                         <span
                           class={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${
@@ -772,7 +760,7 @@ export default component$(() => {
                           <div>📁 {user._count.uploads} uploads</div>
                           <div>🔑 {user._count.apiKeys} API keys</div>
                           <div>
-                            💾 {formatBytes(user.storageUsed)} /{" "}
+                            💾 {formatBytes(user.storageUsed)} /
                             {formatBytes(getEffectiveStorageLimit(user))}
                           </div>
                           <div class="text-theme-accent-primary text-xs">
@@ -797,7 +785,7 @@ export default component$(() => {
                           >
                             ✅ Approve
                           </button>
-                        )}{" "}
+                        )}
                         {user.isApproved && (
                           <button
                             onClick$={() => {
@@ -806,11 +794,11 @@ export default component$(() => {
                                 isApproved: false,
                               });
                             }}
-                            class="bg-gradient-to-br from-theme-deny to-theme-deny-hover border-theme-error text-theme-error hover:bg-gradient-to-br from-theme-deny to-theme-deny-hover-hover rounded-full border px-3 py-1 text-xs font-medium transition-all duration-300 sm:text-sm"
+                            class="from-theme-deny to-theme-deny-hover border-theme-error text-theme-error rounded-full border bg-gradient-to-br px-3 py-1 text-xs font-medium transition-all duration-300 hover:bg-gradient-to-br sm:text-sm"
                           >
                             ❌ Revoke
                           </button>
-                        )}{" "}
+                        )}
                         <button
                           onClick$={() => {
                             updateUser.submit({
@@ -820,7 +808,7 @@ export default component$(() => {
                           }}
                           class={`rounded-full px-3 py-1 text-xs font-medium transition-all duration-300 sm:text-sm ${
                             user.isAdmin
-                              ? "bg-gradient-to-br from-theme-deny to-theme-deny-hover border-theme-error text-theme-error hover:bg-gradient-to-br from-theme-deny to-theme-deny-hover-hover border"
+                              ? "from-theme-deny to-theme-deny-hover border-theme-error text-theme-error border bg-gradient-to-br hover:bg-gradient-to-br"
                               : "from-theme-accent-secondary to-theme-accent-tertiary border-theme-accent-primary/40 text-theme-text-primary hover:from-theme-accent-primary/20 hover:to-theme-accent-secondary/20 border bg-gradient-to-br hover:bg-gradient-to-br"
                           }`}
                         >
@@ -832,7 +820,6 @@ export default component$(() => {
                     </div>
                     {/* Expandable Limits Editor */}
                     <details class="group mt-3">
-                      {" "}
                       <summary class="text-theme-accent-primary hover:text-theme-text-primary flex cursor-pointer items-center gap-1 text-xs font-medium">
                         <span class="transition-transform group-open:rotate-90">
                           ▶
@@ -857,7 +844,6 @@ export default component$(() => {
                             });
                           }}
                         >
-                          {" "}
                           <div>
                             <label class="text-theme-text-secondary mb-1 block text-xs font-medium">
                               Max Uploads
@@ -909,7 +895,7 @@ export default component$(() => {
                               class="btn-cute rounded-full px-3 py-1 text-xs font-medium text-white"
                             >
                               💾 Save Limits
-                            </button>{" "}
+                            </button>
                             <button
                               type="button"
                               onClick$={() => {
@@ -922,10 +908,10 @@ export default component$(() => {
                             >
                               🔄 Reset to Default
                             </button>
-                          </div>{" "}
+                          </div>
                         </form>
                       </div>
-                    </details>{" "}
+                    </details>
                     {/* User Analytics */}
                     <UserAnalytics
                       userId={user.id}

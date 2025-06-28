@@ -19,6 +19,7 @@ import { AnalyticsChart } from "~/components/analytics-chart/analytics-chart";
 import { db } from "~/lib/db";
 import { getEnvConfig } from "~/lib/env";
 import { getUserAnalytics } from "~/lib/analytics";
+import { formatBytes } from "~/lib/utils";
 export const useUserData = routeLoader$(async (requestEvent) => {
   // Import server-side dependencies inside the loader
 
@@ -104,13 +105,8 @@ export default component$(() => {
     const imageUrl = `/f/${shortCode}`;
     imagePreviewStore.openPreview(imageUrl, fileName);
   });
-
   const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return "0 Bytes";
-    const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+    return formatBytes(bytes);
   };
 
   return (

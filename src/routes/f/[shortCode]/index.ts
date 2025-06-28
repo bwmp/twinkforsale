@@ -6,6 +6,7 @@ import fs from "fs";
 import path from "path";
 import { Upload } from "@prisma/client";
 import { extractMediaDimensions } from "~/lib/media-utils";
+import { formatBytes } from "~/lib/utils";
 
 // Generate Discord embed HTML
 function generateDiscordEmbed(upload: Upload, user: any, baseUrl: string, userStats?: { totalFiles: number, totalStorage: number, totalViews: number }) {
@@ -13,18 +14,16 @@ function generateDiscordEmbed(upload: Upload, user: any, baseUrl: string, userSt
   const replacePlaceholders = (text: string) => {
     if (!text) return text;
 
-    const fileSize = (upload.size / 1024 / 1024).toFixed(2);
     const uploadDate = new Date(upload.createdAt).toLocaleDateString();
-    const storageUsedMB = userStats ? (userStats.totalStorage / 1024 / 1024).toFixed(2) : '0';
 
     return text
       .replace(/\{filename\}/g, upload.originalName)
-      .replace(/\{filesize\}/g, `${fileSize} MB`)
+      .replace(/\{filesize\}/g, `${formatBytes(upload.size)}`)
       .replace(/\{filetype\}/g, upload.mimeType)
       .replace(/\{uploaddate\}/g, uploadDate)
       .replace(/\{views\}/g, upload.views.toString())
       .replace(/\{totalfiles\}/g, userStats?.totalFiles.toString() || '0')
-      .replace(/\{totalstorage\}/g, `${storageUsedMB} MB`)
+      .replace(/\{totalstorage\}/g, `${formatBytes(userStats ? userStats.totalStorage : 0)}`)
       .replace(/\{totalviews\}/g, userStats?.totalViews.toLocaleString() || '0')
       .replace(/\{username\}/g, user?.name || 'Anonymous');
   };
@@ -39,23 +38,18 @@ function generateDiscordEmbed(upload: Upload, user: any, baseUrl: string, userSt
   const showUserStats = user?.showUserStats === true;  // Build description with optional file info
   let description = embedDescription;
   if (showFileInfo) {
-    const fileSize = (upload.size / 1024 / 1024).toFixed(2);
-    description += `<br><br>📁 <strong>${upload.originalName}</strong><br>📏 ${fileSize} MB • ${upload.mimeType}`;
+    description += `<br><br>📁 <strong>${upload.originalName}</strong><br>📏 ${formatBytes(upload.size)} • ${upload.mimeType}`;
   }
   if (showUploadDate) {
     const uploadDate = new Date(upload.createdAt).toLocaleDateString();
     description += `<br>📅 Uploaded ${uploadDate}`;
+  }  if (showUserStats && userStats) {
+    description += `<br><br>👤 <strong>User Stats</strong><br>📊 ${userStats.totalFiles} files uploaded • ${formatBytes(userStats.totalStorage)} used<br>👀 ${userStats.totalViews.toLocaleString()} total views`;
   }
-  if (showUserStats && userStats) {
-    const storageUsedMB = (userStats.totalStorage / 1024 / 1024).toFixed(2);
-    description += `<br><br>👤 <strong>User Stats</strong><br>📊 ${userStats.totalFiles} files uploaded • ${storageUsedMB} MB used<br>👀 ${userStats.totalViews.toLocaleString()} total views`;
-  }
-  const domain = user?.customDomain || baseUrl.replace(/^https?:\/\//, '');
-  // Create plain text version for meta tags (Discord doesn't support HTML or markdown)
+  const domain = user?.customDomain || baseUrl.replace(/^https?:\/\//, '');  // Create plain text version for meta tags (Discord doesn't support HTML or markdown)
   let plainDescription = embedDescription;
   if (showFileInfo) {
-    const fileSize = (upload.size / 1024 / 1024).toFixed(2);
-    plainDescription += `\n${upload.originalName}\n${fileSize} MB • ${upload.mimeType}`;
+    plainDescription += `\n${upload.originalName}\n${formatBytes(upload.size)} • ${upload.mimeType}`;
   }
   if (showUploadDate) {
     const uploadDate = new Date(upload.createdAt).toLocaleDateString();
@@ -154,7 +148,7 @@ function generateDiscordEmbed(upload: Upload, user: any, baseUrl: string, userSt
       `<div style="font-size: 48px; margin-bottom: 16px;">📄</div>`
     }      <div class="file-info">
         <strong>${upload.originalName}</strong><br>
-        ${(upload.size / 1024 / 1024).toFixed(2)} MB • ${upload.mimeType}<br>
+        ${formatBytes(upload.size)} • ${upload.mimeType}<br>
         ${upload.views} views • ${upload.downloads} downloads
       </div>
     </div>

@@ -1,7 +1,7 @@
 import type { RequestHandler } from "@builder.io/qwik-city";
 import { db } from "~/lib/db";
 import { getEnvConfig } from "~/lib/env";
-import { parseStorageSize } from "~/lib/utils";
+import { formatBytes } from "~/lib/utils";
 
 export const onGet: RequestHandler = async ({ url, json }) => {
   const requestUrl = url.searchParams.get('url');
@@ -42,12 +42,12 @@ export const onGet: RequestHandler = async ({ url, json }) => {
 
       return text
         .replace(/\{filename\}/g, upload.originalName)
-        .replace(/\{filesize\}/g, `${parseStorageSize(upload.size.toString())}`)
+        .replace(/\{filesize\}/g, `${formatBytes(upload.size)}`)
         .replace(/\{filetype\}/g, upload.mimeType)
         .replace(/\{uploaddate\}/g, uploadDate)
         .replace(/\{views\}/g, upload.views.toString())
         .replace(/\{totalfiles\}/g, userStats?.totalFiles.toString() || '0')
-        .replace(/\{totalstorage\}/g, `${parseStorageSize(userStats ? userStats.totalStorage.toString() : '0')}`)
+        .replace(/\{totalstorage\}/g, `${formatBytes(userStats ? userStats.totalStorage : 0)}`)
         .replace(/\{totalviews\}/g, userStats?.totalViews.toLocaleString() || '0')
         .replace(/\{username\}/g, upload.user?.name || 'Anonymous');
     };
@@ -80,7 +80,7 @@ export const onGet: RequestHandler = async ({ url, json }) => {
     // Build provider name with user stats if enabled
     let providerName = replacePlaceholders(upload.user?.embedFooter) || "twink.forsale";
     if (upload.user?.showUserStats && userStats) {
-      providerName = `📁 ${userStats.totalFiles} files   💾 ${parseStorageSize(userStats.totalStorage.toString())}   👁️ ${userStats.totalViews.toLocaleString()} views`;
+      providerName = `📁 ${userStats.totalFiles} files   💾 ${formatBytes(userStats.totalStorage)}   👁️ ${userStats.totalViews.toLocaleString()} views`;
     }
 
     // Build oEmbed response

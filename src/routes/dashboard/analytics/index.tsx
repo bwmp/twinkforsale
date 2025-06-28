@@ -11,6 +11,7 @@ import {
 import { DetailedAnalyticsChart } from "~/components/detailed-analytics-chart/detailed-analytics-chart";
 import { db } from "~/lib/db";
 import { getUploadAnalytics, getUserAnalytics } from "~/lib/analytics";
+import { formatBytes } from "~/lib/utils";
 export const useAnalyticsOverview = routeLoader$(async (requestEvent) => {
   const session = requestEvent.sharedMap.get("session");
 
@@ -87,13 +88,8 @@ export const useAnalyticsOverview = routeLoader$(async (requestEvent) => {
 
 export default component$(() => {
   const data = useAnalyticsOverview();
-
   const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return "0 Bytes";
-    const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+    return formatBytes(bytes);
   };
 
   return (

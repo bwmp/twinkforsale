@@ -212,8 +212,7 @@ export const useHealthData = routeLoader$(async () => {
         uploads24h: recentUploads,
         views24h: recentViews,
         downloads24h: recentDownloads,
-      },
-      system: {
+      },      system: {
         uptime: Math.floor(uptime),
         memory: {
           used: Math.round(memoryUsage.heapUsed / 1024 / 1024),

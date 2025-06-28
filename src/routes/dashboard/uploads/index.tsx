@@ -39,6 +39,7 @@ import { db } from "~/lib/db";
 import { getEnvConfig } from "~/lib/env";
 import { getUploadAnalytics } from "~/lib/analytics";
 import { getServerUploadsViewMode } from "~/lib/cookie-utils";
+import { formatBytes } from "~/lib/utils";
 export const useDeleteUpload = routeAction$(async (data, requestEvent) => {
   // Import server-side dependencies inside the action
 
@@ -354,7 +355,6 @@ export default component$(() => {
     navigator.clipboard.writeText(urls);
     // Could show a toast notification here
   });
-
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return "0 Bytes";
 
@@ -362,12 +362,7 @@ export default component$(() => {
     const isNegative = bytes < 0;
     const absoluteBytes = Math.abs(bytes);
 
-    const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(absoluteBytes) / Math.log(k));
-    const formattedSize =
-      parseFloat((absoluteBytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
-
+    const formattedSize = formatBytes(absoluteBytes);
     return isNegative ? `-${formattedSize}` : formattedSize;
   };
   const handleSort = $(

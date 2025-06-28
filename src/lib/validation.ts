@@ -1,4 +1,5 @@
 // Validation schemas and utilities
+import { formatBytes } from './utils';
 
 export interface UploadValidation {
   isValid: boolean
@@ -7,11 +8,10 @@ export interface UploadValidation {
 
 export const validateUpload = (file: File): UploadValidation => {
   const errors: string[] = []
-
   // Check file size
   const maxSize = parseInt(process.env.MAX_FILE_SIZE || '10485760') // 10MB
   if (file.size > maxSize) {
-    errors.push(`File size exceeds ${maxSize / 1024 / 1024}MB limit`)
+    errors.push(`File size exceeds ${formatBytes(maxSize)} limit`)
   }
 
   // Check MIME type
