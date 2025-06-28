@@ -202,7 +202,7 @@ export default component$(() => {
       "author": {
         "name": "${replacedAuthor}"
       },
-      "footer": {
+      "header": {
         "text": "${initialFooter}"
       },
       "image": {
@@ -387,7 +387,7 @@ export default component$(() => {
                 </p>
               </div>              <div>
                 <label class="text-theme-text-secondary mb-2 block text-xs font-medium sm:text-sm">
-                  Footer Text~ 📄
+                  Header Text~ 📄
                 </label>
                 <input
                   type="text"
