@@ -1,5 +1,5 @@
 import { getDiskUsage } from './server-utils';
-import { sendCriticalEventNotification } from './discord-notifications';
+import { sendCriticalEventNotification, sendDiscordNotification } from './discord-notifications';
 import { db } from './db';
 import os from 'os';
 
@@ -14,7 +14,8 @@ export type EventType =
   | 'HIGH_MEMORY_USAGE'
   | 'SYSTEM_ERROR'
   | 'FAILED_UPLOAD'
-  | 'BULK_STORAGE_CLEANUP';
+  | 'BULK_STORAGE_CLEANUP'
+  | 'USER_REGISTRATION';
 
 export type EventSeverity = 'INFO' | 'WARNING' | 'ERROR' | 'CRITICAL';
 
@@ -114,10 +115,9 @@ export async function createSystemEvent(
       diskUsage: metrics.diskUsage
     }
   });
-
   console.log(`[${severity}] ${type}: ${title}`);
 
-  // Send Discord notification for critical and error events
+  // Send Discord notification for critical/error events and user registrations
   try {
     // Get user email if userId is provided
     let userEmail: string | undefined;
@@ -129,19 +129,38 @@ export async function createSystemEvent(
       userEmail = user?.email;
     }
 
-    await sendCriticalEventNotification(
-      type,
-      severity,
-      title,
-      message,
-      {
-        metadata,
-        userEmail,
-        cpuUsage: metrics.cpuUsage,
-        memoryUsage: metrics.memoryUsage,
-        diskUsage: metrics.diskUsage
-      }
-    );
+    // Send critical/error events through the critical notification function
+    if (severity === 'CRITICAL' || severity === 'ERROR') {
+      await sendCriticalEventNotification(
+        type,
+        severity,
+        title,
+        message,
+        {
+          metadata,
+          userEmail,
+          cpuUsage: metrics.cpuUsage,
+          memoryUsage: metrics.memoryUsage,
+          diskUsage: metrics.diskUsage
+        }
+      );
+    } 
+    // Send user registration events through regular Discord notification
+    else if (type === 'USER_REGISTRATION') {
+      await sendDiscordNotification(
+        type,
+        severity,
+        title,
+        message,
+        {
+          metadata,
+          userEmail,
+          cpuUsage: metrics.cpuUsage,
+          memoryUsage: metrics.memoryUsage,
+          diskUsage: metrics.diskUsage
+        }
+      );
+    }
   } catch (error) {
     console.error('Failed to send Discord notification:', error);
   }

@@ -13,6 +13,7 @@ import {
   type ImagePreviewStore,
 } from "~/lib/image-preview-store";
 import Navigation from "~/components/navigation/navigation";
+import { Footer } from "~/components/footer";
 import { ParticleBackground } from "~/components/particle-background";
 import { useGlobalParticle } from "~/lib/global-particle-store";
 import {
@@ -184,11 +185,11 @@ export default component$(() => {
           {/* Particle background - rendered behind everything */}
           {globalParticle.isInitialized && globalParticle.config.enabled && (
             <ParticleBackground config={globalParticle.config} />
-          )}
-          <Navigation />
+          )}          <Navigation />
           <div class="relative z-10 mx-auto mt-18 max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
             <Slot />
           </div>
+          <Footer />
           {/* Global Image Preview Modal */}
           <ImagePreview
             isOpen={contextStore.state.isOpen}

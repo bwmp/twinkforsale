@@ -78,6 +78,8 @@ function getEventTypeEmoji(eventType: EventType): string {
       return '📤';
     case 'BULK_STORAGE_CLEANUP':
       return '🧹';
+    case 'USER_REGISTRATION':
+      return '🎉';
     default:
       return '📋';
   }

@@ -14,6 +14,7 @@ import {
   Upload,
   Link as LinkIcon,
 } from "lucide-icons-qwik";
+import { createSystemEvent } from "~/lib/system-events";
 import { ImagePreviewContext } from "~/lib/image-preview-store";
 import { AnalyticsChart } from "~/components/analytics-chart/analytics-chart";
 import { db } from "~/lib/db";
@@ -62,6 +63,26 @@ export const useUserData = routeLoader$(async (requestEvent) => {
         bioLinks: true,
       },
     });
+
+    // Send notification for new user registration
+    try {
+      await createSystemEvent(
+        "USER_REGISTRATION",
+        "INFO",
+        "New User Registration",
+        `New user registered: ${user.email}`,
+        {
+          userId: user.id,
+          metadata: {
+            name: user.name,
+            provider: "Discord", // Since this app only uses Discord OAuth
+            registrationDate: new Date().toISOString(),
+          },
+        },
+      );
+    } catch (error) {
+      console.error("Failed to send user registration notification:", error);
+    }
   }
 
   // Calculate stats
@@ -293,7 +314,8 @@ export default component$(() => {
               <h3 class="group-hover:text-gradient-cute text-theme-text-primary ml-2 text-base font-medium transition-all duration-300 sm:ml-3 sm:text-lg">
                 Discord Embeds
               </h3>
-            </div>{" "}            <p class="text-theme-text-secondary text-xs sm:text-sm">
+            </div>{" "}
+            <p class="text-theme-text-secondary text-xs sm:text-sm">
               Customize how your uploads appear on Discord and social media~
               Make them extra cute! uwu
             </p>
@@ -311,7 +333,8 @@ export default component$(() => {
               </h3>
             </div>
             <p class="text-theme-text-secondary text-xs sm:text-sm">
-              Create your custom bio link page to share all your important links in one place~ ✨
+              Create your custom bio link page to share all your important links
+              in one place~ ✨
             </p>
           </Link>
           <Link

@@ -16,6 +16,8 @@ import {
   Zap,
   Eye,
   Settings as SettingsIcon,
+  Trash2,
+  AlertTriangle,
 } from "lucide-icons-qwik";
 import { db } from "~/lib/db";
 import { setThemePreference } from "~/lib/cookie-utils";
@@ -154,9 +156,88 @@ export const useUpdateParticleConfigAction = routeAction$(
       opacity: z.object({
         min: z.number(),
         max: z.number(),
-      }),
-      enabled: z.boolean(),
+      }),      enabled: z.boolean(),
     }),
+  }),
+);
+
+export const useDeleteAccountAction = routeAction$(
+  async (values, requestEvent) => {
+    const session = requestEvent.sharedMap.get("session");
+
+    if (!session?.user?.email) {
+      return requestEvent.fail(401, { message: "Unauthorized" });
+    }
+
+    const user = await db.user.findUnique({
+      where: { email: session.user.email },
+      include: {
+        uploads: true,
+        apiKeys: true,
+        bioLinks: true,
+        accounts: true,
+        sessions: true,
+      },
+    });
+
+    if (!user) {
+      return requestEvent.fail(404, { message: "User not found" });
+    }
+
+    // Verify the confirmation text
+    if (values.confirmationText !== "DELETE MY ACCOUNT") {
+      return requestEvent.fail(400, {
+        message: "Please type 'DELETE MY ACCOUNT' to confirm deletion",
+      });
+    }
+
+    try {
+      const fs = await import("fs");
+      const path = await import("path");
+      const { getEnvConfig } = await import("~/lib/env");
+      
+      const config = getEnvConfig();
+      const baseUploadDir = config.UPLOAD_DIR;
+
+      // Delete all user files from storage
+      for (const upload of user.uploads) {
+        let filePath: string;
+        if (upload.userId) {
+          filePath = path.join(baseUploadDir, upload.userId, upload.filename);
+        } else {
+          filePath = path.join(baseUploadDir, "anonymous", upload.filename);
+        }
+
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+      }
+
+      // Delete user directory if it exists
+      const userDir = path.join(baseUploadDir, user.id);
+      if (fs.existsSync(userDir)) {
+        fs.rmSync(userDir, { recursive: true, force: true });
+      }
+
+      // Delete all user data from database (cascade relationships will handle related data)
+      await db.user.delete({
+        where: { id: user.id },
+      });
+
+      // Sign out the user
+      throw requestEvent.redirect(302, "/");
+    } catch (error) {
+      console.error("Account deletion error:", error);
+      if (error instanceof Response) {
+        throw error; // Re-throw redirect responses
+      }
+      return requestEvent.fail(500, {
+        message: "Failed to delete account. Please contact support.",
+      });
+    }
+  },
+  zod$({
+    confirmationText: z.string().min(1, "Confirmation text is required"),
   }),
 );
 
@@ -165,6 +246,7 @@ export default component$(() => {
   const uploadDomains = useUploadDomainsLoader();
   const updateAction = useUpdateSettingsAction();
   const updateParticleAction = useUpdateParticleConfigAction();
+  const deleteAccountAction = useDeleteAccountAction();
   const globalParticle = useGlobalParticle();
 
   // Set default to first available domain if no domain is selected
@@ -705,12 +787,53 @@ export default component$(() => {
               ✅ {updateParticleAction.value.message}~ ✨
             </p>
           </div>
-        )}
-
-        {updateParticleAction.value?.failed && (
+        )}        {updateParticleAction.value?.failed && (
           <div class="bg-gradient-to-br from-theme-accent-primary/20 to-theme-accent-secondary/20 border-theme-accent-primary/30 glass mt-4 rounded-2xl border p-3 sm:p-4">
             <p class="text-theme-accent-primary flex items-center text-xs sm:text-sm">
               ❌ {updateParticleAction.value.message}~ 💔
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Account Deletion - Danger Zone */}
+      <div class="glass border-red-500/30 bg-gradient-to-br from-red-500/10 to-red-600/10 rounded-2xl border p-4 sm:p-6">
+        <h2 class="text-red-400 mb-4 flex items-center text-lg font-bold sm:mb-6 sm:text-xl">
+          <AlertTriangle class="mr-2 h-5 w-5" />
+          Danger Zone
+        </h2>
+        <p class="text-red-300/80 mb-6 text-sm">
+          ⚠️ This action is permanent and cannot be undone. All your files, data, and account information will be permanently deleted.
+        </p>
+
+        <Form action={deleteAccountAction} class="space-y-4">
+          <div>
+            <label class="text-red-300 mb-2 block text-sm font-medium">
+              Type "DELETE MY ACCOUNT" to confirm deletion:
+            </label>
+            <input
+              type="text"
+              name="confirmationText"
+              placeholder="Type DELETE MY ACCOUNT here..."
+              class="w-full rounded-lg border border-red-500/30 bg-red-500/5 px-3 py-2 text-red-200 placeholder-red-400/60 focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-400/50"
+              required
+            />
+          </div>
+
+          <button
+            type="submit"
+            class="bg-red-600 hover:bg-red-700 text-white flex w-full items-center justify-center rounded-lg px-4 py-3 font-medium transition-all duration-300 hover:scale-[1.02]"
+          >
+            <Trash2 class="mr-2 h-4 w-4" />
+            Delete My Account Forever
+          </button>
+        </Form>
+
+        {/* Error/Success Messages */}
+        {deleteAccountAction.value?.failed && (
+          <div class="mt-4 rounded-lg border border-red-500/50 bg-red-500/20 p-3">
+            <p class="text-red-300 text-sm">
+              ❌ {deleteAccountAction.value.message}
             </p>
           </div>
         )}
