@@ -18,7 +18,7 @@ export default component$(() => {
 
   // Initialize theme provider
   useThemeProvider();
-  
+
   // Initialize alert provider
   useAlertProvider();
 
@@ -37,7 +37,10 @@ export default component$(() => {
         )}
         <RouterHead />
       </head>
-      <body lang="en" style="background-color: var(--theme-bg-primary); color: var(--theme-text-primary);">
+      <body
+        lang="en"
+        style="background-color: var(--theme-bg-primary); color: var(--theme-text-primary);"
+      >
         <RouterOutlet />
         <AlertContainer />
       </body>
