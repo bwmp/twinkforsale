@@ -17,7 +17,7 @@ import {
   Users,
   Palette,
 } from "lucide-icons-qwik";
-import { ThemeToggle } from "~/components/theme-toggle/theme-toggle";
+import { ThemeToggle } from "~/components/ui/theme-toggle";
 import { db } from "~/lib/db";
 import { getAnalyticsData } from "~/lib/analytics";
 export const usePublicStats = routeLoader$(async () => {

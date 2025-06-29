@@ -47,19 +47,19 @@ import {
 import {
   BioPageDisplay,
   type BioPageData,
-} from "~/components/bio-page-display";
-import { IconSelector } from "~/components/icon-selector";
-import { BioLinkIcon } from "~/components/bio-link-icon";
+} from "~/components/bio/bio-page-display";
+import { IconSelector } from "~/components/ui/icon-selector";
+import { BioLinkIcon } from "~/components/bio/bio-link-icon";
 import {
   defaultParticleConfigs,
   type ParticleConfig,
-} from "~/components/particle-background";
-import { ParticleConfigPanel } from "~/components/particle-config-panel";
+} from "~/components/effects/particle-background";
+import { ParticleConfigPanel } from "~/components/ui/particle-config-panel";
 import {
   GradientConfigPanel,
   getGradientCSS,
   type GradientConfig,
-} from "~/components/gradient-config-panel";
+} from "~/components/ui/gradient-config-panel";
 import { autoPopulateDiscordId, getLanyardData } from "~/lib/discord";
 import { sanitizeCSS, hasDangerousCSS } from "~/lib/css-sanitizer";
 

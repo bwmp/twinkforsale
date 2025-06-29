@@ -13,7 +13,7 @@ import {
   BarChart3,
   FileDown,
 } from "lucide-icons-qwik";
-import { DetailedAnalyticsChart } from "~/components/detailed-analytics-chart/detailed-analytics-chart";
+import { DetailedAnalyticsChart } from "~/components/charts/detailed-analytics-chart";
 import { db } from "~/lib/db";
 import { getUploadAnalytics } from "~/lib/analytics";
 import { formatBytes } from "~/lib/utils";

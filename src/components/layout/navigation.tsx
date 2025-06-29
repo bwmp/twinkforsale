@@ -12,7 +12,7 @@ import {
   Link as LinkIcon,
 } from "lucide-icons-qwik";
 import { Nav } from "@luminescent/ui-qwik";
-import { ThemeToggle } from "~/components/theme-toggle/theme-toggle";
+import { ThemeToggle } from "~/components/ui/theme-toggle";
 
 export default component$(() => {
   const session = useSession();

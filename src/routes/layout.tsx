@@ -7,14 +7,14 @@ import {
   useVisibleTask$,
 } from "@builder.io/qwik";
 import { routeLoader$, useLocation } from "@builder.io/qwik-city";
-import { ImagePreview } from "~/components/image-preview/image-preview";
+import { ImagePreview } from "~/components/layout/image-preview";
 import {
   ImagePreviewContext,
   type ImagePreviewStore,
 } from "~/lib/image-preview-store";
-import Navigation from "~/components/navigation/navigation";
-import { Footer } from "~/components/footer";
-import { ParticleBackground } from "~/components/particle-background";
+import Navigation from "~/components/layout/navigation";
+import { Footer } from "~/components/layout/footer";
+import { ParticleBackground } from "~/components/effects/particle-background";
 import { useGlobalParticle } from "~/lib/global-particle-store";
 import {
   getServerThemePreference,

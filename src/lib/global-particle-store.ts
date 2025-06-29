@@ -7,7 +7,7 @@ import {
   $
 } from "@builder.io/qwik";
 import { isServer } from "@builder.io/qwik/build";
-import { defaultParticleConfigs, type ParticleConfig } from "~/components/particle-background";
+import { defaultParticleConfigs, type ParticleConfig } from "~/components/effects/particle-background";
 
 export interface GlobalParticleStore {
   config: ParticleConfig;

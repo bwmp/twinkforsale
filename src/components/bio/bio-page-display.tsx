@@ -9,9 +9,9 @@ import {
   type ParticleConfig,
 } from "~/components/effects/particle-background";
 import { BioLinkIcon } from "~/components/bio/bio-link-icon";
-import { DiscordProfile } from "~/components/bio/discord-profile";
+import { DiscordProfile } from "./discord-profile";
 import { Markdown } from "~/components/markdown";
-import { AsyncDiscordAvatar } from "~/components/bio/async-discord-avatar";
+import { AsyncDiscordAvatar } from "./async-discord-avatar";
 // import { sanitizeCSS } from "~/lib/css-sanitizer";
 
 export interface BioPageData {

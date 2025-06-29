@@ -11,8 +11,8 @@ import {
   Activity,
   Bell,
 } from "lucide-icons-qwik";
-import { AnalyticsChart } from "~/components/analytics-chart/analytics-chart";
-import { UserAnalytics } from "~/components/user-analytics/user-analytics";
+import { AnalyticsChart } from "~/components/charts/analytics-chart";
+import { UserAnalytics } from "~/components/charts/user-analytics";
 import { db } from "~/lib/db";
 import { getEnvConfig } from "~/lib/env";
 import { getAnalyticsData } from "~/lib/analytics";

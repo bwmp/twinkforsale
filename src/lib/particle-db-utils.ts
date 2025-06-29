@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { defaultParticleConfigs, type ParticleConfig } from "~/components/particle-background";
+import { defaultParticleConfigs, type ParticleConfig } from "~/components/effects/particle-background";
 
 export async function loadUserParticleConfig(userEmail: string): Promise<ParticleConfig> {
   try {

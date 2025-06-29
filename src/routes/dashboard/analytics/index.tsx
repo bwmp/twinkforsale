@@ -8,7 +8,7 @@ import {
   FileText,
   Zap,
 } from "lucide-icons-qwik";
-import { DetailedAnalyticsChart } from "~/components/detailed-analytics-chart/detailed-analytics-chart";
+import { DetailedAnalyticsChart } from "~/components/charts/detailed-analytics-chart";
 import { db } from "~/lib/db";
 import { getUploadAnalytics, getUserAnalytics } from "~/lib/analytics";
 import { formatBytes } from "~/lib/utils";

@@ -3,8 +3,8 @@ import { routeLoader$, routeAction$, z, zod$ } from "@builder.io/qwik-city";
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { Eye } from "lucide-icons-qwik";
 import { getBioPageByUsername, trackBioView, trackLinkClick } from "~/lib/bio";
-import { BioPageDisplay, type BioPageData } from "~/components/bio-page-display";
-import { getGradientCSS, type GradientConfig } from "~/components/gradient-config-panel";
+import { BioPageDisplay, type BioPageData } from "~/components/bio/bio-page-display";
+import { getGradientCSS, type GradientConfig } from "~/components/ui/gradient-config-panel";
 
 export const useBioPage = routeLoader$(async (requestEvent) => {
   const username = requestEvent.params.username;

@@ -34,7 +34,7 @@ import {
   Square,
 } from "lucide-icons-qwik";
 import { ImagePreviewContext } from "~/lib/image-preview-store";
-import { FileTypeIcon } from "~/components/lazy-image";
+import { FileTypeIcon } from "~/components/file-type-icon";
 import { db } from "~/lib/db";
 import { getEnvConfig } from "~/lib/env";
 import { getUploadAnalytics } from "~/lib/analytics";

@@ -21,7 +21,7 @@ import {
 } from "lucide-icons-qwik";
 import { db } from "~/lib/db";
 import { setThemePreference } from "~/lib/cookie-utils";
-import { ParticleConfigPanel } from "~/components/particle-config-panel/particle-config-panel";
+import { ParticleConfigPanel } from "~/components/ui/particle-config-panel";
 import {
   useGlobalParticle,
   updateGlobalParticleConfig,

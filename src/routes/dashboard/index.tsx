@@ -16,7 +16,7 @@ import {
 } from "lucide-icons-qwik";
 import { createSystemEvent } from "~/lib/system-events";
 import { ImagePreviewContext } from "~/lib/image-preview-store";
-import { AnalyticsChart } from "~/components/analytics-chart/analytics-chart";
+import { AnalyticsChart } from "~/components/charts/analytics-chart";
 import { db } from "~/lib/db";
 import { getEnvConfig } from "~/lib/env";
 import { getUserAnalytics } from "~/lib/analytics";
