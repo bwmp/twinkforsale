@@ -1,0 +1,208 @@
+// Storage abstraction layer - supports both filesystem and R2
+import { getEnvConfig } from './env';
+import { getR2Storage } from './r2-storage';
+import fs from 'fs';
+import path from 'path';
+
+export interface StorageResult {
+  success: boolean;
+  key: string;
+  url: string;
+  publicUrl: string;
+  error?: string;
+}
+
+export interface StorageProvider {
+  uploadFile(file: File, key: string, userId?: string): Promise<StorageResult>;
+  deleteFile(key: string): Promise<void>;
+  deleteFiles(keys: string[]): Promise<void>;
+  generateFileKey(filename: string, userId?: string): string;
+  getPublicUrl(key: string): string;
+  fileExists(key: string): Promise<boolean>;
+}
+
+class FilesystemStorage implements StorageProvider {
+  async uploadFile(file: File, key: string, userId?: string): Promise<StorageResult> {
+    try {
+      const config = getEnvConfig();
+      const baseUploadDir = config.UPLOAD_DIR;
+
+      // Determine the upload directory based on whether user is authenticated
+      let uploadDir: string;
+      if (userId) {
+        uploadDir = path.join(baseUploadDir, userId);
+      } else {
+        uploadDir = path.join(baseUploadDir, 'anonymous');
+      }
+
+      // Ensure upload directory exists
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+
+      const filePath = path.join(uploadDir, path.basename(key));
+
+      // Convert File to Buffer
+      const arrayBuffer = await file.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+
+      // Write file
+      fs.writeFileSync(filePath, buffer);
+
+      // Return URLs relative to base URL
+      const baseUrl = config.BASE_URL;
+      const publicUrl = `${baseUrl}/f/${path.basename(key, path.extname(key))}`;
+
+      return {
+        success: true,
+        key,
+        url: publicUrl,
+        publicUrl
+      };
+    } catch (error) {
+      console.error('Filesystem upload error:', error);
+      return {
+        success: false,
+        key,
+        url: '',
+        publicUrl: '',
+        error: error instanceof Error ? error.message : 'Upload failed'
+      };
+    }
+  }
+
+  async deleteFile(key: string): Promise<void> {
+    const config = getEnvConfig();
+    const baseUploadDir = config.UPLOAD_DIR;
+    
+    // Try both possible paths (user-specific and anonymous)
+    const possiblePaths = [
+      path.join(baseUploadDir, key), // Direct path
+      path.join(baseUploadDir, 'anonymous', path.basename(key)), // Anonymous
+      // We'd need userId for user-specific, but deletion should use original path
+    ];
+
+    for (const filePath of possiblePaths) {
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+        break;
+      }
+    }
+  }
+
+  async deleteFiles(keys: string[]): Promise<void> {
+    for (const key of keys) {
+      await this.deleteFile(key);
+    }
+  }
+
+  generateFileKey(filename: string, userId?: string): string {
+    return filename; // Filesystem uses simple filename
+  }
+
+  getPublicUrl(key: string): string {
+    const config = getEnvConfig();
+    const shortCode = path.basename(key, path.extname(key)).split('_')[0];
+    return `${config.BASE_URL}/f/${shortCode}`;
+  }
+
+  async fileExists(key: string): Promise<boolean> {
+    const config = getEnvConfig();
+    const baseUploadDir = config.UPLOAD_DIR;
+    
+    const possiblePaths = [
+      path.join(baseUploadDir, key),
+      path.join(baseUploadDir, 'anonymous', path.basename(key)),
+    ];
+
+    return possiblePaths.some(filePath => fs.existsSync(filePath));
+  }
+}
+
+class R2StorageProvider implements StorageProvider {
+  private r2: ReturnType<typeof getR2Storage>;
+
+  constructor() {
+    this.r2 = getR2Storage();
+  }
+
+  async uploadFile(file: File, key: string, userId?: string): Promise<StorageResult> {
+    try {
+      const r2Key = this.generateFileKey(key, userId);
+      const result = await this.r2.uploadFile(file, r2Key, {
+        'user-id': userId || 'anonymous',
+        'short-code': path.basename(key, path.extname(key)).split('_')[0]
+      });
+
+      return {
+        success: true,
+        key: r2Key,
+        url: result.publicUrl,
+        publicUrl: result.publicUrl
+      };
+    } catch (error) {
+      console.error('R2 upload error:', error);
+      return {
+        success: false,
+        key,
+        url: '',
+        publicUrl: '',
+        error: error instanceof Error ? error.message : 'Upload failed'
+      };
+    }
+  }
+
+  async deleteFile(key: string): Promise<void> {
+    await this.r2.deleteFile(key);
+  }
+
+  async deleteFiles(keys: string[]): Promise<void> {
+    await this.r2.deleteFiles(keys);
+  }
+
+  generateFileKey(filename: string, userId?: string): string {
+    return this.r2.generateFileKey(filename, userId);
+  }
+
+  getPublicUrl(key: string): string {
+    return this.r2.getPublicUrl(key);
+  }
+
+  async fileExists(key: string): Promise<boolean> {
+    const info = await this.r2.getFileInfo(key);
+    return info.exists;
+  }
+}
+
+// Factory function to get the appropriate storage provider
+export function getStorageProvider(): StorageProvider {
+  const config = getEnvConfig();
+  
+  if (config.USE_R2_STORAGE) {
+    return new R2StorageProvider();
+  } else {
+    return new FilesystemStorage();
+  }
+}
+
+// Legacy functions for backwards compatibility
+export async function saveFile(file: File, filename: string, userId?: string): Promise<string> {
+  const storage = getStorageProvider();
+  const result = await storage.uploadFile(file, filename, userId);
+  
+  if (!result.success) {
+    throw new Error(result.error || 'File upload failed');
+  }
+  
+  return result.key;
+}
+
+export async function deleteStoredFile(key: string): Promise<void> {
+  const storage = getStorageProvider();
+  await storage.deleteFile(key);
+}
+
+export async function deleteStoredFiles(keys: string[]): Promise<void> {
+  const storage = getStorageProvider();
+  await storage.deleteFiles(keys);
+}
