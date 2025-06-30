@@ -197,7 +197,7 @@ export const useDeleteAccountAction = routeAction$(
         try {
           const fileKey = storage.generateFileKey(
             upload.filename,
-            upload.userId || undefined,
+            upload.userId || "",
           );
           await storage.deleteFile(fileKey);
         } catch (error) {

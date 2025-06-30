@@ -47,9 +47,3 @@ export function parseStorageSize(value: string): number {
     return number // Assume bytes
   }
 }
-
-/**
- * Get the free space available on the drive where the uploads directory is located
- * @param uploadsPath - Path to the uploads directory (defaults to './uploads')
- * @returns Promise that resolves to free space in bytes
- */

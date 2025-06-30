@@ -41,7 +41,7 @@ export async function cleanupExpiredFiles() {
 
     for (const file of filesToDelete) {
       try {        // Delete from storage (R2 or filesystem)
-        const fileKey = storage.generateFileKey(file.filename, file.userId || undefined);
+        const fileKey = storage.generateFileKey(file.filename, file.userId || "");
         await storage.deleteFile(fileKey);
 
         // Update user storage if the file had a user

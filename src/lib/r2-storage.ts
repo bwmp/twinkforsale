@@ -199,11 +199,10 @@ class R2Storage {
   }
 
   /**
-   * Generate the key path for a file
+   * Generate the key path for a file (now requires userId)
    */
-  generateFileKey(filename: string, userId?: string): string {
-    const prefix = userId ? `users/${userId}` : 'anonymous';
-    return `${prefix}/${filename}`;
+  generateFileKey(filename: string, userId: string): string {
+    return `users/${userId}/${filename}`;
   }
 
   /**

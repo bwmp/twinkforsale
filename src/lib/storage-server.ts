@@ -15,23 +15,26 @@ export interface StorageResult {
 }
 
 export interface StorageProvider {
-  uploadFile(file: File, key: string, userId?: string): Promise<StorageResult>;
+  uploadFile(file: File, key: string, userId: string): Promise<StorageResult>;
   deleteFile(key: string): Promise<void>;
   deleteFiles(keys: string[]): Promise<void>;
-  generateFileKey(filename: string, userId?: string): string;
+  generateFileKey(filename: string, userId: string): string;
   getPublicUrl(key: string): string;
   fileExists(key: string): Promise<boolean>;
 }
 
 class FilesystemStorage implements StorageProvider {
-  async uploadFile(file: File, key: string, userId?: string): Promise<StorageResult> {
+  async uploadFile(file: File, key: string, userId: string): Promise<StorageResult> {
     try {
       const config = getEnvConfig();
       const baseUploadDir = config.UPLOAD_DIR;
 
-      // Determine the upload directory based on whether user is authenticated
-      const userDir = userId || 'anonymous';
-      const uploadDir = path.join(baseUploadDir, userDir);
+      // Now that API keys are required, we should always have a userId
+      if (!userId) {
+        throw new Error('User ID is required for file uploads');
+      }
+
+      const uploadDir = path.join(baseUploadDir, userId);
 
       // Ensure the upload directory exists
       if (!fs.existsSync(uploadDir)) {
@@ -110,7 +113,7 @@ class FilesystemStorage implements StorageProvider {
     }
   }
 
-  generateFileKey(filename: string, userId?: string): string {
+  generateFileKey(filename: string, userId: string): string {
     // For filesystem, the key is just the filename
     return filename;
   }
@@ -161,10 +164,16 @@ class FilesystemStorage implements StorageProvider {
 class R2StorageAdapter implements StorageProvider {
   private r2 = getR2Storage();
 
-  async uploadFile(file: File, key: string, userId?: string): Promise<StorageResult> {
+  async uploadFile(file: File, key: string, userId: string): Promise<StorageResult> {
     try {
-      // Optionally, you could add userId to metadata if needed
-      const result: UploadResult = await this.r2.uploadFile(file, key);
+      // Now that API keys are required, we should always have a userId
+      if (!userId) {
+        throw new Error('User ID is required for file uploads');
+      }
+
+      // Generate proper key with user prefix for R2
+      const r2Key = this.r2.generateFileKey(key, userId);
+      const result: UploadResult = await this.r2.uploadFile(file, r2Key);
       return {
         success: true,
         key: result.key,
@@ -190,8 +199,8 @@ class R2StorageAdapter implements StorageProvider {
     await this.r2.deleteFiles(keys);
   }
 
-  generateFileKey(filename: string, userId?: string): string {
-    return this.r2.generateFileKey ? this.r2.generateFileKey(filename, userId) : filename;
+  generateFileKey(filename: string, userId: string): string {
+    return this.r2.generateFileKey(filename, userId);
   }
 
   getPublicUrl(key: string): string {
@@ -214,7 +223,7 @@ export function getStorageProvider(): StorageProvider {
 }
 
 // Helper functions for server-side storage operations
-export async function uploadFileToStorage(file: File, key: string, userId?: string): Promise<StorageResult> {
+export async function uploadFileToStorage(file: File, key: string, userId: string): Promise<StorageResult> {
   const storage = getStorageProvider();
   return await storage.uploadFile(file, key, userId);
 }

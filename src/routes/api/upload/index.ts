@@ -8,32 +8,35 @@ import { extractDimensionsFromBuffer } from "~/lib/media-utils";
 import { getStorageProvider } from "~/lib/storage-server";
 
 export const onPost: RequestHandler = async ({ request, json }) => {
-  // Check for API key authentication
+  // Check for API key authentication - now required
   const authHeader = request.headers.get("Authorization");
   const apiKey = authHeader?.replace("Bearer ", "");
 
-  let userId: string | undefined;
-  if (apiKey) {
-    // Validate API key and get user
-    const keyRecord = await db.apiKey.findUnique({
-      where: { key: apiKey, isActive: true },
-      include: { user: true }
-    });
-
-    if (keyRecord) {
-      // Check if user is approved
-      if (!keyRecord.user.isApproved) {
-        throw json(403, { error: "Account pending approval. Please wait for admin approval before uploading files." });
-      }
-
-      userId = keyRecord.userId;
-      // Update last used timestamp
-      await db.apiKey.update({
-        where: { id: keyRecord.id },
-        data: { lastUsed: new Date() }
-      });
-    }
+  if (!apiKey) {
+    throw json(401, { error: "API key required. Please provide a valid API key in the Authorization header." });
   }
+
+  // Validate API key and get user
+  const keyRecord = await db.apiKey.findUnique({
+    where: { key: apiKey, isActive: true },
+    include: { user: true }
+  });
+
+  if (!keyRecord) {
+    throw json(401, { error: "Invalid or inactive API key." });
+  }
+
+  // Check if user is approved
+  if (!keyRecord.user.isApproved) {
+    throw json(403, { error: "Account pending approval. Please wait for admin approval before uploading files." });
+  }
+
+  const userId = keyRecord.userId;
+  // Update last used timestamp
+  await db.apiKey.update({
+    where: { id: keyRecord.id },
+    data: { lastUsed: new Date() }
+  });
 
   // Parse multipart form data
   const formData = await request.formData();
@@ -45,42 +48,36 @@ export const onPost: RequestHandler = async ({ request, json }) => {
   const validation = validateFile(file);
   if (!validation.isValid) {
     // Monitor failed upload
-    await monitorFailedUpload(userId || null, validation.error || "File validation failed", {
+    await monitorFailedUpload(userId, validation.error || "File validation failed", {
       fileName: file.name,
       fileSize: file.size,
       mimeType: file.type
     });
     throw json(400, { error: validation.error });
   }
-  // Check user limits if authenticated
-  if (userId) {
-    const user = await db.user.findUnique({
-      where: { id: userId },
-      include: { uploads: true }
-    });
 
-    if (user) {
-      // Check upload count limit
-      if (user.uploads.length >= user.maxUploads) {
-        throw json(429, { error: "Upload limit exceeded" });
-      }
+  // Check user limits
+  const user = await db.user.findUnique({
+    where: { id: userId },
+    include: { uploads: true }
+  });
 
-      // Check file size limit
-      if (file.size > user.maxFileSize) {
-        throw json(413, { error: "File too large" });
-      }
-      // Check storage limit (user's custom limit or env default)
-      const config = getEnvConfig();
-      const userStorageLimit = user.maxStorageLimit || config.BASE_STORAGE_LIMIT;
-      const totalStorage = user.storageUsed + file.size;
-      if (totalStorage > userStorageLimit) {
-        throw json(413, { error: "Storage quota exceeded" });
-      }
+  if (user) {
+    // Check upload count limit
+    if (user.uploads.length >= user.maxUploads) {
+      throw json(429, { error: "Upload limit exceeded" });
     }
-  } else {
-    // Anonymous upload limits
-    if (file.size > 5242880) { // 5MB for anonymous
-      throw json(413, { error: "File too large for anonymous upload" });
+
+    // Check file size limit
+    if (file.size > user.maxFileSize) {
+      throw json(413, { error: "File too large" });
+    }
+    // Check storage limit (user's custom limit or env default)
+    const config = getEnvConfig();
+    const userStorageLimit = user.maxStorageLimit || config.BASE_STORAGE_LIMIT;
+    const totalStorage = user.storageUsed + file.size;
+    if (totalStorage > userStorageLimit) {
+      throw json(413, { error: "Storage quota exceeded" });
     }
   }  // Generate unique identifiers
   let useCuteWords = false;
@@ -130,14 +127,18 @@ export const onPost: RequestHandler = async ({ request, json }) => {
     ? new Date(Date.now() + finalExpirationDays * 24 * 60 * 60 * 1000)
     : null;
 
-  // Use the storage provider's URL instead of constructing manually
+  // Always use the application URL format for embeds (twink.forsale/f/shortCode)
+  const config = getEnvConfig();
+  const baseUrl = config.BASE_URL || 'https://twink.forsale';
+  const applicationUrl = `${baseUrl}/f/${shortCode}`;
+
   const upload = await db.upload.create({
     data: {
       filename: uploadResult.key, // Store the storage key
       originalName: file.name,
       mimeType: file.type,
       size: file.size,
-      url: uploadResult.publicUrl, // Use the public URL from storage
+      url: applicationUrl, // Use application URL for embeds
       shortCode,
       deletionKey,
       userId,
@@ -147,27 +148,26 @@ export const onPost: RequestHandler = async ({ request, json }) => {
       height: dimensions?.height
     }
   });
-  // Update user storage if authenticated
-  if (userId) {
-    await db.user.update({
-      where: { id: userId },
-      data: {
-        storageUsed: {
-          increment: file.size
-        }
-      }
-    });
 
-    // Monitor upload event for potential alerts
-    await monitorUploadEvent(userId, file.size);
-  }  // Return ShareX-compatible response
+  // Update user storage
+  await db.user.update({
+    where: { id: userId },
+    data: {
+      storageUsed: {
+        increment: file.size
+      }
+    }
+  });
+
+  // Monitor upload event for potential alerts
+  await monitorUploadEvent(userId, file.size);  // Return ShareX-compatible response with application URL for embeds
   const response: any = {
-    url: upload.url // This will be the R2 public URL or filesystem URL
+    url: upload.url, // This will be the twink.forsale/f/shortCode URL for embeds
+    deletion_url: `${baseUrl}/delete/${upload.deletionKey}`
   };
   
-  // Add thumbnail URL for images
+  // Add thumbnail URL for images (also use application URL)
   if (file.type.startsWith("image/")) {
-    // For R2, this could be a direct image URL or a processed thumbnail
     response.thumbnail_url = upload.url;
   }
 

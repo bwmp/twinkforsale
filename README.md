@@ -150,12 +150,23 @@ Configure per-user storage limits and file size restrictions through environment
 ## 📊 API Endpoints
 
 ### Upload API
+**Authentication Required**: All uploads require a valid API key.
+
 ```http
 POST /api/upload
 Authorization: Bearer <api-key>
 Content-Type: multipart/form-data
 
 file: <file-data>
+```
+
+**Response**: Returns the twink.forsale URL for proper embed support:
+```json
+{
+  "url": "https://twink.forsale/f/abc123",
+  "deletion_url": "https://twink.forsale/delete/xyz789",
+  "thumbnail_url": "https://twink.forsale/f/abc123"
+}
 ```
 
 ### File Access
