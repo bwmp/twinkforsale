@@ -102,12 +102,21 @@ export const useUserData = routeLoader$(async (requestEvent) => {
   const analyticsData = await getUserAnalytics(user.id, 7);
 
   return {
-    user,
+    user: {
+      ...user,
+      maxFileSize: Number(user.maxFileSize), // Convert BigInt to number
+      maxStorageLimit: user.maxStorageLimit ? Number(user.maxStorageLimit) : null, // Convert BigInt to number
+      storageUsed: Number(user.storageUsed), // Convert BigInt to number
+      uploads: user.uploads.map(upload => ({
+        ...upload,
+        size: Number(upload.size) // Convert BigInt to number
+      }))
+    },
     stats: {
       totalUploads,
       totalViews: totalViews._sum.views || 0,
-      storageUsed: user.storageUsed,
-      maxStorage: effectiveStorageLimit,
+      storageUsed: Number(user.storageUsed), // Convert BigInt to number
+      maxStorage: Number(effectiveStorageLimit), // Convert BigInt to number
     },
     analyticsData,
     origin: requestEvent.url.origin,

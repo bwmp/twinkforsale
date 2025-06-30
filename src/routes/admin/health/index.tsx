@@ -240,7 +240,7 @@ export const useHealthData = routeLoader$(async () => {
         email: user.email,
         uploadsLast7Days: user.uploads.length,
         totalUploads: user._count.uploads,
-        storageUsed: user.storageUsed,
+        storageUsed: Number(user.storageUsed), // Convert BigInt to number
       })),
       errorLogs,
       analytics: analyticsData,

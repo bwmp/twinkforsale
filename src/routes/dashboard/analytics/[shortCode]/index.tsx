@@ -134,7 +134,10 @@ export const useFileAnalytics = routeLoader$(async (requestEvent) => {
     return { hour, count };
   }).reverse();
   return {
-    upload,
+    upload: {
+      ...upload,
+      size: Number(upload.size) // Convert BigInt to number
+    },
     analytics,
     viewLogs: viewLogs.slice(0, 20).map((log) => ({
       ...log,

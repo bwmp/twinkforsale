@@ -52,6 +52,7 @@ export const useAnalyticsOverview = routeLoader$(async (requestEvent) => {
 
       return {
         ...upload,
+        size: Number(upload.size), // Convert BigInt to number
         analytics,
         weeklyViews,
         weeklyDownloads,
@@ -75,7 +76,13 @@ export const useAnalyticsOverview = routeLoader$(async (requestEvent) => {
   });
 
   return {
-    user,
+    user: {
+      ...user,
+      maxFileSize: Number(user.maxFileSize), // Convert BigInt to number
+      maxStorageLimit: user.maxStorageLimit ? Number(user.maxStorageLimit) : null, // Convert BigInt to number
+      storageUsed: Number(user.storageUsed), // Convert BigInt to number
+      uploads: topUploadsAnalytics // Already converted above
+    },
     userAnalytics,
     topUploadsAnalytics,
     summary: {

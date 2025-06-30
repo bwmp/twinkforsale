@@ -78,7 +78,23 @@ export const useUserData = routeLoader$(async ({ sharedMap, redirect }) => {
   // Get analytics data for the last week
   const analyticsData = await getAnalyticsData(7);
 
-  return { users, currentUser: user, config, analyticsData };
+  // Convert BigInt values to numbers for JSON serialization
+  const usersWithConvertedBigInt = users.map(user => ({
+    ...user,
+    maxFileSize: Number(user.maxFileSize),
+    maxStorageLimit: user.maxStorageLimit ? Number(user.maxStorageLimit) : null,
+    storageUsed: Number(user.storageUsed)
+  }));
+
+  return { 
+    users: usersWithConvertedBigInt, 
+    currentUser: user, 
+    config: {
+      ...config,
+      BASE_STORAGE_LIMIT: Number(config.BASE_STORAGE_LIMIT) // Convert BigInt to number
+    }, 
+    analyticsData 
+  };
 });
 
 export const useUpdateUser = routeAction$(async (data, { sharedMap }) => {

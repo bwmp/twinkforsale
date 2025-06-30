@@ -194,14 +194,14 @@ export async function checkUserStorageAlerts(userId: string) {
 
     if (!user) return;
 
-    const totalStorage = user.uploads.reduce((sum: number, upload: any) => sum + upload.size, 0);
-    const storageLimit = user.maxStorageLimit || 10737418240; // 10GB default
-    const storageUsagePercent = (totalStorage / Number(storageLimit)) * 100;
+    const totalStorage = user.uploads.reduce((sum: number, upload: any) => sum + Number(upload.size), 0);
+    const storageLimit = Number(user.maxStorageLimit || BigInt(10737418240)); // 10GB default
+    const storageUsagePercent = (totalStorage / storageLimit) * 100;
 
     // Update user's storage usage
     await db.user.update({
       where: { id: userId },
-      data: { storageUsed: totalStorage }
+      data: { storageUsed: BigInt(totalStorage) }
     });
 
     // Storage alerts
@@ -542,9 +542,9 @@ export async function checkUserLimits(userId: string) {
 
     if (!user) return;
 
-    const totalStorage = user.uploads.reduce((sum: number, upload: any) => sum + upload.size, 0);
-    const storageLimit = user.maxStorageLimit || 10737418240; // 10GB default
-    const storageUsagePercent = (totalStorage / Number(storageLimit)) * 100;
+    const totalStorage = user.uploads.reduce((sum: number, upload: any) => sum + Number(upload.size), 0);
+    const storageLimit = Number(user.maxStorageLimit || BigInt(10737418240)); // 10GB default
+    const storageUsagePercent = (totalStorage / storageLimit) * 100;
 
     const fileCount = user.uploads.length;
     const fileLimit = user.maxUploads || 1000;

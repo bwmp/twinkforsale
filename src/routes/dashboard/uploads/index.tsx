@@ -183,6 +183,7 @@ export const useUserUploads = routeLoader$(async (requestEvent) => {
 
       return {
         ...upload,
+        size: Number(upload.size), // Convert BigInt to number for JSON serialization
         analytics,
         weeklyViews: totalViews,
         weeklyUniqueViews: uniqueViews,
@@ -198,9 +199,12 @@ export const useUserUploads = routeLoader$(async (requestEvent) => {
   return {
     user: {
       ...user,
+      maxFileSize: Number(user.maxFileSize), // Convert BigInt to number
+      maxStorageLimit: user.maxStorageLimit ? Number(user.maxStorageLimit) : null, // Convert BigInt to number
+      storageUsed: Number(user.storageUsed), // Convert BigInt to number
       uploads: uploadsWithAnalytics,
     },
-    effectiveStorageLimit,
+    effectiveStorageLimit: Number(effectiveStorageLimit), // Convert BigInt to number
     origin: requestEvent.url.origin,
     savedViewMode,
   };
