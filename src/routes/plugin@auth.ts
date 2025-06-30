@@ -27,6 +27,7 @@ export const { onRequest, useSession, useSignIn, useSignOut } = QwikAuth$(
           if (session?.user) {
             session.user.id = user.id;
             // Add approval status and admin role to session
+            // No need to worry about BigInt fields since they're now in UserSettings
             const dbUser = await db.user.findUnique({
               where: { id: user.id },
               select: { isApproved: true, isAdmin: true }

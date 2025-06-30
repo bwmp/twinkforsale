@@ -74,7 +74,7 @@ async function runSystemChecks() {
 
   // Check user storage alerts
   const users = await db.user.findMany({
-    select: { id: true, email: true, storageUsed: true, maxStorageLimit: true }
+    select: { id: true, email: true }
   });
 
   for (const user of users) {
@@ -99,19 +99,24 @@ export async function monitorUploadEvent(userId: string, fileSize: number) {
     // Check if user is approaching limits after this upload
     const user = await db.user.findUnique({
       where: { id: userId },
-      include: { uploads: true }
+      include: { 
+        uploads: true,
+        settings: true
+      }
     });
 
     if (!user) return;
 
-    const maxStorageLimit = Number(user.maxStorageLimit || BigInt(50 * 1024 * 1024 * 1024)); // 50GB default
-    const newStorageUsed = Number(user.storageUsed) + fileSize;
+    const maxStorageLimit = Number(user.settings?.maxStorageLimit || BigInt(50 * 1024 * 1024 * 1024)); // 50GB default
+    const currentStorageUsed = Number(user.settings?.storageUsed || BigInt(0));
+    const newStorageUsed = currentStorageUsed + fileSize;
     const storagePercentage = newStorageUsed / maxStorageLimit * 100;
     const fileCount = user.uploads.length + 1; // +1 for the current upload
-    const fileCountPercentage = (fileCount / user.maxUploads) * 100;
+    const maxUploads = user.settings?.maxUploads || 100;
+    const fileCountPercentage = (fileCount / maxUploads) * 100;
 
     // Check for immediate alerts after upload
-    if (storagePercentage >= 90 && (Number(user.storageUsed) / maxStorageLimit) * 100 < 90) {
+    if (storagePercentage >= 90 && (currentStorageUsed / maxStorageLimit) * 100 < 90) {
       await createSystemEvent(
         'USER_STORAGE_WARNING',
         'WARNING',
@@ -129,17 +134,17 @@ export async function monitorUploadEvent(userId: string, fileSize: number) {
       );
     }
 
-    if (fileCountPercentage >= 90 && (user.uploads.length / user.maxUploads * 100) < 90) {
+    if (fileCountPercentage >= 90 && (user.uploads.length / maxUploads * 100) < 90) {
       await createSystemEvent(
         'USER_FILE_LIMIT_WARNING',
         'WARNING',
         'User Approaching File Limit',
-        `User ${user.email} has uploaded ${fileCount}/${user.maxUploads} files (${fileCountPercentage.toFixed(1)}%)`,
+        `User ${user.email} has uploaded ${fileCount}/${maxUploads} files (${fileCountPercentage.toFixed(1)}%)`,
         {
           userId,
           metadata: {
             fileCount,
-            maxUploads: user.maxUploads,
+            maxUploads: maxUploads,
             percentage: fileCountPercentage,
             triggerUpload: true
           }

@@ -59,23 +59,29 @@ export const onPost: RequestHandler = async ({ request, json }) => {
   // Check user limits
   const user = await db.user.findUnique({
     where: { id: userId },
-    include: { uploads: true }
+    include: { 
+      uploads: true,
+      settings: true
+    }
   });
 
   if (user) {
     // Check upload count limit
-    if (user.uploads.length >= user.maxUploads) {
+    const maxUploads = user.settings?.maxUploads || 100;
+    if (user.uploads.length >= maxUploads) {
       throw json(429, { error: "Upload limit exceeded" });
     }
 
     // Check file size limit
-    if (file.size > Number(user.maxFileSize)) {
+    const maxFileSize = user.settings?.maxFileSize || BigInt(10485760); // 10MB default
+    if (file.size > Number(maxFileSize)) {
       throw json(413, { error: "File too large" });
     }
     // Check storage limit (user's custom limit or env default)
     const config = getEnvConfig();
-    const userStorageLimit = user.maxStorageLimit || BigInt(config.BASE_STORAGE_LIMIT);
-    const totalStorage = user.storageUsed + BigInt(file.size);
+    const userStorageLimit = user.settings?.maxStorageLimit || BigInt(config.BASE_STORAGE_LIMIT);
+    const currentStorageUsed = user.settings?.storageUsed || BigInt(0);
+    const totalStorage = currentStorageUsed + BigInt(file.size);
     if (totalStorage > userStorageLimit) {
       throw json(413, { error: "Storage quota exceeded" });
     }
@@ -86,17 +92,21 @@ export const onPost: RequestHandler = async ({ request, json }) => {
   let userExpirationDays = null;
   let userMaxViews = null;
   if (userId) {
-    const user = await db.user.findUnique({
+    const userWithSettings = await db.user.findUnique({
       where: { id: userId },
-      select: { 
-        useCustomWords: true, 
-        defaultExpirationDays: true,
-        defaultMaxViews: true
+      include: { 
+        settings: {
+          select: {
+            useCustomWords: true, 
+            defaultExpirationDays: true,
+            defaultMaxViews: true
+          }
+        }
       }
     });
-    useCuteWords = user?.useCustomWords || false;
-    userExpirationDays = user?.defaultExpirationDays;
-    userMaxViews = user?.defaultMaxViews;
+    useCuteWords = userWithSettings?.settings?.useCustomWords || false;
+    userExpirationDays = userWithSettings?.settings?.defaultExpirationDays;
+    userMaxViews = userWithSettings?.settings?.defaultMaxViews;
   }// Check for custom expiration and view limit overrides from form data
   const customExpirationDays = formData.get('expirationDays');
   const customMaxViews = formData.get('maxViews');
@@ -149,15 +159,21 @@ export const onPost: RequestHandler = async ({ request, json }) => {
     }
   });
 
-  // Update user storage
-  await db.user.update({
-    where: { id: userId },
-    data: {
-      storageUsed: {
-        increment: BigInt(file.size)
+  // Update user storage in UserSettings
+  if (userId) {
+    await db.userSettings.upsert({
+      where: { userId },
+      update: {
+        storageUsed: {
+          increment: BigInt(file.size)
+        }
+      },
+      create: {
+        userId,
+        storageUsed: BigInt(file.size)
       }
-    }
-  });
+    });
+  }
 
   // Monitor upload event for potential alerts
   await monitorUploadEvent(userId, file.size);  // Return ShareX-compatible response with application URL for embeds

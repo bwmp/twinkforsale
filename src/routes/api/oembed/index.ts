@@ -24,7 +24,13 @@ export const onGet: RequestHandler = async ({ url, json }) => {
     // Find upload in database with user info
     const upload = await db.upload.findUnique({
       where: { shortCode },
-      include: { user: true }
+      include: { 
+        user: {
+          include: {
+            settings: true
+          }
+        }
+      }
     });
 
     if (!upload) {
@@ -54,7 +60,7 @@ export const onGet: RequestHandler = async ({ url, json }) => {
 
     // Fetch user statistics if the user wants to show them
     let userStats = undefined;
-    if (upload.user?.showUserStats) {
+    if (upload.user?.settings?.showUserStats) {
       const [totalFiles, totalStorageResult, totalViewsResult] = await Promise.all([
         db.upload.count({ where: { userId: upload.userId } }),
         db.upload.aggregate({
@@ -78,12 +84,12 @@ export const onGet: RequestHandler = async ({ url, json }) => {
       };
     }
 
-    const embedTitle = replacePlaceholders(upload.user?.embedTitle, userStats) || "File Upload";
-    const embedAuthor = replacePlaceholders(upload.user?.embedAuthor) || upload.user?.name;
+    const embedTitle = replacePlaceholders(upload.user?.settings?.embedTitle, userStats) || "File Upload";
+    const embedAuthor = replacePlaceholders(upload.user?.settings?.embedAuthor) || upload.user?.name;
 
     // Build provider name with user stats if enabled
-    let providerName = replacePlaceholders(upload.user?.embedFooter) || "twink.forsale";
-    if (upload.user?.showUserStats && userStats) {
+    let providerName = replacePlaceholders(upload.user?.settings?.embedFooter) || "twink.forsale";
+    if (upload.user?.settings?.showUserStats && userStats) {
       providerName = `📁 ${userStats.totalFiles} files   💾 ${formatBytes(userStats.totalStorage)}   👁️ ${userStats.totalViews.toLocaleString()} views`;
     }
 

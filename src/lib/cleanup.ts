@@ -46,8 +46,8 @@ export async function cleanupExpiredFiles() {
 
         // Update user storage if the file had a user
         if (file.userId) {
-          await db.user.update({
-            where: { id: file.userId },
+          await db.userSettings.update({
+            where: { userId: file.userId },
             data: {
               storageUsed: {
                 decrement: file.size

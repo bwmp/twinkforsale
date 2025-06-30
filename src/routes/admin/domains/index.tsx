@@ -32,7 +32,7 @@ export const useUploadDomainsLoader = routeLoader$(async () => {
     orderBy: [{ isDefault: "desc" }, { name: "asc" }],
     include: {
       _count: {
-        select: { users: true },
+        select: { userSettings: true },
       },
     },
   });
@@ -155,12 +155,12 @@ export const useDeleteDomainAction = routeAction$(
     // Check if domain has users
     const domainWithUsers = await db.uploadDomain.findUnique({
       where: { id: values.id },
-      include: { _count: { select: { users: true } } },
+      include: { _count: { select: { userSettings: true } } },
     });
 
-    if (domainWithUsers?._count.users && domainWithUsers._count.users > 0) {
+    if (domainWithUsers?._count.userSettings && domainWithUsers._count.userSettings > 0) {
       return requestEvent.fail(400, {
-        message: `Cannot delete domain: ${domainWithUsers._count.users} users are using this domain`,
+        message: `Cannot delete domain: ${domainWithUsers._count.userSettings} users are using this domain`,
       });
     }
 
@@ -414,7 +414,7 @@ export default component$(() => {
                           {domain.domain}
                         </p>
                         <p class="text-theme-text-muted text-xs">
-                          {domain._count.users} users using this domain
+                          {domain._count.userSettings} users using this domain
                         </p>
                       </div>
                     </div>

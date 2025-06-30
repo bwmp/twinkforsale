@@ -37,7 +37,11 @@ export const useUserLoader = routeLoader$(async (requestEvent) => {
   const user = await db.user.findUnique({
     where: { email: session.user.email },
     include: {
-      uploadDomain: true,
+      settings: {
+        include: {
+          uploadDomain: true,
+        }
+      },
     },
   });
 
@@ -49,12 +53,12 @@ export const useUserLoader = routeLoader$(async (requestEvent) => {
       id: user.id,
       name: user.name,
       email: user.email,
-      uploadDomainId: user.uploadDomainId,
-      customSubdomain: user.customSubdomain,
-      uploadDomain: user.uploadDomain,
-      defaultExpirationDays: user.defaultExpirationDays,
-      defaultMaxViews: user.defaultMaxViews,
-      globalParticleConfig: user.globalParticleConfig,
+      uploadDomainId: user.settings?.uploadDomainId,
+      customSubdomain: user.settings?.customSubdomain,
+      uploadDomain: user.settings?.uploadDomain,
+      defaultExpirationDays: user.settings?.defaultExpirationDays,
+      defaultMaxViews: user.settings?.defaultMaxViews,
+      globalParticleConfig: user.settings?.globalParticleConfig,
     },
   };
 });
@@ -96,9 +100,17 @@ export const useUpdateSettingsAction = routeAction$(
         });
       }
     }
-    await db.user.update({
-      where: { id: user.id },
-      data: {
+    // Update or create user settings
+    await db.userSettings.upsert({
+      where: { userId: user.id },
+      update: {
+        uploadDomainId: values.uploadDomainId || null,
+        customSubdomain: values.customSubdomain || null,
+        defaultExpirationDays: values.defaultExpirationDays || null,
+        defaultMaxViews: values.defaultMaxViews || null,
+      },
+      create: {
+        userId: user.id,
         uploadDomainId: values.uploadDomainId || null,
         customSubdomain: values.customSubdomain || null,
         defaultExpirationDays: values.defaultExpirationDays || null,
@@ -132,9 +144,13 @@ export const useUpdateParticleConfigAction = routeAction$(
       return requestEvent.fail(404, { message: "User not found" });
     }
 
-    await db.user.update({
-      where: { id: user.id },
-      data: {
+    await db.userSettings.upsert({
+      where: { userId: user.id },
+      update: {
+        globalParticleConfig: JSON.stringify(values.config),
+      },
+      create: {
+        userId: user.id,
         globalParticleConfig: JSON.stringify(values.config),
       },
     });

@@ -177,6 +177,7 @@ export const useHealthData = routeLoader$(async () => {
         uploads: {
           where: { createdAt: { gte: last7Days } },
         },
+        settings: true,
         _count: {
           select: {
             uploads: true,
@@ -240,7 +241,7 @@ export const useHealthData = routeLoader$(async () => {
         email: user.email,
         uploadsLast7Days: user.uploads.length,
         totalUploads: user._count.uploads,
-        storageUsed: Number(user.storageUsed), // Convert BigInt to number
+        storageUsed: user.settings ? Number(user.settings.storageUsed) : 0, // Convert BigInt to number
       })),
       errorLogs,
       analytics: analyticsData,

@@ -48,6 +48,7 @@ export const useUserData = routeLoader$(async (requestEvent) => {
         where: { isActive: true },
         orderBy: { order: "asc" },
       },
+      settings: true, // Include user settings
     },
   });
   if (!user) {
@@ -56,11 +57,15 @@ export const useUserData = routeLoader$(async (requestEvent) => {
         email: session.user.email,
         name: session.user.name || null,
         image: session.user.image || null,
+        settings: {
+          create: {} // Create default settings
+        }
       },
       include: {
         uploads: true,
         apiKeys: true,
         bioLinks: true,
+        settings: true,
       },
     });
 
@@ -85,6 +90,34 @@ export const useUserData = routeLoader$(async (requestEvent) => {
     }
   }
 
+  // Ensure user has settings (create if missing for existing users)
+  if (!user.settings) {
+    await db.userSettings.create({
+      data: {
+        userId: user.id
+      }
+    });
+    // Re-fetch user with settings
+    user = await db.user.findUnique({
+      where: { id: user.id },
+      include: {
+        uploads: {
+          orderBy: { createdAt: "desc" },
+          take: 10,
+        },
+        apiKeys: {
+          where: { isActive: true },
+          orderBy: { createdAt: "desc" },
+        },
+        bioLinks: {
+          where: { isActive: true },
+          orderBy: { order: "asc" },
+        },
+        settings: true,
+      },
+    }) || user;
+  }
+
   // Calculate stats
   const totalUploads = await db.upload.count({
     where: { userId: user.id },
@@ -96,7 +129,7 @@ export const useUserData = routeLoader$(async (requestEvent) => {
   });
   // Calculate the effective storage limit (user's custom limit or default from env)
   const effectiveStorageLimit =
-    user.maxStorageLimit || config.BASE_STORAGE_LIMIT;
+    user.settings?.maxStorageLimit || config.BASE_STORAGE_LIMIT;
 
   // Get user analytics for the last 7 days
   const analyticsData = await getUserAnalytics(user.id, 7);
@@ -104,9 +137,10 @@ export const useUserData = routeLoader$(async (requestEvent) => {
   return {
     user: {
       ...user,
-      maxFileSize: Number(user.maxFileSize), // Convert BigInt to number
-      maxStorageLimit: user.maxStorageLimit ? Number(user.maxStorageLimit) : null, // Convert BigInt to number
-      storageUsed: Number(user.storageUsed), // Convert BigInt to number
+      // Add settings fields at the top level for backward compatibility
+      maxFileSize: user.settings ? Number(user.settings.maxFileSize) : 10485760, // Default 10MB
+      maxStorageLimit: user.settings?.maxStorageLimit ? Number(user.settings.maxStorageLimit) : null,
+      storageUsed: user.settings ? Number(user.settings.storageUsed) : 0,
       uploads: user.uploads.map(upload => ({
         ...upload,
         size: Number(upload.size) // Convert BigInt to number
@@ -115,7 +149,7 @@ export const useUserData = routeLoader$(async (requestEvent) => {
     stats: {
       totalUploads,
       totalViews: totalViews._sum.views || 0,
-      storageUsed: Number(user.storageUsed), // Convert BigInt to number
+      storageUsed: user.settings ? Number(user.settings.storageUsed) : 0,
       maxStorage: Number(effectiveStorageLimit), // Convert BigInt to number
     },
     analyticsData,

@@ -34,7 +34,7 @@ export const useUserData = routeLoader$(async ({ sharedMap, redirect }) => {
 
   if (!user?.isAdmin) {
     throw redirect(302, "/dashboard");
-  } // Get all users with their approval status and Discord account info
+  }  // Get all users with their approval status and Discord account info
   const users = await db.user.findMany({
     select: {
       id: true,
@@ -45,10 +45,14 @@ export const useUserData = routeLoader$(async ({ sharedMap, redirect }) => {
       isApproved: true,
       isAdmin: true,
       approvedAt: true,
-      maxUploads: true,
-      maxFileSize: true,
-      maxStorageLimit: true,
-      storageUsed: true,
+      settings: {
+        select: {
+          maxUploads: true,
+          maxFileSize: true,
+          maxStorageLimit: true,
+          storageUsed: true,
+        }
+      },
       approvedBy: {
         select: {
           name: true,
@@ -81,9 +85,9 @@ export const useUserData = routeLoader$(async ({ sharedMap, redirect }) => {
   // Convert BigInt values to numbers for JSON serialization
   const usersWithConvertedBigInt = users.map(user => ({
     ...user,
-    maxFileSize: Number(user.maxFileSize),
-    maxStorageLimit: user.maxStorageLimit ? Number(user.maxStorageLimit) : null,
-    storageUsed: Number(user.storageUsed)
+    maxFileSize: user.settings ? Number(user.settings.maxFileSize) : 10485760,
+    maxStorageLimit: user.settings?.maxStorageLimit ? Number(user.settings.maxStorageLimit) : null,
+    storageUsed: user.settings ? Number(user.settings.storageUsed) : 0
   }));
 
   return { 
@@ -189,7 +193,7 @@ export default component$(() => {
 
   const getEffectiveStorageLimit = (user: any): number => {
     return (
-      user.maxStorageLimit ||
+      user.settings?.maxStorageLimit ||
       userData.value?.config.BASE_STORAGE_LIMIT ||
       10737418240
     );
@@ -776,11 +780,11 @@ export default component$(() => {
                           <div>📁 {user._count.uploads} uploads</div>
                           <div>🔑 {user._count.apiKeys} API keys</div>
                           <div>
-                            💾 {formatBytes(user.storageUsed)} /
+                            💾 {formatBytes(user.settings?.storageUsed || 0)} /
                             {formatBytes(getEffectiveStorageLimit(user))}
                           </div>
                           <div class="text-theme-accent-primary text-xs">
-                            {user.maxStorageLimit
+                            {user.settings?.maxStorageLimit
                               ? "Custom limit"
                               : "Default limit"}
                           </div>
@@ -867,7 +871,7 @@ export default component$(() => {
                             <input
                               type="number"
                               name="maxUploads"
-                              value={user.maxUploads}
+                              value={user.settings?.maxUploads || 100}
                               class="glass border-theme-card-border text-theme-text-primary focus:border-theme-accent-primary/60 w-full rounded border bg-transparent px-2 py-1 text-xs focus:outline-none"
                               min="1"
                             />
@@ -879,12 +883,12 @@ export default component$(() => {
                             <input
                               type="number"
                               name="maxFileSize"
-                              value={user.maxFileSize}
+                              value={user.settings?.maxFileSize || 10485760}
                               class="glass border-theme-card-border text-theme-text-primary focus:border-theme-accent-primary/60 w-full rounded border bg-transparent px-2 py-1 text-xs focus:outline-none"
                               min="1"
                             />
                             <div class="text-theme-accent-primary mt-1 text-xs">
-                              Current: {formatBytes(user.maxFileSize)}
+                              Current: {formatBytes(user.settings?.maxFileSize || 10485760)}
                             </div>
                           </div>
                           <div>
@@ -894,14 +898,14 @@ export default component$(() => {
                             <input
                               type="number"
                               name="maxStorageLimit"
-                              value={user.maxStorageLimit || ""}
+                              value={user.settings?.maxStorageLimit || ""}
                               placeholder={`Default: ${formatBytes(userData.value?.config.BASE_STORAGE_LIMIT || 10737418240)}`}
                               class="glass border-theme-card-border text-theme-text-primary focus:border-theme-accent-primary/60 w-full rounded border bg-transparent px-2 py-1 text-xs focus:outline-none"
                               min="1"
                             />
                             <div class="text-theme-accent-primary mt-1 text-xs">
-                              {user.maxStorageLimit
-                                ? `Custom: ${formatBytes(user.maxStorageLimit)}`
+                              {user.settings?.maxStorageLimit
+                                ? `Custom: ${formatBytes(user.settings.maxStorageLimit)}`
                                 : `Using default: ${formatBytes(userData.value?.config.BASE_STORAGE_LIMIT || 10737418240)}`}
                             </div>
                           </div>

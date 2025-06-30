@@ -27,6 +27,7 @@ export const useAnalyticsOverview = routeLoader$(async (requestEvent) => {
         orderBy: { views: "desc" },
         take: 10, // Top 10 most viewed files
       },
+      settings: true,
     },
   });
 
@@ -78,9 +79,9 @@ export const useAnalyticsOverview = routeLoader$(async (requestEvent) => {
   return {
     user: {
       ...user,
-      maxFileSize: Number(user.maxFileSize), // Convert BigInt to number
-      maxStorageLimit: user.maxStorageLimit ? Number(user.maxStorageLimit) : null, // Convert BigInt to number
-      storageUsed: Number(user.storageUsed), // Convert BigInt to number
+      maxFileSize: user.settings ? Number(user.settings.maxFileSize) : 10485760, // Convert BigInt to number
+      maxStorageLimit: user.settings?.maxStorageLimit ? Number(user.settings.maxStorageLimit) : null, // Convert BigInt to number
+      storageUsed: user.settings ? Number(user.settings.storageUsed) : 0, // Convert BigInt to number
       uploads: topUploadsAnalytics // Already converted above
     },
     userAnalytics,

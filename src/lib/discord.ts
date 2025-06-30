@@ -646,14 +646,14 @@ export async function autoPopulateDiscordId(userId: string): Promise<boolean> {
     }
 
     // Update user with Discord ID if not already set
-    const user = await db.user.findUnique({
-      where: { id: userId },
+    const user = await db.userSettings.findUnique({
+      where: { userId: userId },
       select: { bioDiscordUserId: true },
     });
 
     if (!user?.bioDiscordUserId) {
-      await db.user.update({
-        where: { id: userId },
+      await db.userSettings.update({
+        where: { userId: userId },
         data: {
           bioDiscordUserId: discordId,
         },

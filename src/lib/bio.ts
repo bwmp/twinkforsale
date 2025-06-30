@@ -39,35 +39,38 @@ export interface BioPageData {
  * Get bio page data by username
  */
 export async function getBioPageByUsername(username: string): Promise<BioPageData | null> {
-  const user = await db.user.findUnique({
+  const user = await db.user.findFirst({
     where: { 
-      bioUsername: username,
-      bioIsPublic: true,  // Only return public bio pages
-      isApproved: true    // Only approved users can have public bios
+      isApproved: true,    // Only approved users can have public bios
+      settings: {
+        bioUsername: username,
+        bioIsPublic: true,  // Only return public bio pages
+      }
     },
     include: {
       bioLinks: {
         where: { isActive: true },
         orderBy: { order: 'asc' }
-      }
+      },
+      settings: true,
     }
   });
 
-  if (!user || !user.bioUsername) {
+  if (!user || !user.settings?.bioUsername) {
     return null;
   }  return {
-    username: user.bioUsername,
-    displayName: user.bioDisplayName ?? undefined,
-    description: user.bioDescription ?? undefined,
-    profileImage: user.bioProfileImage ?? undefined,
-    backgroundImage: user.bioBackgroundImage ?? undefined,
-    backgroundColor: user.bioBackgroundColor || '#8B5CF6',
-    textColor: user.bioTextColor || '#FFFFFF',
-    accentColor: user.bioAccentColor || '#F59E0B',
-    customCss: user.bioCustomCss ?? undefined,
-    spotifyTrack: user.bioSpotifyTrack ?? undefined,
-    isPublic: user.bioIsPublic,
-    views: user.bioViews,
+    username: user.settings.bioUsername,
+    displayName: user.settings.bioDisplayName ?? undefined,
+    description: user.settings.bioDescription ?? undefined,
+    profileImage: user.settings.bioProfileImage ?? undefined,
+    backgroundImage: user.settings.bioBackgroundImage ?? undefined,
+    backgroundColor: user.settings.bioBackgroundColor || '#8B5CF6',
+    textColor: user.settings.bioTextColor || '#FFFFFF',
+    accentColor: user.settings.bioAccentColor || '#F59E0B',
+    customCss: user.settings.bioCustomCss ?? undefined,
+    spotifyTrack: user.settings.bioSpotifyTrack ?? undefined,
+    isPublic: user.settings.bioIsPublic,
+    views: user.settings.bioViews,
     links: user.bioLinks.map(link => ({
       id: link.id,
       title: link.title,
@@ -76,11 +79,11 @@ export async function getBioPageByUsername(username: string): Promise<BioPageDat
       order: link.order,
       isActive: link.isActive
     })),
-    gradientConfig: user.bioGradientConfig ?? undefined,
-    particleConfig: user.bioParticleConfig ?? undefined,
-    discordUserId: user.bioDiscordUserId ?? undefined,
-    showDiscord: user.bioShowDiscord ?? false,
-    discordConfig: user.bioDiscordConfig ?? undefined,
+    gradientConfig: user.settings.bioGradientConfig ?? undefined,
+    particleConfig: user.settings.bioParticleConfig ?? undefined,
+    discordUserId: user.settings.bioDiscordUserId ?? undefined,
+    showDiscord: user.settings.bioShowDiscord ?? false,
+    discordConfig: user.settings.bioDiscordConfig ?? undefined,
   };
 }
 
@@ -93,7 +96,7 @@ export async function trackBioView(
   userAgent?: string, 
   referer?: string
 ): Promise<void> {
-  const user = await db.user.findUnique({
+  const user = await db.userSettings.findUnique({
     where: { bioUsername: username },
     select: { id: true }
   });
@@ -101,8 +104,8 @@ export async function trackBioView(
   if (!user) return;
 
   // Update view count
-  await db.user.update({
-    where: { id: user.id },
+  await db.userSettings.update({
+    where: { userId: user.id },
     data: {
       bioViews: { increment: 1 },
       bioLastViewed: new Date()
@@ -137,7 +140,7 @@ export async function trackLinkClick(linkId: string): Promise<void> {
  * Validate bio username availability
  */
 export async function isBioUsernameAvailable(username: string, userId?: string): Promise<boolean> {
-  const existingUser = await db.user.findUnique({
+  const existingUser = await db.userSettings.findUnique({
     where: { bioUsername: username },
     select: { id: true }
   });

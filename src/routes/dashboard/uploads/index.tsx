@@ -58,6 +58,16 @@ export const useDeleteUpload = routeAction$(async (data, requestEvent) => {
     let totalStorageDecrement = 0;
     const storage = getStorageProvider();
 
+    // Get the user ID first
+    const user = await db.user.findUnique({
+      where: { email: session.user.email },
+      select: { id: true },
+    });
+
+    if (!user) {
+      return { success: false, error: "User not found" };
+    }
+
     // Process each deletion key
     for (const deletionKey of keysArray) {
       // Find upload by deletion key and verify ownership
@@ -104,12 +114,16 @@ export const useDeleteUpload = routeAction$(async (data, requestEvent) => {
 
     // Update user storage in a single transaction
     if (totalStorageDecrement > 0) {
-      await db.user.update({
-        where: { email: session.user.email },
-        data: {
+      await db.userSettings.upsert({
+        where: { userId: user.id },
+        update: {
           storageUsed: {
-            decrement: totalStorageDecrement,
+            decrement: BigInt(totalStorageDecrement),
           },
+        },
+        create: {
+          userId: user.id,
+          storageUsed: BigInt(0), // Will be decremented from 0, but this shouldn't happen in practice
         },
       });
     }
@@ -149,6 +163,7 @@ export const useUserUploads = routeLoader$(async (requestEvent) => {
       uploads: {
         orderBy: { createdAt: "desc" },
       },
+      settings: true,
     },
   });
 
@@ -158,7 +173,7 @@ export const useUserUploads = routeLoader$(async (requestEvent) => {
 
   // Calculate the effective storage limit (user's custom limit or default from env)
   const effectiveStorageLimit =
-    user.maxStorageLimit || config.BASE_STORAGE_LIMIT;
+    user.settings?.maxStorageLimit || config.BASE_STORAGE_LIMIT;
 
   // Get analytics data for each upload (last 7 days)
   const uploadsWithAnalytics = await Promise.all(
@@ -199,9 +214,9 @@ export const useUserUploads = routeLoader$(async (requestEvent) => {
   return {
     user: {
       ...user,
-      maxFileSize: Number(user.maxFileSize), // Convert BigInt to number
-      maxStorageLimit: user.maxStorageLimit ? Number(user.maxStorageLimit) : null, // Convert BigInt to number
-      storageUsed: Number(user.storageUsed), // Convert BigInt to number
+      maxFileSize: user.settings ? Number(user.settings.maxFileSize) : 10485760, // Convert BigInt to number
+      maxStorageLimit: user.settings?.maxStorageLimit ? Number(user.settings.maxStorageLimit) : null, // Convert BigInt to number
+      storageUsed: user.settings ? Number(user.settings.storageUsed) : 0, // Convert BigInt to number
       uploads: uploadsWithAnalytics,
     },
     effectiveStorageLimit: Number(effectiveStorageLimit), // Convert BigInt to number

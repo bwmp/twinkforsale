@@ -76,6 +76,7 @@ export const useBioData = routeLoader$(async (requestEvent) => {
       bioLinks: {
         orderBy: { order: "asc" },
       },
+      settings: true,
     },
   });
 
@@ -87,11 +88,11 @@ export const useBioData = routeLoader$(async (requestEvent) => {
   }
 
   // Auto-populate Discord ID if user logged in with Discord and doesn't have one set
-  if (!user.bioDiscordUserId) {
+  if (!user.settings?.bioDiscordUserId) {
     await autoPopulateDiscordId(user.id);
     // Refetch user data to get the updated Discord ID
-    const updatedUser = await db.user.findUnique({
-      where: { id: user.id },
+    const updatedUser = await db.userSettings.findUnique({
+      where: { userId: user.id },
       select: {
         bioDiscordUserId: true,
         bioShowDiscord: true,
@@ -99,14 +100,14 @@ export const useBioData = routeLoader$(async (requestEvent) => {
       },
     });
     if (updatedUser) {
-      user.bioDiscordUserId = updatedUser.bioDiscordUserId;
-      user.bioShowDiscord = updatedUser.bioShowDiscord;
-      user.bioDiscordConfig = updatedUser.bioDiscordConfig;
+      user.settings!.bioDiscordUserId = updatedUser.bioDiscordUserId;
+      user.settings!.bioShowDiscord = updatedUser.bioShowDiscord;
+      user.settings!.bioDiscordConfig = updatedUser.bioDiscordConfig;
     }
   }
   // Get analytics if bio is set up
   let analytics = null;
-  if (user.bioUsername) {
+  if (user.settings?.bioUsername) {
     analytics = await getBioAnalytics(user.id, 7);
   }
 
@@ -118,23 +119,23 @@ export const useBioData = routeLoader$(async (requestEvent) => {
       name: user.name,
       email: user.email,
       isApproved: user.isApproved,
-      bioUsername: user.bioUsername,
-      bioDisplayName: user.bioDisplayName,
-      bioDescription: user.bioDescription,
-      bioProfileImage: user.bioProfileImage,
-      bioBackgroundImage: user.bioBackgroundImage,
-      bioBackgroundColor: user.bioBackgroundColor || "#8B5CF6",
-      bioTextColor: user.bioTextColor || "#FFFFFF",
-      bioAccentColor: user.bioAccentColor || "#F59E0B",
-      bioCustomCss: user.bioCustomCss,
-      bioSpotifyTrack: user.bioSpotifyTrack,
-      bioIsPublic: user.bioIsPublic,
-      bioViews: user.bioViews,
-      bioGradientConfig: user.bioGradientConfig,
-      bioParticleConfig: user.bioParticleConfig,
-      bioDiscordUserId: user.bioDiscordUserId,
-      bioShowDiscord: user.bioShowDiscord,
-      bioDiscordConfig: user.bioDiscordConfig,
+      bioUsername: user.settings?.bioUsername,
+      bioDisplayName: user.settings?.bioDisplayName,
+      bioDescription: user.settings?.bioDescription,
+      bioProfileImage: user.settings?.bioProfileImage,
+      bioBackgroundImage: user.settings?.bioBackgroundImage,
+      bioBackgroundColor: user.settings?.bioBackgroundColor || "#8B5CF6",
+      bioTextColor: user.settings?.bioTextColor || "#FFFFFF",
+      bioAccentColor: user.settings?.bioAccentColor || "#F59E0B",
+      bioCustomCss: user.settings?.bioCustomCss,
+      bioSpotifyTrack: user.settings?.bioSpotifyTrack,
+      bioIsPublic: user.settings?.bioIsPublic,
+      bioViews: user.settings?.bioViews,
+      bioGradientConfig: user.settings?.bioGradientConfig,
+      bioParticleConfig: user.settings?.bioParticleConfig,
+      bioDiscordUserId: user.settings?.bioDiscordUserId,
+      bioShowDiscord: user.settings?.bioShowDiscord,
+      bioDiscordConfig: user.settings?.bioDiscordConfig,
     },
     bioLinks: user.bioLinks,
     bioLimits,
@@ -192,8 +193,8 @@ export const useUpdateBio = routeAction$(
       }
     }
 
-    await db.user.update({
-      where: { id: user.id },
+    await db.userSettings.update({
+      where: { userId: user.id },
       data: {
         bioUsername: values.bioUsername || null,
         bioDisplayName: values.bioDisplayName || null,

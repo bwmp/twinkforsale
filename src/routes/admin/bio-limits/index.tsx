@@ -28,14 +28,18 @@ export const useAdminBioLimitsData = routeLoader$(async (requestEvent) => {
       name: true,
       email: true,
       isApproved: true,
-      bioUsername: true,
-      maxBioLinks: true,
-      maxUsernameLength: true,
-      maxDisplayNameLength: true,
-      maxDescriptionLength: true,
-      maxUrlLength: true,
-      maxLinkTitleLength: true,
-      maxIconLength: true,
+      settings: {
+        select: {
+          bioUsername: true,
+          maxBioLinks: true,
+          maxUsernameLength: true,
+          maxDisplayNameLength: true,
+          maxDescriptionLength: true,
+          maxUrlLength: true,
+          maxLinkTitleLength: true,
+          maxIconLength: true,
+        },
+      },
       _count: {
         select: {
           bioLinks: true,
@@ -51,13 +55,13 @@ export const useAdminBioLimitsData = routeLoader$(async (requestEvent) => {
       bioLinksCount: user._count.bioLinks,
       // Show effective limits (user override or default)
       effectiveLimits: {
-        maxBioLinks: user.maxBioLinks ?? DEFAULT_BIO_LIMITS.maxBioLinks,
-        maxUsernameLength: user.maxUsernameLength ?? DEFAULT_BIO_LIMITS.maxUsernameLength,
-        maxDisplayNameLength: user.maxDisplayNameLength ?? DEFAULT_BIO_LIMITS.maxDisplayNameLength,
-        maxDescriptionLength: user.maxDescriptionLength ?? DEFAULT_BIO_LIMITS.maxDescriptionLength,
-        maxUrlLength: user.maxUrlLength ?? DEFAULT_BIO_LIMITS.maxUrlLength,
-        maxLinkTitleLength: user.maxLinkTitleLength ?? DEFAULT_BIO_LIMITS.maxLinkTitleLength,
-        maxIconLength: user.maxIconLength ?? DEFAULT_BIO_LIMITS.maxIconLength,
+        maxBioLinks: user.settings?.maxBioLinks ?? DEFAULT_BIO_LIMITS.maxBioLinks,
+        maxUsernameLength: user.settings?.maxUsernameLength ?? DEFAULT_BIO_LIMITS.maxUsernameLength,
+        maxDisplayNameLength: user.settings?.maxDisplayNameLength ?? DEFAULT_BIO_LIMITS.maxDisplayNameLength,
+        maxDescriptionLength: user.settings?.maxDescriptionLength ?? DEFAULT_BIO_LIMITS.maxDescriptionLength,
+        maxUrlLength: user.settings?.maxUrlLength ?? DEFAULT_BIO_LIMITS.maxUrlLength,
+        maxLinkTitleLength: user.settings?.maxLinkTitleLength ?? DEFAULT_BIO_LIMITS.maxLinkTitleLength,
+        maxIconLength: user.settings?.maxIconLength ?? DEFAULT_BIO_LIMITS.maxIconLength,
       },
     })),
     defaultLimits: DEFAULT_BIO_LIMITS,
@@ -129,7 +133,7 @@ export default component$(() => {
   const filteredUsers = data.value.users.filter(user => 
     user.name?.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
     user.email.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-    user.bioUsername?.toLowerCase().includes(searchQuery.value.toLowerCase())
+    user.settings?.bioUsername?.toLowerCase().includes(searchQuery.value.toLowerCase())
   );
 
   return (
@@ -254,9 +258,9 @@ export default component$(() => {
                       <div class="text-sm text-gray-500 dark:text-gray-400">
                         {user.email}
                       </div>
-                      {user.bioUsername && (
+                      {user.settings?.bioUsername && (
                         <div class="text-sm text-blue-600 dark:text-blue-400">
-                          @{user.bioUsername}
+                          @{user.settings.bioUsername}
                         </div>
                       )}
                       <div class="text-xs text-gray-400">

@@ -19,6 +19,9 @@ export const useUserLoader = routeLoader$(async (requestEvent) => {
 
   const user = await db.user.findUnique({
     where: { email: session.user.email },
+    include: {
+      settings: true,
+    },
   });
 
   if (!user) {
@@ -30,16 +33,16 @@ export const useUserLoader = routeLoader$(async (requestEvent) => {
       id: user.id,
       name: user.name,
       email: user.email,
-      embedTitle: user.embedTitle,
-      embedDescription: user.embedDescription,
-      embedColor: user.embedColor,
-      embedAuthor: user.embedAuthor,
-      embedFooter: user.embedFooter,
-      showFileInfo: Boolean(user.showFileInfo),
-      showUploadDate: Boolean(user.showUploadDate),
-      showUserStats: Boolean(user.showUserStats),
-      customDomain: user.customDomain,
-      useCustomWords: Boolean(user.useCustomWords),
+      embedTitle: user.settings?.embedTitle,
+      embedDescription: user.settings?.embedDescription,
+      embedColor: user.settings?.embedColor,
+      embedAuthor: user.settings?.embedAuthor,
+      embedFooter: user.settings?.embedFooter,
+      showFileInfo: Boolean(user.settings?.showFileInfo),
+      showUploadDate: Boolean(user.settings?.showUploadDate),
+      showUserStats: Boolean(user.settings?.showUserStats),
+      customDomain: user.settings?.customDomain,
+      useCustomWords: Boolean(user.settings?.useCustomWords),
     },
   };
 });
@@ -62,9 +65,22 @@ export const useUpdateEmbedSettings = routeAction$(
       return requestEvent.fail(404, { message: "User not found" });
     }
 
-    await db.user.update({
-      where: { id: user.id },
-      data: {
+    await db.userSettings.upsert({
+      where: { userId: user.id },
+      update: {
+        embedTitle: values.embedTitle || null,
+        embedDescription: values.embedDescription || null,
+        embedColor: values.embedColor || null,
+        embedAuthor: values.embedAuthor || null,
+        embedFooter: values.embedFooter || null,
+        showFileInfo: Boolean(values.showFileInfo),
+        showUploadDate: Boolean(values.showUploadDate),
+        showUserStats: Boolean(values.showUserStats),
+        customDomain: values.customDomain || null,
+        useCustomWords: Boolean(values.useCustomWords),
+      },
+      create: {
+        userId: user.id,
         embedTitle: values.embedTitle || null,
         embedDescription: values.embedDescription || null,
         embedColor: values.embedColor || null,

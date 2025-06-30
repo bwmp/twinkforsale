@@ -188,21 +188,32 @@ export async function checkUserStorageAlerts(userId: string) {
       include: {
         uploads: {
           select: { size: true }
-        }
+        },
+        settings: true
       }
     });
 
     if (!user) return;
 
     const totalStorage = user.uploads.reduce((sum: number, upload: any) => sum + Number(upload.size), 0);
-    const storageLimit = Number(user.maxStorageLimit || BigInt(10737418240)); // 10GB default
+    const storageLimit = Number(user.settings?.maxStorageLimit || BigInt(10737418240)); // 10GB default
     const storageUsagePercent = (totalStorage / storageLimit) * 100;
 
     // Update user's storage usage
-    await db.user.update({
-      where: { id: userId },
-      data: { storageUsed: BigInt(totalStorage) }
-    });
+    if (user.settings) {
+      await db.userSettings.update({
+        where: { userId: userId },
+        data: { storageUsed: BigInt(totalStorage) }
+      });
+    } else {
+      // Create default settings if they don't exist
+      await db.userSettings.create({
+        data: {
+          userId: userId,
+          storageUsed: BigInt(totalStorage)
+        }
+      });
+    }
 
     // Storage alerts
     if (storageUsagePercent >= 95) {
@@ -239,7 +250,7 @@ export async function checkUserStorageAlerts(userId: string) {
 
     // File count alerts
     const fileCount = user.uploads.length;
-    const fileLimit = user.maxUploads || 1000; // Default limit
+    const fileLimit = user.settings?.maxUploads || 1000; // Default limit
     const fileUsagePercent = (fileCount / fileLimit) * 100;
 
     if (fileUsagePercent >= 95) {
@@ -536,18 +547,19 @@ export async function checkUserLimits(userId: string) {
     const user = await db.user.findUnique({
       where: { id: userId },
       include: {
-        uploads: true
+        uploads: true,
+        settings: true
       }
     });
 
     if (!user) return;
 
     const totalStorage = user.uploads.reduce((sum: number, upload: any) => sum + Number(upload.size), 0);
-    const storageLimit = Number(user.maxStorageLimit || BigInt(10737418240)); // 10GB default
+    const storageLimit = Number(user.settings?.maxStorageLimit || BigInt(10737418240)); // 10GB default
     const storageUsagePercent = (totalStorage / storageLimit) * 100;
 
     const fileCount = user.uploads.length;
-    const fileLimit = user.maxUploads || 1000;
+    const fileLimit = user.settings?.maxUploads || 1000;
     const fileUsagePercent = (fileCount / fileLimit) * 100;
 
     return {

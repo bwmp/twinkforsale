@@ -67,6 +67,28 @@ model User {
   approvedBy    User?     @relation("UserApprovals", fields: [approvedById], references: [id])
   approvedUsers User[]    @relation("UserApprovals")
   
+  // Auth.js relations
+  accounts Account[]
+  sessions Session[]
+  
+  // App relations
+  uploads  Upload[]
+  apiKeys  ApiKey[]
+  systemEvents SystemEvent[]
+  bioLinks BioLink[] // Bio links
+  bioViewLogs BioView[] // Bio view logs
+  
+  // User settings relation
+  settings UserSettings?
+  
+  @@map("users")
+}
+
+model UserSettings {
+  id        String @id @default(cuid())
+  userId    String @unique
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
   // Upload settings
   maxUploads    Int     @default(100)
   maxFileSize   BigInt  @default(10485760) // 10MB
@@ -132,18 +154,10 @@ model User {
   maxLinkTitleLength Int?    @default(50) // Maximum link title length
   maxIconLength     Int?     @default(20) // Maximum icon length
   
-  // Auth.js relations
-  accounts Account[]
-  sessions Session[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   
-  // App relations
-  uploads  Upload[]
-  apiKeys  ApiKey[]
-  systemEvents SystemEvent[]
-  bioLinks BioLink[] // Bio links
-  bioViewLogs BioView[] // Bio view logs
-  
-  @@map("users")
+  @@map("user_settings")
 }
 
 model Upload {
@@ -257,7 +271,7 @@ model UploadDomain {
   updatedAt   DateTime @updatedAt
   
   // Relations
-  users       User[]
+  userSettings UserSettings[]
   
   @@map("upload_domains")
 }

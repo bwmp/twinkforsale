@@ -17,8 +17,8 @@ export const DEFAULT_BIO_LIMITS = {
  * Get bio limits for a user
  */
 export async function getBioLimits(userId: string) {
-  const user = await db.user.findUnique({
-    where: { id: userId },
+  const user = await db.userSettings.findUnique({
+    where: { userId: userId },
     select: {
       maxBioLinks: true,
       maxUsernameLength: true,
@@ -156,7 +156,7 @@ export async function updateUserBioLimits(userId: string, limits: {
   maxLinkTitleLength?: number;
   maxIconLength?: number;
 }) {
-  return await db.user.update({
+  return await db.userSettings.update({
     where: { id: userId },
     data: limits,
   });

@@ -29,14 +29,14 @@ function generateDiscordEmbed(upload: Upload, user: any, baseUrl: string, userSt
       .replace(/\{username\}/g, user?.name || 'Anonymous');
   };
 
-  const embedTitle = replacePlaceholders(user?.embedTitle) || "File Upload";
-  const embedDescription = replacePlaceholders(user?.embedDescription) || "Uploaded via twink.forsale";
-  const embedColor = user?.embedColor || "#8B5CF6";
-  const embedAuthor = replacePlaceholders(user?.embedAuthor) || user?.name;
-  const embedFooter = replacePlaceholders(user?.embedFooter) || "twink.forsale";
-  const showFileInfo = user?.showFileInfo !== false;
-  const showUploadDate = user?.showUploadDate !== false;
-  const showUserStats = user?.showUserStats === true;  // Build description with optional file info
+  const embedTitle = replacePlaceholders(user?.settings?.embedTitle) || "File Upload";
+  const embedDescription = replacePlaceholders(user?.settings?.embedDescription) || "Uploaded via twink.forsale";
+  const embedColor = user?.settings?.embedColor || "#8B5CF6";
+  const embedAuthor = replacePlaceholders(user?.settings?.embedAuthor) || user?.name;
+  const embedFooter = replacePlaceholders(user?.settings?.embedFooter) || "twink.forsale";
+  const showFileInfo = user?.settings?.showFileInfo !== false;
+  const showUploadDate = user?.settings?.showUploadDate !== false;
+  const showUserStats = user?.settings?.showUserStats === true;  // Build description with optional file info
   let description = embedDescription;
   if (showFileInfo) {
     description += `<br><br>📁 <strong>${upload.originalName}</strong><br>📏 ${formatBytes(upload.size)} • ${upload.mimeType}`;
@@ -47,7 +47,7 @@ function generateDiscordEmbed(upload: Upload, user: any, baseUrl: string, userSt
   }  if (showUserStats && userStats) {
     description += `<br><br>👤 <strong>User Stats</strong><br>📊 ${userStats.totalFiles} files uploaded • ${formatBytes(userStats.totalStorage)} used<br>👀 ${userStats.totalViews.toLocaleString()} total views`;
   }
-  const domain = user?.customDomain || baseUrl.replace(/^https?:\/\//, '');  // Create plain text version for meta tags (Discord doesn't support HTML or markdown)
+  const domain = user?.settings?.customDomain || baseUrl.replace(/^https?:\/\//, '');  // Create plain text version for meta tags (Discord doesn't support HTML or markdown)
   let plainDescription = embedDescription;
   if (showFileInfo) {
     plainDescription += `\n${upload.originalName}\n${formatBytes(upload.size)} • ${upload.mimeType}`;
@@ -175,7 +175,13 @@ export const onRequest: RequestHandler = async ({ params, send, status, url, req
     // Find upload in database with user info for embed settings
     const upload = await db.upload.findUnique({
       where: { shortCode },
-      include: { user: true }
+      include: { 
+        user: {
+          include: {
+            settings: true
+          }
+        }
+      }
     });
 
     if (!upload) {
@@ -339,7 +345,7 @@ export const onRequest: RequestHandler = async ({ params, send, status, url, req
 
       // Fetch user statistics if the user wants to show them
       let userStats = undefined;
-      if (upload.user?.showUserStats) {
+      if (upload.user?.settings?.showUserStats) {
         const [totalFiles, totalStorageResult, totalViewsResult] = await Promise.all([
           db.upload.count({ where: { userId: upload.userId } }),
           db.upload.aggregate({
