@@ -98,7 +98,7 @@ export const useDeleteUpload = routeAction$(async (data, requestEvent) => {
         where: { id: upload.id },
       });
 
-      totalStorageDecrement += upload.size;
+      totalStorageDecrement += typeof upload.size === "bigint" ? Number(upload.size) : upload.size;
       results.push({ key: deletionKey, success: true });
     }
 

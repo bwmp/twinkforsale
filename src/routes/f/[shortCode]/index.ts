@@ -354,8 +354,8 @@ export const onRequest: RequestHandler = async ({ params, send, status, url, req
 
         userStats = {
           totalFiles,
-          totalStorage: totalStorageResult._sum.size || 0,
-          totalViews: totalViewsResult._sum.views || 0
+          totalStorage: Number(totalStorageResult._sum.size || 0),
+          totalViews: Number(totalViewsResult._sum.views || 0)
         };
       }
 

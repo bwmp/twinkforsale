@@ -115,7 +115,7 @@ export const useHealthData = routeLoader$(async () => {
       });
 
       storageStats.totalFiles = totalUploads;
-      storageStats.totalSize = totalSize._sum.size || 0;
+      storageStats.totalSize = totalSize._sum.size ? Number(totalSize._sum.size) : 0;
       storageStats.usedSpace = storageStats.totalSize;
 
       if (isUsingR2) {

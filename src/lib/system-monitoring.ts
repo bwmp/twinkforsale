@@ -105,13 +105,13 @@ export async function monitorUploadEvent(userId: string, fileSize: number) {
     if (!user) return;
 
     const maxStorageLimit = user.maxStorageLimit || (50 * 1024 * 1024 * 1024); // 50GB default
-    const newStorageUsed = user.storageUsed + fileSize;
-    const storagePercentage = (newStorageUsed / maxStorageLimit) * 100;
+    const newStorageUsed = user.storageUsed + BigInt(fileSize);
+    const storagePercentage = Number(newStorageUsed) / Number(maxStorageLimit) * 100;
     const fileCount = user.uploads.length + 1; // +1 for the current upload
     const fileCountPercentage = (fileCount / user.maxUploads) * 100;
 
     // Check for immediate alerts after upload
-    if (storagePercentage >= 90 && user.storageUsed / maxStorageLimit * 100 < 90) {
+    if (storagePercentage >= 90 && (Number(user.storageUsed) / Number(maxStorageLimit)) * 100 < 90) {
       await createSystemEvent(
         'USER_STORAGE_WARNING',
         'WARNING',

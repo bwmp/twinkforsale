@@ -69,8 +69,12 @@ export const onGet: RequestHandler = async ({ url, json }) => {
 
       userStats = {
         totalFiles,
-        totalStorage: totalStorageResult._sum.size || 0,
-        totalViews: totalViewsResult._sum.views || 0
+        totalStorage: typeof totalStorageResult._sum.size === "bigint"
+          ? Number(totalStorageResult._sum.size)
+          : (totalStorageResult._sum.size || 0),
+        totalViews: typeof totalViewsResult._sum.views === "bigint"
+          ? Number(totalViewsResult._sum.views)
+          : (totalViewsResult._sum.views || 0)
       };
     }
 
