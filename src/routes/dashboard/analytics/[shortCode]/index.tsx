@@ -198,7 +198,7 @@ export default component$(() => {
   const formatDate = (date: string | Date) => {
     return new Date(date).toLocaleString();
   };
-  const formatFileSize = (bytes: number) => {
+  const formatFileSize = (bytes: number | bigint) => {
     return formatBytes(bytes);
   };
 

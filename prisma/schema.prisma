@@ -69,9 +69,9 @@ model User {
   
   // Upload settings
   maxUploads    Int     @default(100)
-  maxFileSize   Int     @default(10485760) // 10MB
-  maxStorageLimit Int?  // Custom storage limit, null means use default from env
-  storageUsed   Int     @default(0)
+  maxFileSize   BigInt  @default(10485760) // 10MB
+  maxStorageLimit BigInt? // Custom storage limit, null means use default from env
+  storageUsed   BigInt  @default(0)
   
   // Discord embed settings
   embedTitle    String?   @default("File Upload")
@@ -151,7 +151,7 @@ model Upload {
   filename    String   // Stored filename
   originalName String  // Original upload name
   mimeType    String
-  size        Int
+  size        BigInt
   url         String   @unique // Full URL
   shortCode   String   @unique // Short identifier
   deletionKey String   @unique

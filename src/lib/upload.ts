@@ -50,7 +50,7 @@ export { generateDeletionKey }
 // Validate uploaded file
 export function validateFile(file: File): { isValid: boolean; error?: string } {
   const config = getEnvConfig();
-  const maxSize = config.MAX_FILE_SIZE;
+  const maxSize = Number(config.MAX_FILE_SIZE);
   const allowedTypes = config.ALLOWED_MIME_TYPES;
 
   // Check file size

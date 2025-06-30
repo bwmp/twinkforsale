@@ -244,8 +244,8 @@ export default component$(() => {
           bVal = b._count?.uploads || 0;
           break;
         case "storageUsed":
-          aVal = a.storageUsed || 0;
-          bVal = b.storageUsed || 0;
+          aVal = Number(a.storageUsed || 0);
+          bVal = Number(b.storageUsed || 0);
           break;
         case "createdAt":
         default:

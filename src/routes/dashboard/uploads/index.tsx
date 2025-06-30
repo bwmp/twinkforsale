@@ -348,12 +348,15 @@ export default component$(() => {
     navigator.clipboard.writeText(urls);
     // Could show a toast notification here
   });
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return "0 Bytes";
+  const formatFileSize = (bytes: number | bigint) => {
+    // Convert BigInt to number for calculations
+    const numBytes = typeof bytes === 'bigint' ? Number(bytes) : bytes;
+    
+    if (numBytes === 0) return "0 Bytes";
 
     // Handle negative numbers (over quota)
-    const isNegative = bytes < 0;
-    const absoluteBytes = Math.abs(bytes);
+    const isNegative = numBytes < 0;
+    const absoluteBytes = Math.abs(numBytes);
 
     const formattedSize = formatBytes(absoluteBytes);
     return isNegative ? `-${formattedSize}` : formattedSize;

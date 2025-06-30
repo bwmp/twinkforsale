@@ -88,7 +88,7 @@ export const useAnalyticsOverview = routeLoader$(async (requestEvent) => {
 
 export default component$(() => {
   const data = useAnalyticsOverview();
-  const formatFileSize = (bytes: number) => {
+  const formatFileSize = (bytes: number | bigint) => {
     return formatBytes(bytes);
   };
 

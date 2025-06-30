@@ -69,13 +69,13 @@ export const onPost: RequestHandler = async ({ request, json }) => {
     }
 
     // Check file size limit
-    if (file.size > user.maxFileSize) {
+    if (file.size > Number(user.maxFileSize)) {
       throw json(413, { error: "File too large" });
     }
     // Check storage limit (user's custom limit or env default)
     const config = getEnvConfig();
-    const userStorageLimit = user.maxStorageLimit || config.BASE_STORAGE_LIMIT;
-    const totalStorage = user.storageUsed + file.size;
+    const userStorageLimit = user.maxStorageLimit || BigInt(config.BASE_STORAGE_LIMIT);
+    const totalStorage = user.storageUsed + BigInt(file.size);
     if (totalStorage > userStorageLimit) {
       throw json(413, { error: "Storage quota exceeded" });
     }
@@ -137,7 +137,7 @@ export const onPost: RequestHandler = async ({ request, json }) => {
       filename: uploadResult.key, // Store the storage key
       originalName: file.name,
       mimeType: file.type,
-      size: file.size,
+      size: BigInt(file.size),
       url: applicationUrl, // Use application URL for embeds
       shortCode,
       deletionKey,
@@ -154,7 +154,7 @@ export const onPost: RequestHandler = async ({ request, json }) => {
     where: { id: userId },
     data: {
       storageUsed: {
-        increment: file.size
+        increment: BigInt(file.size)
       }
     }
   });

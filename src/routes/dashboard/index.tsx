@@ -126,7 +126,7 @@ export default component$(() => {
     const imageUrl = `/f/${shortCode}`;
     imagePreviewStore.openPreview(imageUrl, fileName);
   });
-  const formatFileSize = (bytes: number) => {
+  const formatFileSize = (bytes: number | bigint) => {
     return formatBytes(bytes);
   };
 
