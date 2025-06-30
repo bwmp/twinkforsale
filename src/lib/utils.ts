@@ -53,6 +53,3 @@ export function parseStorageSize(value: string): number {
  * @param uploadsPath - Path to the uploads directory (defaults to './uploads')
  * @returns Promise that resolves to free space in bytes
  */
-// Server-only functions moved to server-utils.ts to avoid client bundling issues
-// These functions are re-exported here for backwards compatibility but should not be used on client side
-export { getFreeSpace, getDiskUsage } from './server-utils';

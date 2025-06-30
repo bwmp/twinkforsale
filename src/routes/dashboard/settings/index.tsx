@@ -27,7 +27,6 @@ import {
   updateGlobalParticleConfig,
   themeParticleConfigs,
 } from "~/lib/global-particle-store";
-
 export const useUserLoader = routeLoader$(async (requestEvent) => {
   const session = requestEvent.sharedMap.get("session");
 
@@ -156,7 +155,8 @@ export const useUpdateParticleConfigAction = routeAction$(
       opacity: z.object({
         min: z.number(),
         max: z.number(),
-      }),      enabled: z.boolean(),
+      }),
+      enabled: z.boolean(),
     }),
   }),
 );
@@ -190,33 +190,19 @@ export const useDeleteAccountAction = routeAction$(
         message: "Please type 'DELETE MY ACCOUNT' to confirm deletion",
       });
     }
-
     try {
-      const fs = await import("fs");
-      const path = await import("path");
-      const { getEnvConfig } = await import("~/lib/env");
-      
-      const config = getEnvConfig();
-      const baseUploadDir = config.UPLOAD_DIR;
-
-      // Delete all user files from storage
+      const { getStorageProvider } = await import("~/lib/storage-server");
+      const storage = getStorageProvider(); // Delete all user files from storage (R2 or filesystem)
       for (const upload of user.uploads) {
-        let filePath: string;
-        if (upload.userId) {
-          filePath = path.join(baseUploadDir, upload.userId, upload.filename);
-        } else {
-          filePath = path.join(baseUploadDir, "anonymous", upload.filename);
+        try {
+          const fileKey = storage.generateFileKey(
+            upload.filename,
+            upload.userId || undefined,
+          );
+          await storage.deleteFile(fileKey);
+        } catch (error) {
+          console.error(`Failed to delete file ${upload.filename}:`, error);
         }
-
-        if (fs.existsSync(filePath)) {
-          fs.unlinkSync(filePath);
-        }
-      }
-
-      // Delete user directory if it exists
-      const userDir = path.join(baseUploadDir, user.id);
-      if (fs.existsSync(userDir)) {
-        fs.rmSync(userDir, { recursive: true, force: true });
       }
 
       // Delete all user data from database (cascade relationships will handle related data)
@@ -268,7 +254,7 @@ export default component$(() => {
   );
   const defaultMaxViews = useSignal(userData.value.user.defaultMaxViews || "");
   const currentThemeDisplay = useSignal<ThemeName>("dark");
-  
+
   // Initialize particle config from database or default
   const getInitialParticleConfig = () => {
     if (userData.value.user.globalParticleConfig) {
@@ -276,23 +262,26 @@ export default component$(() => {
         const parsed = JSON.parse(userData.value.user.globalParticleConfig);
         return { ...themeParticleConfigs.hearts, ...parsed };
       } catch (e) {
-        console.warn('Failed to parse user particle config:', e);
+        console.warn("Failed to parse user particle config:", e);
       }
     }
     return { ...themeParticleConfigs.hearts, enabled: true };
   };
-  
+
   const particleConfigSignal = useSignal(getInitialParticleConfig());
 
   // Sync particle settings with database on page load
   // eslint-disable-next-line qwik/no-use-visible-task
   useVisibleTask$(async () => {
     // Update global particle store with database settings
-    await updateGlobalParticleConfig(globalParticle, particleConfigSignal.value);
-    
+    await updateGlobalParticleConfig(
+      globalParticle,
+      particleConfigSignal.value,
+    );
+
     // Check if localStorage has different settings than database
     try {
-      const localSettings = localStorage.getItem('global-particle-config');
+      const localSettings = localStorage.getItem("global-particle-config");
       if (localSettings && !userData.value.user.globalParticleConfig) {
         // User has local settings but no database settings - save local to database
         const parsed = JSON.parse(localSettings);
@@ -302,7 +291,7 @@ export default component$(() => {
         updateParticleAction.submit({ config: mergedConfig });
       }
     } catch (e) {
-      console.warn('Failed to sync particle settings:', e);
+      console.warn("Failed to sync particle settings:", e);
     }
   });
 
@@ -545,7 +534,7 @@ export default component$(() => {
         </Form>
 
         {updateAction.value?.success && (
-          <div class="bg-gradient-to-br from-theme-accent-secondary/20 to-theme-accent-tertiary/20 border-theme-accent-secondary/30 glass mt-4 rounded-2xl border p-3 sm:mt-6 sm:p-4">
+          <div class="from-theme-accent-secondary/20 to-theme-accent-tertiary/20 border-theme-accent-secondary/30 glass mt-4 rounded-2xl border bg-gradient-to-br p-3 sm:mt-6 sm:p-4">
             <p class="text-theme-accent-secondary flex items-center text-xs sm:text-sm">
               ✅ {updateAction.value.message}~ ✨
             </p>
@@ -553,7 +542,7 @@ export default component$(() => {
         )}
 
         {updateAction.value?.failed && (
-          <div class="bg-gradient-to-br from-theme-accent-primary/20 to-theme-accent-secondary/20 border-theme-accent-primary/30 glass mt-4 rounded-2xl border p-3 sm:mt-6 sm:p-4">
+          <div class="from-theme-accent-primary/20 to-theme-accent-secondary/20 border-theme-accent-primary/30 glass mt-4 rounded-2xl border bg-gradient-to-br p-3 sm:mt-6 sm:p-4">
             <p class="text-theme-accent-primary flex items-center text-xs sm:text-sm">
               ❌ {updateAction.value.message}~ 💔
             </p>
@@ -585,7 +574,7 @@ export default component$(() => {
                   key={option.name}
                   class={`glass group cursor-pointer rounded-xl border-2 p-4 transition-all duration-300 ${
                     isActive
-                      ? "border-theme-accent-primary/60 bg-gradient-to-br from-theme-accent-primary/20 to-theme-accent-secondary/20"
+                      ? "border-theme-accent-primary/60 from-theme-accent-primary/20 to-theme-accent-secondary/20 bg-gradient-to-br"
                       : "border-theme-card-border hover:border-theme-accent-primary/40"
                   }`}
                   onClick$={() => {
@@ -630,7 +619,7 @@ export default component$(() => {
                           {option.label}
                         </h4>
                         {isActive && (
-                          <span class="bg-gradient-to-br from-theme-accent-primary to-theme-accent-secondary text-theme-text-primary rounded-full px-2 py-1 text-xs">
+                          <span class="from-theme-accent-primary to-theme-accent-secondary text-theme-text-primary rounded-full bg-gradient-to-br px-2 py-1 text-xs">
                             Active
                           </span>
                         )}
@@ -703,15 +692,17 @@ export default component$(() => {
           <span class="sparkle ml-2">✨</span>
         </h2>
         <p class="text-theme-text-secondary mb-6 text-sm">
-          Control the animated particles that appear in the background of the site~ ✨
+          Control the animated particles that appear in the background of the
+          site~ ✨
         </p>
-
         {/* Quick Presets */}
         <div class="mb-6">
           <label class="text-theme-text-secondary mb-3 block text-sm font-medium">
             Quick Presets~ 🎀
           </label>
-          <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">            {Object.keys(themeParticleConfigs).map((name) => (
+          <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {" "}
+            {Object.keys(themeParticleConfigs).map((name) => (
               <button
                 key={name}
                 type="button"
@@ -720,7 +711,7 @@ export default component$(() => {
                   // Update global particle store immediately for visual feedback
                   await updateGlobalParticleConfig(globalParticle, config);
                   particleConfigSignal.value = config;
-                  
+
                   // Save to database in the background
                   updateParticleAction.submit({ config });
                 }}
@@ -751,44 +742,52 @@ export default component$(() => {
               </button>
             ))}
           </div>
-        </div>        {/* Advanced Configuration */}
+        </div>{" "}
+        {/* Advanced Configuration */}
         <div>
           <ParticleConfigPanel
             config={particleConfigSignal}
             previewEnabled={false}
           />
-          
+
           {/* Save advanced settings button */}
           <div class="mt-4">
             <button
               type="button"
               onClick$={async () => {
                 // Update global particle store
-                await updateGlobalParticleConfig(globalParticle, particleConfigSignal.value);
+                await updateGlobalParticleConfig(
+                  globalParticle,
+                  particleConfigSignal.value,
+                );
                 // Save to database
-                updateParticleAction.submit({ config: particleConfigSignal.value });
+                updateParticleAction.submit({
+                  config: particleConfigSignal.value,
+                });
               }}
               class="btn-cute text-theme-text-primary w-full rounded-full px-4 py-2 text-sm font-medium transition-all duration-300"
             >
               Save Advanced Settings~ 💾✨
             </button>
           </div>
-        </div>        {/* Save note */}
+        </div>{" "}
+        {/* Save note */}
         <div class="mt-4 rounded-lg border border-blue-500/20 bg-blue-500/10 p-3">
           <p class="text-xs text-blue-400">
-            💡 Your particle preferences are saved to your account and will sync across all your devices~ ✨
+            💡 Your particle preferences are saved to your account and will sync
+            across all your devices~ ✨
           </p>
         </div>
-        
         {/* Particle save status */}
         {updateParticleAction.value?.success && (
-          <div class="bg-gradient-to-br from-theme-accent-secondary/20 to-theme-accent-tertiary/20 border-theme-accent-secondary/30 glass mt-4 rounded-2xl border p-3 sm:p-4">
+          <div class="from-theme-accent-secondary/20 to-theme-accent-tertiary/20 border-theme-accent-secondary/30 glass mt-4 rounded-2xl border bg-gradient-to-br p-3 sm:p-4">
             <p class="text-theme-accent-secondary flex items-center text-xs sm:text-sm">
               ✅ {updateParticleAction.value.message}~ ✨
             </p>
           </div>
-        )}        {updateParticleAction.value?.failed && (
-          <div class="bg-gradient-to-br from-theme-accent-primary/20 to-theme-accent-secondary/20 border-theme-accent-primary/30 glass mt-4 rounded-2xl border p-3 sm:p-4">
+        )}{" "}
+        {updateParticleAction.value?.failed && (
+          <div class="from-theme-accent-primary/20 to-theme-accent-secondary/20 border-theme-accent-primary/30 glass mt-4 rounded-2xl border bg-gradient-to-br p-3 sm:p-4">
             <p class="text-theme-accent-primary flex items-center text-xs sm:text-sm">
               ❌ {updateParticleAction.value.message}~ 💔
             </p>
@@ -797,32 +796,33 @@ export default component$(() => {
       </div>
 
       {/* Account Deletion - Danger Zone */}
-      <div class="glass border-red-500/30 bg-gradient-to-br from-red-500/10 to-red-600/10 rounded-2xl border p-4 sm:p-6">
-        <h2 class="text-red-400 mb-4 flex items-center text-lg font-bold sm:mb-6 sm:text-xl">
+      <div class="glass rounded-2xl border border-red-500/30 bg-gradient-to-br from-red-500/10 to-red-600/10 p-4 sm:p-6">
+        <h2 class="mb-4 flex items-center text-lg font-bold text-red-400 sm:mb-6 sm:text-xl">
           <AlertTriangle class="mr-2 h-5 w-5" />
           Danger Zone
         </h2>
-        <p class="text-red-300/80 mb-6 text-sm">
-          ⚠️ This action is permanent and cannot be undone. All your files, data, and account information will be permanently deleted.
+        <p class="mb-6 text-sm text-red-300/80">
+          ⚠️ This action is permanent and cannot be undone. All your files,
+          data, and account information will be permanently deleted.
         </p>
 
         <Form action={deleteAccountAction} class="space-y-4">
           <div>
-            <label class="text-red-300 mb-2 block text-sm font-medium">
+            <label class="mb-2 block text-sm font-medium text-red-300">
               Type "DELETE MY ACCOUNT" to confirm deletion:
             </label>
             <input
               type="text"
               name="confirmationText"
               placeholder="Type DELETE MY ACCOUNT here..."
-              class="w-full rounded-lg border border-red-500/30 bg-red-500/5 px-3 py-2 text-red-200 placeholder-red-400/60 focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-400/50"
+              class="w-full rounded-lg border border-red-500/30 bg-red-500/5 px-3 py-2 text-red-200 placeholder-red-400/60 focus:border-red-400 focus:ring-2 focus:ring-red-400/50 focus:outline-none"
               required
             />
           </div>
 
           <button
             type="submit"
-            class="bg-red-600 hover:bg-red-700 text-white flex w-full items-center justify-center rounded-lg px-4 py-3 font-medium transition-all duration-300 hover:scale-[1.02]"
+            class="flex w-full items-center justify-center rounded-lg bg-red-600 px-4 py-3 font-medium text-white transition-all duration-300 hover:scale-[1.02] hover:bg-red-700"
           >
             <Trash2 class="mr-2 h-4 w-4" />
             Delete My Account Forever
@@ -832,7 +832,7 @@ export default component$(() => {
         {/* Error/Success Messages */}
         {deleteAccountAction.value?.failed && (
           <div class="mt-4 rounded-lg border border-red-500/50 bg-red-500/20 p-3">
-            <p class="text-red-300 text-sm">
+            <p class="text-sm text-red-300">
               ❌ {deleteAccountAction.value.message}
             </p>
           </div>

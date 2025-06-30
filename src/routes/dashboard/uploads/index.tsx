@@ -8,8 +8,6 @@ import {
 import { routeLoader$, routeAction$, Link } from "@builder.io/qwik-city";
 import type { DocumentHead } from "@builder.io/qwik-city";
 import { setUploadsViewMode } from "~/lib/cookie-utils";
-import fs from "fs";
-import path from "path";
 import {
   Folder,
   Eye,
@@ -54,12 +52,11 @@ export const useDeleteUpload = routeAction$(async (data, requestEvent) => {
 
   if (!keysArray.length) {
     return { success: false, error: "No deletion keys provided" };
-  }
-  try {
+  }  try {
+    const { getStorageProvider } = await import("~/lib/storage-server");
     const results = [];
     let totalStorageDecrement = 0;
-    const config = getEnvConfig();
-    const baseUploadDir = config.UPLOAD_DIR;
+    const storage = getStorageProvider();
 
     // Process each deletion key
     for (const deletionKey of keysArray) {
@@ -88,16 +85,12 @@ export const useDeleteUpload = routeAction$(async (data, requestEvent) => {
         continue;
       }
 
-      // Delete file from storage
-      let filePath: string;
-      if (upload.userId) {
-        filePath = path.join(baseUploadDir, upload.userId, upload.filename);
-      } else {
-        filePath = path.join(baseUploadDir, "anonymous", upload.filename);
-      }
-
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
+      // Delete file from storage (works with both filesystem and R2)
+      try {
+        await storage.deleteFile(upload.filename);
+      } catch (error) {
+        console.error(`Failed to delete file from storage: ${upload.filename}`, error);
+        // Continue with database deletion even if storage deletion fails
       }
 
       // Delete from database

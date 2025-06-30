@@ -2,11 +2,12 @@ import type { RequestHandler } from "@builder.io/qwik-city";
 import { db } from "~/lib/db";
 import { getEnvConfig } from "~/lib/env";
 import { updateDailyAnalytics } from "~/lib/analytics";
-import fs from "fs";
-import path from "path";
 import { Upload } from "@prisma/client";
-import { extractMediaDimensions } from "~/lib/media-utils";
+import { extractMediaDimensions, extractDimensionsFromBuffer } from "~/lib/media-utils";
 import { formatBytes } from "~/lib/utils";
+import { getFileProvider } from "~/lib/file-provider";
+import path from "path";
+import fs from "fs";
 
 // Generate Discord embed HTML
 function generateDiscordEmbed(upload: Upload, user: any, baseUrl: string, userStats?: { totalFiles: number, totalStorage: number, totalViews: number }) {
@@ -220,21 +221,11 @@ export const onRequest: RequestHandler = async ({ params, send, status, url, req
 
       // Update daily analytics (async, don't wait for it)
       updateDailyAnalytics().catch(console.error);
-    }
-    // Get file path
-    const config = getEnvConfig();
-    const baseUploadDir = config.UPLOAD_DIR;
+    }    // Get file from storage (supports both filesystem and R2)
+    const fileProvider = getFileProvider();
+    const fileData = await fileProvider.getFile(upload.filename);
 
-    // Determine the correct directory based on whether the upload has a user
-    let filePath: string;
-    if (upload.userId) {
-      filePath = path.join(baseUploadDir, upload.userId, upload.filename);
-    } else {
-      filePath = path.join(baseUploadDir, 'anonymous', upload.filename);
-    }
-
-    // Check if file exists
-    if (!fs.existsSync(filePath)) {
+    if (!fileData) {
       status(404);
       return;
     }
@@ -272,18 +263,15 @@ export const onRequest: RequestHandler = async ({ params, send, status, url, req
 
         // Update daily analytics (async, don't wait for it)
         updateDailyAnalytics().catch(console.error);
-      }
-
-      // Read and serve file directly
-      const fileBuffer = fs.readFileSync(filePath);
-
-      // Special headers for GIFs to ensure proper animation support
+      }      // Read and serve file directly from storage
       const headers: Record<string, string> = {
-        "Content-Type": upload.mimeType,
-        "Content-Length": upload.size.toString(),
+        "Content-Type": fileData.contentType,
+        "Content-Length": fileData.size.toString(),
         "Content-Disposition": `inline; filename="${upload.originalName}"`,
         "Cache-Control": "public, max-age=31536000"
-      };// Additional headers for GIFs to ensure proper playback
+      };
+
+      // Additional headers for GIFs to ensure proper playback
       if (upload.mimeType === 'image/gif') {
         headers["X-Content-Type-Options"] = "nosniff";
         headers["Accept-Ranges"] = "bytes";
@@ -291,20 +279,41 @@ export const onRequest: RequestHandler = async ({ params, send, status, url, req
         headers["Cache-Control"] = "public, max-age=31536000, immutable";
       }
 
-      const response = new Response(fileBuffer, { headers });
+      const response = new Response(fileData.buffer, { headers });
 
       send(response);
-      return;    } else {
+      return;} else {
       // Generate and serve Discord embed HTML
       const config = getEnvConfig();
-      const baseUrl = config.BASE_URL;
-
-      // Extract dimensions on-the-fly if missing and this is a media file
+      const baseUrl = config.BASE_URL;      // Extract dimensions on-the-fly if missing and this is a media file
       let finalUpload = upload;
       if (!upload.width || !upload.height) {
         if (upload.mimeType.startsWith('image/') || upload.mimeType.startsWith('video/')) {
           try {
-            const dimensions = await extractMediaDimensions(filePath, upload.mimeType);
+            // For R2 storage, we can extract dimensions from the buffer we already have
+            // For filesystem, we need to read the file
+            const config = getEnvConfig();
+            let dimensions = null;
+            
+            if (config.USE_R2_STORAGE) {
+              // Use the buffer we already have from fileData
+              dimensions = await extractDimensionsFromBuffer(fileData.buffer, upload.mimeType);
+            } else {
+              // For filesystem, use the file path method
+              const baseUploadDir = config.UPLOAD_DIR;
+              
+              let filePath: string;
+              if (upload.userId) {
+                filePath = path.join(baseUploadDir, upload.userId, upload.filename);
+              } else {
+                filePath = path.join(baseUploadDir, 'anonymous', upload.filename);
+              }
+              
+              if (fs.existsSync(filePath)) {
+                dimensions = await extractMediaDimensions(filePath, upload.mimeType);
+              }
+            }
+            
             if (dimensions) {
               // Update the database with extracted dimensions
               await db.upload.update({

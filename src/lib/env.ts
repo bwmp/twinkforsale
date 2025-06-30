@@ -9,7 +9,15 @@ export const getEnvConfig = () => {
       'image/png,image/jpeg,image/gif,image/webp,text/plain,application/pdf'
     ).split(','),
     NODE_ENV: process.env.NODE_ENV || 'development',
-    DISCORD_WEBHOOK_URL: process.env.DISCORD_WEBHOOK_URL || ''
+    DISCORD_WEBHOOK_URL: process.env.DISCORD_WEBHOOK_URL || '',
+    
+    // R2 Storage Configuration
+    USE_R2_STORAGE: process.env.USE_R2_STORAGE === 'true',
+    R2_ACCOUNT_ID: process.env.R2_ACCOUNT_ID,
+    R2_ACCESS_KEY_ID: process.env.R2_ACCESS_KEY_ID,
+    R2_SECRET_ACCESS_KEY: process.env.R2_SECRET_ACCESS_KEY,
+    R2_BUCKET_NAME: process.env.R2_BUCKET_NAME,
+    R2_PUBLIC_URL: process.env.R2_PUBLIC_URL || `https://${process.env.R2_BUCKET_NAME}.r2.dev`
   };
 };
 

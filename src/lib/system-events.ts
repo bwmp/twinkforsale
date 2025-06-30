@@ -1,6 +1,7 @@
 import { getDiskUsage } from './server-utils';
 import { sendCriticalEventNotification, sendDiscordNotification } from './discord-notifications';
 import { db } from './db';
+import { getEnvConfig } from './env';
 import os from 'os';
 
 export type EventType =
@@ -55,11 +56,20 @@ export async function getSystemMetrics(): Promise<SystemMetrics> {
   // Memory usage
   const totalMemory = os.totalmem();
   const freeMemory = os.freemem();
-  const memoryUsage = ((totalMemory - freeMemory) / totalMemory) * 100;
+  const memoryUsage = ((totalMemory - freeMemory) / totalMemory) * 100;  // Disk usage (only check if using filesystem storage)
+  const config = getEnvConfig();
+  const isUsingR2 = config.USE_R2_STORAGE;
 
-  // Disk usage
-  const diskInfo = await getDiskUsage('./uploads');
-  const diskUsage = diskInfo.usedPercentage;
+  let diskUsage = 0;
+  if (!isUsingR2) {
+    try {
+      const diskInfo = await getDiskUsage('./uploads');
+      diskUsage = diskInfo.usedPercentage;
+    } catch (error) {
+      console.warn('Failed to get disk usage:', error);
+      diskUsage = 0;
+    }
+  }
 
   return {
     cpuUsage,
@@ -144,7 +154,7 @@ export async function createSystemEvent(
           diskUsage: metrics.diskUsage
         }
       );
-    } 
+    }
     // Send user registration events through regular Discord notification
     else if (type === 'USER_REGISTRATION') {
       await sendDiscordNotification(
@@ -312,10 +322,11 @@ export async function checkSystemAlerts() {
           includeMetrics: false
         }
       );
-    }
+    }    // Disk space alerts (only check if using filesystem storage)
+    const config = getEnvConfig();
+    const isUsingR2 = config.USE_R2_STORAGE;
 
-    // Disk space alerts
-    if (metrics.diskUsage >= 95) {
+    if (!isUsingR2 && metrics.diskUsage >= 95) {
       await createSystemEvent(
         'SYSTEM_STORAGE_CRITICAL',
         'CRITICAL',
@@ -326,7 +337,7 @@ export async function checkSystemAlerts() {
           includeMetrics: false
         }
       );
-    } else if (metrics.diskUsage >= 80) {
+    } else if (!isUsingR2 && metrics.diskUsage >= 80) {
       await createSystemEvent(
         'SYSTEM_STORAGE_WARNING',
         'WARNING',
@@ -358,7 +369,7 @@ export async function checkSystemAlerts() {
  */
 export async function getRecentSystemEvents(
   limit: number = 50,
-  severity?: EventSeverity,  userId?: string
+  severity?: EventSeverity, userId?: string
 ) {
   return await db.systemEvent.findMany({
     where: {

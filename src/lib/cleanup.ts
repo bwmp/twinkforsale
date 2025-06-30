@@ -2,13 +2,16 @@ import fs from "fs";
 import path from "path";
 import { db } from "~/lib/db";
 import { getEnvConfig } from "~/lib/env";
+import { getStorageProvider } from "~/lib/storage-server";
 /**
  * Cleanup expired files and files that exceeded view limits
  */
 export async function cleanupExpiredFiles() {
-
   try {
-    const now = new Date();    // Find files that are expired or exceeded view limits
+    const now = new Date();
+    const storage = getStorageProvider();
+
+    // Find files that are expired or exceeded view limits
     const allFiles = await db.upload.findMany({
       where: {
         OR: [
@@ -24,37 +27,22 @@ export async function cleanupExpiredFiles() {
           }
         ]
       }
-    });
-
-    // Filter files that exceeded view limits (since Prisma doesn't support field-to-field comparison)
+    });    // Filter files that exceeded view limits (since Prisma doesn't support field-to-field comparison)
     const filesToDelete = allFiles.filter(file =>
       (file.expiresAt && now > file.expiresAt) ||
       (file.maxViews && file.views >= file.maxViews)
-    ); console.log(`Found ${filesToDelete.length} files to cleanup`);
+    );
 
-    if (filesToDelete.length === 0) {
+    console.log(`Found ${filesToDelete.length} files to cleanup`);    if (filesToDelete.length === 0) {
       return { cleaned: 0 };
     }
 
-    const config = getEnvConfig();
-    const baseUploadDir = config.UPLOAD_DIR;
     let cleanedCount = 0;
 
     for (const file of filesToDelete) {
-      try {
-        // Determine file path
-        let filePath: string;
-        if (file.userId) {
-          filePath = path.join(baseUploadDir, file.userId, file.filename);
-        } else {
-          filePath = path.join(baseUploadDir, 'anonymous', file.filename);
-        }
-
-        // Delete physical file if it exists
-        if (fs.existsSync(filePath)) {
-          fs.unlinkSync(filePath);
-          console.log(`Deleted file: ${filePath}`);
-        }
+      try {        // Delete from storage (R2 or filesystem)
+        const fileKey = storage.generateFileKey(file.filename, file.userId || undefined);
+        await storage.deleteFile(fileKey);
 
         // Update user storage if the file had a user
         if (file.userId) {

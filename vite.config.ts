@@ -26,7 +26,15 @@ export default defineConfig(({ command, mode }): UserConfig => {
     optimizeDeps: {
       // Put problematic deps that break bundling here, mostly those with binaries.
       // For example ['better-sqlite3'] if you use that in server functions.
-      exclude: ['diskusage', 'fs', 'path', 'os'],
+      exclude: [
+        'diskusage', 
+        'fs', 
+        'path', 
+        'os', 
+        'sharp',
+        '@aws-sdk/client-s3',
+        '@aws-sdk/s3-request-presigner'
+      ],
     },
     resolve: {
       alias: {
@@ -35,7 +43,15 @@ export default defineConfig(({ command, mode }): UserConfig => {
     },
     build: {
       rollupOptions: {
-        external: mode === 'development' ? [] : ['diskusage', 'fs', 'path', 'os'],
+        external: mode === 'development' ? [] : [
+          'diskusage', 
+          'fs', 
+          'path', 
+          'os', 
+          'sharp',
+          '@aws-sdk/client-s3',
+          '@aws-sdk/s3-request-presigner'
+        ],
       },
     },
     // Ensure environment variables are available in SSR

@@ -1,10 +1,11 @@
 import type { RequestHandler } from "@builder.io/qwik-city";
 import { db } from "~/lib/db";
-import { generateUniqueShortCode, saveFile, validateFile } from "~/lib/upload";
+import { generateUniqueShortCode, validateFile } from "~/lib/upload";
 import { getEnvConfig } from "~/lib/env";
 import { monitorUploadEvent, monitorFailedUpload } from "~/lib/system-monitoring";
 import { nanoid } from "nanoid";
 import { extractDimensionsFromBuffer } from "~/lib/media-utils";
+import { getStorageProvider } from "~/lib/storage-server";
 
 export const onPost: RequestHandler = async ({ request, json }) => {
   // Check for API key authentication
@@ -83,7 +84,8 @@ export const onPost: RequestHandler = async ({ request, json }) => {
     }
   }  // Generate unique identifiers
   let useCuteWords = false;
-  let userUploadDomain: string | null = null;  // Get user's preferences if authenticated
+  
+  // Get user's preferences if authenticated
   let userExpirationDays = null;
   let userMaxViews = null;
   if (userId) {
@@ -91,8 +93,6 @@ export const onPost: RequestHandler = async ({ request, json }) => {
       where: { id: userId },
       select: { 
         useCustomWords: true, 
-        customSubdomain: true,
-        uploadDomain: true,
         defaultExpirationDays: true,
         defaultMaxViews: true
       }
@@ -100,16 +100,7 @@ export const onPost: RequestHandler = async ({ request, json }) => {
     useCuteWords = user?.useCustomWords || false;
     userExpirationDays = user?.defaultExpirationDays;
     userMaxViews = user?.defaultMaxViews;
-    
-    // Build the user's preferred upload domain
-    if (user?.uploadDomain) {
-      if (user.customSubdomain) {
-        userUploadDomain = `https://${user.customSubdomain}.${user.uploadDomain.domain}`;
-      } else {
-        userUploadDomain = `https://${user.uploadDomain.domain}`;
-      }
-    }
-  }  // Check for custom expiration and view limit overrides from form data
+  }// Check for custom expiration and view limit overrides from form data
   const customExpirationDays = formData.get('expirationDays');
   const customMaxViews = formData.get('maxViews');
   
@@ -119,35 +110,34 @@ export const onPost: RequestHandler = async ({ request, json }) => {
     : userExpirationDays;  const finalMaxViews = customMaxViews 
     ? parseInt(customMaxViews as string) 
     : userMaxViews;
-
   const shortCode = await generateUniqueShortCode(useCuteWords);
   const deletionKey = nanoid(32);
-  const filename = `${shortCode}_${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;  // Save file to storage
-  await saveFile(file, filename, userId);
+  const filename = `${shortCode}_${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
 
+  // Save file to storage (supports both filesystem and R2)
+  const storage = getStorageProvider();
+  const uploadResult = await storage.uploadFile(file, filename, userId);
+
+  if (!uploadResult.success) {
+    throw json(500, { error: uploadResult.error || "File upload failed" });
+  }
   // Extract dimensions for images and videos
   const fileBuffer = Buffer.from(await file.arrayBuffer());
   const dimensions = await extractDimensionsFromBuffer(fileBuffer, file.type);
 
-  // Determine the upload domain based on user preference
-  const config = getEnvConfig();
-  let uploadDomain = config.BASE_URL;
-
-  // Use user's preferred upload domain if they have one configured
-  if (userUploadDomain) {
-    uploadDomain = userUploadDomain;
-  }
   // Create database record
   const expiresAt = finalExpirationDays 
     ? new Date(Date.now() + finalExpirationDays * 24 * 60 * 60 * 1000)
     : null;
-      const upload = await db.upload.create({
+
+  // Use the storage provider's URL instead of constructing manually
+  const upload = await db.upload.create({
     data: {
-      filename,
+      filename: uploadResult.key, // Store the storage key
       originalName: file.name,
       mimeType: file.type,
       size: file.size,
-      url: `${uploadDomain}/f/${shortCode}`,
+      url: uploadResult.publicUrl, // Use the public URL from storage
       shortCode,
       deletionKey,
       userId,
@@ -170,14 +160,15 @@ export const onPost: RequestHandler = async ({ request, json }) => {
 
     // Monitor upload event for potential alerts
     await monitorUploadEvent(userId, file.size);
-  }
-  // Return ShareX-compatible response
+  }  // Return ShareX-compatible response
   const response: any = {
-    url: upload.url
+    url: upload.url // This will be the R2 public URL or filesystem URL
   };
+  
   // Add thumbnail URL for images
   if (file.type.startsWith("image/")) {
-    response.thumbnail_url = `${uploadDomain}/f/${shortCode}/thumb`;
+    // For R2, this could be a direct image URL or a processed thumbnail
+    response.thumbnail_url = upload.url;
   }
 
   throw json(201, response);

@@ -94,10 +94,9 @@ export const useHealthData = routeLoader$(async () => {
     // Database Health
     const dbStart = Date.now();
     await db.user.count();
-    const dbResponseTime = Date.now() - dbStart;
-
-    // Storage Analytics
+    const dbResponseTime = Date.now() - dbStart;    // Storage Analytics
     const uploadsDir = config.UPLOAD_DIR;
+    const isUsingR2 = config.USE_R2_STORAGE;
     const storageStats = {
       totalFiles: 0,
       totalSize: 0,
@@ -106,6 +105,7 @@ export const useHealthData = routeLoader$(async () => {
       diskTotal: 0,
       diskUsed: 0,
       diskUsedPercentage: 0,
+      storageType: isUsingR2 ? 'R2' : 'Filesystem',
     };
 
     try {
@@ -116,22 +116,32 @@ export const useHealthData = routeLoader$(async () => {
 
       storageStats.totalFiles = totalUploads;
       storageStats.totalSize = totalSize._sum.size || 0;
-
-      // Get actual disk usage information
-      const diskUsage = await getDiskUsage(uploadsDir);
-      storageStats.freeSpace = diskUsage.free;
-      storageStats.diskTotal = diskUsage.total;
-      storageStats.diskUsed = diskUsage.used;
-      storageStats.diskUsedPercentage = diskUsage.usedPercentage;
       storageStats.usedSpace = storageStats.totalSize;
+
+      if (isUsingR2) {
+        // For R2, we show unlimited storage but track usage
+        storageStats.freeSpace = 0; // Set to 0 instead of null for unlimited
+        storageStats.diskTotal = 0;
+        storageStats.diskUsed = storageStats.totalSize;
+        storageStats.diskUsedPercentage = 0; // Can't calculate percentage for unlimited storage
+      } else {
+        // Get actual disk usage information for filesystem storage
+        const diskUsage = await getDiskUsage(uploadsDir);
+        storageStats.freeSpace = diskUsage.free;
+        storageStats.diskTotal = diskUsage.total;
+        storageStats.diskUsed = diskUsage.used;
+        storageStats.diskUsedPercentage = diskUsage.usedPercentage;
+      }
     } catch (error) {
       console.error("Storage stats error:", error);
-      // Fallback to getting just free space
-      try {
-        storageStats.freeSpace = await getFreeSpace(uploadsDir);
-      } catch (freeSpaceError) {
-        console.error("Free space error:", freeSpaceError);
-        storageStats.freeSpace = 100 * 1024 * 1024 * 1024; // 100GB fallback
+      // Fallback values
+      if (!isUsingR2) {
+        try {
+          storageStats.freeSpace = await getFreeSpace(uploadsDir);
+        } catch (freeSpaceError) {
+          console.error("Free space error:", freeSpaceError);
+          storageStats.freeSpace = 100 * 1024 * 1024 * 1024; // 100GB fallback
+        }
       }
     }
 
@@ -566,10 +576,9 @@ export default component$(() => {
         {/* Storage & User Analytics */}
         <div class="mb-6 grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2">
           {/* Storage Breakdown */}
-          <div class="card-cute rounded-2xl p-4 sm:rounded-3xl sm:p-6">
-            <h3 class="text-gradient-cute mb-4 flex items-center gap-2 text-base font-bold sm:text-lg">
+          <div class="card-cute rounded-2xl p-4 sm:rounded-3xl sm:p-6">            <h3 class="text-gradient-cute mb-4 flex items-center gap-2 text-base font-bold sm:text-lg">
               <HardDrive class="h-4 w-4 sm:h-5 sm:w-5" />
-              Storage Analytics
+              Storage Analytics ({data.storage?.storageType || 'Unknown'})
             </h3>
             <div class="space-y-3 sm:space-y-4">
               <div class="flex items-center justify-between">
@@ -587,47 +596,69 @@ export default component$(() => {
                 <span class="text-sm font-medium sm:text-base">
                   {formatBytes(data.storage?.totalSize || 0)}
                 </span>
-              </div>
-              <div class="flex items-center justify-between">
-                <span class="text-theme-text-secondary text-sm sm:text-base">
-                  Disk Free Space
-                </span>
-                <span class="text-sm font-medium text-green-600 sm:text-base">
-                  {formatBytes(data.storage?.freeSpace || 0)}
-                </span>
-              </div>
-              {data.storage?.diskTotal && data.storage.diskTotal > 0 && (
+              </div>              {data.storage?.storageType === 'R2' ? (
                 <>
                   <div class="flex items-center justify-between">
                     <span class="text-theme-text-secondary text-sm sm:text-base">
-                      Total Disk Size
+                      R2 Storage
                     </span>
-                    <span class="text-sm font-medium sm:text-base">
-                      {formatBytes(data.storage.diskTotal)}
+                    <span class="text-sm font-medium text-blue-600 sm:text-base">
+                      Unlimited
                     </span>
                   </div>
                   <div class="flex items-center justify-between">
                     <span class="text-theme-text-secondary text-sm sm:text-base">
-                      Disk Usage
+                      Monthly Cost
                     </span>
-                    <span class="text-sm font-medium sm:text-base">
-                      {data.storage.diskUsedPercentage?.toFixed(1) || 0}%
+                    <span class="text-sm font-medium text-green-600 sm:text-base">
+                      ${((data.storage?.totalSize || 0) / (1024 * 1024 * 1024) * 0.015).toFixed(2)}
                     </span>
                   </div>
-                  <div class="bg-theme-card-border h-3 overflow-hidden rounded-full">
-                    <div
-                      class={`h-full transition-all duration-500 ${
-                        (data.storage.diskUsedPercentage || 0) > 80
-                          ? "bg-gradient-to-r from-red-500 to-red-600"
-                          : (data.storage.diskUsedPercentage || 0) > 60
-                            ? "bg-gradient-to-r from-yellow-500 to-orange-500"
-                            : "bg-gradient-to-r from-green-500 to-emerald-500"
-                      }`}
-                      style={{
-                        width: `${Math.min(data.storage.diskUsedPercentage || 0, 100)}%`,
-                      }}
-                    />
+                </>
+              ) : (
+                <>
+                  <div class="flex items-center justify-between">
+                    <span class="text-theme-text-secondary text-sm sm:text-base">
+                      Disk Free Space
+                    </span>
+                    <span class="text-sm font-medium text-green-600 sm:text-base">
+                      {formatBytes(data.storage?.freeSpace || 0)}
+                    </span>
                   </div>
+                  {data.storage?.diskTotal && data.storage.diskTotal > 0 && (
+                    <>
+                      <div class="flex items-center justify-between">
+                        <span class="text-theme-text-secondary text-sm sm:text-base">
+                          Total Disk Size
+                        </span>
+                        <span class="text-sm font-medium sm:text-base">
+                          {formatBytes(data.storage.diskTotal)}
+                        </span>
+                      </div>
+                      <div class="flex items-center justify-between">
+                        <span class="text-theme-text-secondary text-sm sm:text-base">
+                          Disk Usage
+                        </span>
+                        <span class="text-sm font-medium sm:text-base">
+                          {data.storage.diskUsedPercentage?.toFixed(1) || 0}%
+                        </span>
+                      </div>
+                      <div class="bg-theme-card-border h-3 overflow-hidden rounded-full">
+                        <div
+                          class={`h-full transition-all duration-500 ${
+                            (data.storage.diskUsedPercentage || 0) > 80
+                              ? "bg-gradient-to-r from-red-500 to-red-600"
+                              : (data.storage.diskUsedPercentage || 0) > 60
+                                ? "bg-gradient-to-r from-yellow-500 to-orange-500"
+                                : "bg-gradient-to-r from-green-500 to-emerald-500"
+                          }`}
+                          style={{
+                            width: `${Math.min(data.storage.diskUsedPercentage || 0, 100)}%`,
+                          }}
+                        />
+                      </div>
+                    </>
+                  )}
                 </>
               )}
               <div class="flex items-center justify-between">
