@@ -28,7 +28,7 @@ RUN pnpm install --ignore-scripts
 COPY . .
 
 # Generate Prisma client
-RUN pnpm exec prisma generate
+RUN npx prisma generate
 
 # Build the application
 RUN pnpm run build && pnpm run build.server
@@ -61,16 +61,15 @@ COPY prisma ./prisma/
 # Install production dependencies with pnpm (skip postinstall scripts)
 RUN pnpm install --prod --ignore-scripts
 
-# Generate Prisma client
-RUN pnpm exec prisma generate
-
 # Copy built application from build stage
 COPY --from=base /app/server ./server
 COPY --from=base /app/dist ./dist
 COPY --from=base /app/public ./public
 
-# Copy other necessary files
+# Copy other necessary files including generated Prisma client
 COPY --from=base /app/prisma ./prisma
+COPY --from=base /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=base /app/node_modules/@prisma ./node_modules/@prisma
 
 # Set environment variables
 ENV NODE_ENV=production
