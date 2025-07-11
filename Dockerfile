@@ -16,17 +16,19 @@ RUN apk add --no-cache \
     vips-dev
 
 # Copy package files
-COPY package.json pnpm-lock.yaml ./
+COPY package.json ./
+# Copy pnpm-lock.yaml if it exists
+COPY pnpm-lock.yaml* ./
 COPY prisma ./prisma/
 
-# Install dependencies with pnpm
-RUN pnpm install --frozen-lockfile
+# Install dependencies with pnpm (skip postinstall scripts)
+RUN pnpm install --ignore-scripts
 
 # Copy source code
 COPY . .
 
 # Generate Prisma client
-RUN pnpm prisma generate
+RUN pnpm exec prisma generate
 
 # Build the application
 RUN pnpm run build && pnpm run build.server
@@ -51,14 +53,16 @@ WORKDIR /app
 RUN mkdir -p /app/uploads && chmod 755 /app/uploads
 
 # Copy package files and install production dependencies only
-COPY package.json pnpm-lock.yaml ./
+COPY package.json ./
+# Copy pnpm-lock.yaml if it exists
+COPY pnpm-lock.yaml* ./
 COPY prisma ./prisma/
 
-# Install production dependencies with pnpm
-RUN pnpm install --prod --frozen-lockfile
+# Install production dependencies with pnpm (skip postinstall scripts)
+RUN pnpm install --prod --ignore-scripts
 
 # Generate Prisma client
-RUN pnpm prisma generate
+RUN pnpm exec prisma generate
 
 # Copy built application from build stage
 COPY --from=base /app/server ./server
