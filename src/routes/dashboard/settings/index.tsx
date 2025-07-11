@@ -123,8 +123,8 @@ export const useUpdateSettingsAction = routeAction$(
   zod$({
     uploadDomainId: z.string().optional(),
     customSubdomain: z.string().optional(),
-    defaultExpirationDays: z.number().min(1).max(365).optional(),
-    defaultMaxViews: z.number().min(1).optional(),
+    defaultExpirationDays: z.string().optional().transform((val) => val === "" ? undefined : Number(val)).pipe(z.number().min(1).max(365).optional()),
+    defaultMaxViews: z.string().optional().transform((val) => val === "" ? undefined : Number(val)).pipe(z.number().min(1).optional()),
   }),
 );
 
