@@ -49,8 +49,9 @@ RUN apk add --no-cache \
 
 WORKDIR /app
 
-# Create uploads directory with proper permissions
+# Create uploads and data directories with proper permissions
 RUN mkdir -p /app/uploads && chmod 755 /app/uploads
+RUN mkdir -p /app/data && chmod 755 /app/data
 
 # Copy package files and install all dependencies
 COPY package.json ./
@@ -66,13 +67,15 @@ COPY --from=base /app/server ./server
 COPY --from=base /app/dist ./dist
 COPY --from=base /app/public ./public
 
-# Copy other necessary files
+# Copy other necessary files including custom Prisma client location
 COPY --from=base /app/prisma ./prisma
+COPY --from=base /app/generated ./generated
 
 # Set environment variables
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV UPLOAD_DIR=/app/uploads
+ENV DATABASE_URL=file:/app/data/prod.db
 
 # Create a non-root user
 RUN addgroup -g 1001 -S nodejs
