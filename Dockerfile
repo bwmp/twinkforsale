@@ -26,7 +26,7 @@ RUN pnpm install --frozen-lockfile
 COPY . .
 
 # Generate Prisma client
-RUN npx prisma generate
+RUN pnpm prisma generate
 
 # Build the application
 RUN pnpm run build && pnpm run build.server
@@ -58,7 +58,7 @@ COPY prisma ./prisma/
 RUN pnpm install --prod --frozen-lockfile
 
 # Generate Prisma client
-RUN npx prisma generate
+RUN pnpm prisma generate
 
 # Copy built application from build stage
 COPY --from=base /app/server ./server
