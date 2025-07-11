@@ -69,7 +69,6 @@ COPY --from=base /app/public ./public
 
 # Copy other necessary files including custom Prisma client location
 COPY --from=base /app/prisma ./prisma
-COPY --from=base /app/generated ./generated
 
 # Set environment variables
 ENV NODE_ENV=production
