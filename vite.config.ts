@@ -36,11 +36,6 @@ export default defineConfig(({ command, mode }): UserConfig => {
         '@aws-sdk/s3-request-presigner'
       ],
     },
-    resolve: {
-      alias: {
-        '.prisma/client/index-browser': './node_modules/.prisma/client/index-browser.js',
-      },
-    },
     build: {
       rollupOptions: {
         external: mode === 'development' ? [] : [
