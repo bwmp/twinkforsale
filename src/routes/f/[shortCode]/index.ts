@@ -2,7 +2,7 @@ import type { RequestHandler } from "@builder.io/qwik-city";
 import { db } from "~/lib/db";
 import { getEnvConfig } from "~/lib/env";
 import { updateDailyAnalytics } from "~/lib/analytics";
-import { Upload } from "~/../generated/prisma_client";
+import { Upload } from "@prisma/client";
 import { extractMediaDimensions, extractDimensionsFromBuffer } from "~/lib/media-utils";
 import { formatBytes } from "~/lib/utils";
 import { getFileProvider } from "~/lib/file-provider";
