@@ -21,14 +21,14 @@ COPY package.json ./
 COPY pnpm-lock.yaml* ./
 COPY prisma ./prisma/
 
-# Install dependencies with pnpm (skip postinstall scripts)
-RUN pnpm install --ignore-scripts
+# Install dependencies with pnpm
+RUN pnpm install
 
 # Copy source code
 COPY . .
 
 # Generate Prisma client
-RUN npx prisma generate
+RUN pnpm exec prisma generate
 
 # Build the application
 RUN pnpm run build && pnpm run build.server
@@ -52,24 +52,22 @@ WORKDIR /app
 # Create uploads directory with proper permissions
 RUN mkdir -p /app/uploads && chmod 755 /app/uploads
 
-# Copy package files and install production dependencies only
+# Copy package files and install all dependencies
 COPY package.json ./
 # Copy pnpm-lock.yaml if it exists
 COPY pnpm-lock.yaml* ./
 COPY prisma ./prisma/
 
-# Install production dependencies with pnpm (skip postinstall scripts)
-RUN pnpm install --prod --ignore-scripts
+# Install all dependencies with pnpm (including dev dependencies for runtime)
+RUN pnpm install
 
 # Copy built application from build stage
 COPY --from=base /app/server ./server
 COPY --from=base /app/dist ./dist
 COPY --from=base /app/public ./public
 
-# Copy other necessary files including generated Prisma client
+# Copy other necessary files
 COPY --from=base /app/prisma ./prisma
-COPY --from=base /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=base /app/node_modules/@prisma ./node_modules/@prisma
 
 # Set environment variables
 ENV NODE_ENV=production
