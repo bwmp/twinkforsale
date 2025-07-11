@@ -1,5 +1,8 @@
-# Use the latest stable Bun image
-FROM oven/bun:latest-alpine AS base
+# Alternative Node.js-based Dockerfile
+# Use this if you prefer Node.js over Bun in Docker
+
+# Build stage
+FROM node:20-alpine AS base
 
 # Set working directory
 WORKDIR /app
@@ -16,20 +19,20 @@ RUN apk add --no-cache \
 COPY package.json ./
 COPY prisma ./prisma/
 
-# Install dependencies (without frozen lockfile to allow regeneration)
-RUN bun install
+# Install dependencies with npm
+RUN npm install
 
 # Copy source code
 COPY . .
 
 # Generate Prisma client
-RUN bunx prisma generate
+RUN npx prisma generate
 
 # Build the application
-RUN bun run build && bun run build.server
+RUN npm run build && npm run build.server
 
 # Production stage
-FROM oven/bun:latest-alpine AS production
+FROM node:20-alpine AS production
 
 # Install system dependencies for runtime including build tools for native modules
 RUN apk add --no-cache \
@@ -48,11 +51,11 @@ RUN mkdir -p /app/uploads && chmod 755 /app/uploads
 COPY package.json ./
 COPY prisma ./prisma/
 
-# Install production dependencies (without frozen lockfile)
-RUN bun install --production
+# Install production dependencies with npm
+RUN npm install --production
 
 # Generate Prisma client
-RUN bunx prisma generate
+RUN npx prisma generate
 
 # Copy built application from build stage
 COPY --from=base /app/server ./server

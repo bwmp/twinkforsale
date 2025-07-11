@@ -4,6 +4,12 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Lockfiles (let Docker regenerate with correct version)
+bun.lock
+bun.lockb
+package-lock.json
+yarn.lock
+
 # Build outputs
 .next
 dist
