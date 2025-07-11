@@ -24,6 +24,7 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:migrate:prod": "prisma migrate deploy",
+    "db:deploy": "npx prisma migrate deploy && npx prisma generate",
     "migrate:r2": "tsx migrate-to-r2.ts",
     "migrate:r2:dry-run": "tsx migrate-to-r2.ts --dry-run",
     "test:r2": "tsx test-r2.ts",

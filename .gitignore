@@ -46,3 +46,4 @@ prisma/dev.db
 # Uploads directory (files uploaded by users)
 /uploads/
 prisma/dev.db-journal
+generated/

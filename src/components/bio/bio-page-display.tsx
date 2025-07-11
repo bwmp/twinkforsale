@@ -3,7 +3,7 @@ import {
   type QRL,
 } from "@builder.io/qwik";
 import { Music } from "lucide-icons-qwik";
-import type { BioLink } from "@prisma/client";
+import type { BioLink } from "~/../generated/prisma_client";
 import {
   ParticleBackground,
   type ParticleConfig,
