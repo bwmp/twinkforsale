@@ -31,10 +31,13 @@ RUN bun run build && bun run build.server
 # Production stage
 FROM oven/bun:1.1-alpine AS production
 
-# Install system dependencies for runtime
+# Install system dependencies for runtime including build tools for native modules
 RUN apk add --no-cache \
     vips \
-    libc6-compat
+    libc6-compat \
+    python3 \
+    make \
+    g++
 
 WORKDIR /app
 

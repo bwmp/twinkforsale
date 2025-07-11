@@ -6,7 +6,8 @@ import path from 'path';
 import os from 'os';
 
 /**
- * Get disk usage information using Node.js built-in fs.statSync as fallback
+ * Get disk usage information using Node.js built-in fs.statSync
+ * This is a fallback implementation that doesn't require native dependencies
  */
 async function getDiskUsageFallback(dirPath: string): Promise<{
   total: number;
@@ -45,6 +46,7 @@ async function getDiskUsageFallback(dirPath: string): Promise<{
     const used = calculateDirectorySize(absolutePath);
     
     // Estimate available space based on system memory and typical disk ratios
+    // This is a rough estimate since we can't get exact disk info without native modules
     const totalMemory = os.totalmem();
     const freeMemory = os.freemem();
     
@@ -79,25 +81,7 @@ async function getDiskUsageFallback(dirPath: string): Promise<{
 }
 
 /**
- * Get free space available in the uploads directory
- * @param uploadsPath - Path to the uploads directory
- * @returns Free space in bytes
- */
-export async function getFreeSpace(uploadsPath: string = './uploads'): Promise<number> {
-  try {
-    const diskInfo = await getDiskUsage(uploadsPath);
-    return diskInfo.free;
-  } catch (error) {
-    console.error('Error getting free space:', error);
-    // Return a safe default value
-    return 100 * 1024 * 1024 * 1024; // 100 GB
-  }
-}
-
-/**
- * Get disk usage information with diskusage package and fallback
- * @param uploadsPath - Path to the uploads directory
- * @returns Object containing total, used, and free space in bytes
+ * Get disk usage information using diskusage package with fallback
  */
 export async function getDiskUsage(uploadsPath: string = './uploads'): Promise<{
   total: number;
@@ -106,7 +90,7 @@ export async function getDiskUsage(uploadsPath: string = './uploads'): Promise<{
   usedPercentage: number;
 }> {
   try {
-    // Try to dynamically import and use diskusage package
+    // Try to use diskusage package first
     const diskusage = await import('diskusage');
     
     const absolutePath = path.resolve(uploadsPath);
@@ -136,6 +120,22 @@ export async function getDiskUsage(uploadsPath: string = './uploads'): Promise<{
 }
 
 /**
+ * Get free space available in the uploads directory
+ * @param uploadsPath - Path to the uploads directory
+ * @returns Free space in bytes
+ */
+export async function getFreeSpace(uploadsPath: string = './uploads'): Promise<number> {
+  try {
+    const diskInfo = await getDiskUsage(uploadsPath);
+    return diskInfo.free;
+  } catch (error) {
+    console.error('Error getting free space:', error);
+    // Return a safe default value
+    return 100 * 1024 * 1024 * 1024; // 100 GB
+  }
+}
+
+/**
  * Get system metrics including CPU, memory, and disk usage
  * Server-side only function
  */
@@ -153,13 +153,13 @@ export async function getSystemMetrics() {
     });
     
     const cpuUsage = 100 - (100 * totalIdle / totalTick);
-    
+
     // Memory usage
-    const totalMem = os.totalmem();
-    const freeMem = os.freemem();
-    const usedMem = totalMem - freeMem;
-    const memoryUsage = (usedMem / totalMem) * 100;
-    
+    const totalMemory = os.totalmem();
+    const freeMemory = os.freemem();
+    const usedMemory = totalMemory - freeMemory;
+    const memoryUsage = (usedMemory / totalMemory) * 100;
+
     // Disk usage
     let diskUsage = 0;
     try {
@@ -169,12 +169,14 @@ export async function getSystemMetrics() {
       console.warn('Could not get disk usage:', error);
       diskUsage = 0;
     }
-    
+
     return {
       cpuUsage,
       memoryUsage,
       diskUsage,
-      timestamp: Date.now()
+      totalMemory,
+      freeMemory,
+      usedMemory
     };
   } catch (error) {
     console.error('Error getting system metrics:', error);
@@ -182,7 +184,58 @@ export async function getSystemMetrics() {
       cpuUsage: 0,
       memoryUsage: 0,
       diskUsage: 0,
-      timestamp: Date.now()
+      totalMemory: 0,
+      freeMemory: 0,
+      usedMemory: 0
     };
   }
+}
+
+/**
+ * Format bytes to human readable string
+ */
+export function formatBytes(bytes: number, decimals: number = 2): string {
+  if (bytes === 0) return '0 B';
+
+  const k = 1024;
+  const dm = decimals < 0 ? 0 : decimals;
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
+
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+}
+
+/**
+ * Check if a file path is safe (prevents path traversal attacks)
+ */
+export function isSafeFilePath(filePath: string): boolean {
+  const normalizedPath = path.normalize(filePath);
+  return !normalizedPath.includes('..');
+}
+
+/**
+ * Get directory size recursively
+ */
+export async function getDirectorySize(dirPath: string): Promise<number> {
+  let size = 0;
+  
+  try {
+    const items = await fs.promises.readdir(dirPath);
+    
+    for (const item of items) {
+      const itemPath = path.join(dirPath, item);
+      const stat = await fs.promises.stat(itemPath);
+      
+      if (stat.isDirectory()) {
+        size += await getDirectorySize(itemPath);
+      } else {
+        size += stat.size;
+      }
+    }
+  } catch (error) {
+    console.error('Error calculating directory size:', error);
+  }
+  
+  return size;
 }
