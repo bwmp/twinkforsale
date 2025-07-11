@@ -70,6 +70,10 @@ COPY --from=base /app/public ./public
 # Copy other necessary files including custom Prisma client location
 COPY --from=base /app/prisma ./prisma
 
+# Copy entrypoint script
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 # Set environment variables
 ENV NODE_ENV=production
 ENV PORT=3000
@@ -82,6 +86,8 @@ RUN adduser -S nextjs -u 1001
 
 # Change ownership of the app directory to the nodejs user
 RUN chown -R nextjs:nodejs /app
+# Also make sure the entrypoint is accessible
+RUN chown nextjs:nodejs /usr/local/bin/docker-entrypoint.sh
 USER nextjs
 
 # Expose the port the app runs on
@@ -91,5 +97,6 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD wget --no-verbose --tries=1 --spider http://localhost:3000/ || exit 1
 
-# Start the application
+# Set entrypoint and command
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["node", "server/entry.node-server.js"]
