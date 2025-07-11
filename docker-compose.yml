@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATABASE_URL=file:/app/data/prod.db
+      # Add your environment variables here or use an .env file
+      # - AUTH_SECRET=your_auth_secret_here
+      # - DISCORD_CLIENT_ID=your_discord_client_id
+      # - DISCORD_CLIENT_SECRET=your_discord_client_secret
+      # - ORIGIN=https://your-domain.com
+      # - BASE_URL=https://your-domain.com
+    volumes:
+      # Persistent storage for uploads
+      - uploads_data:/app/uploads
+      # Persistent storage for SQLite database
+      - db_data:/app/data
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+volumes:
+  uploads_data:
+  db_data:
