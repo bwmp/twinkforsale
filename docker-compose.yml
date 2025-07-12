@@ -11,8 +11,8 @@ services:
       - AUTH_SECRET=$AUTH_SECRET
       - DISCORD_CLIENT_ID=$DISCORD_CLIENT_ID
       - DISCORD_CLIENT_SECRET=$DISCORD_CLIENT_SECRET
-      # - ORIGIN=https://your-domain.com
-      # - BASE_URL=https://your-domain.com
+      - ORIGIN=https://test.twink.forsale
+      - BASE_URL=https://test.twink.forsale
     volumes:
       # Persistent storage for uploads
       - uploads_data:/app/uploads
