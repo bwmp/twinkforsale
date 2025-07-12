@@ -3,14 +3,14 @@ FROM oven/bun:1.2.15
 WORKDIR /app
 
 # Install system dependencies required for sharp and other native modules
-RUN apk add --no-cache \
+RUN apt-get update && apt-get install -y \
     python3 \
     make \
     g++ \
-    && rm -rf /var/cache/apk/*
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy package files first for better caching
-COPY package.json bun.lockb* ./
+COPY package.json bun.lock* ./
 
 # Install dependencies with frozen lockfile
 RUN bun install --frozen-lockfile
