@@ -88,10 +88,6 @@ ENV DATABASE_URL=file:/app/data/prod.db
 # Expose the port the app runs on
 EXPOSE 3004
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:3004/ || exit 1
-
 # Set entrypoint and command
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["node", "server/entry.node-server.js"]
