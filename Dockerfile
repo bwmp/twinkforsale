@@ -1,22 +1,32 @@
 FROM oven/bun:1.2.15
 
 WORKDIR /app
+
 # Install system dependencies required for sharp and other native modules
-RUN apt-get update && apt-get install -y \
+RUN apk add --no-cache \
     python3 \
     make \
     g++ \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/cache/apk/*
 
+# Copy package files first for better caching
+COPY package.json bun.lockb* ./
+
+# Install dependencies with frozen lockfile
+RUN bun install --frozen-lockfile
+
+# Copy source code
 COPY . .
-
-RUN bun install
 
 # Set environment variables needed for Prisma during build
 ENV UPLOADS_DIR=/app/uploads
 ENV DATABASE_URL=file:/app/data/prod.db
 
-RUN bun run deploy
+# Increase memory limit for build
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+
+# Run deployment with more verbose output
+RUN bun run deploy --verbose
 
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
