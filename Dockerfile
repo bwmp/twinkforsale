@@ -7,7 +7,7 @@ RUN apt-get update && apt-get install -y \
     python3 \
     make \
     g++ \
-    vips-dev \
+    libvips-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy package files first for better caching
