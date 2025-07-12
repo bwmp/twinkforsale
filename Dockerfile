@@ -81,7 +81,7 @@ RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Set environment variables
 ENV NODE_ENV=production
-ENV PORT=3000
+ENV PORT=3004
 ENV UPLOAD_DIR=/app/uploads
 ENV DATABASE_URL=file:/app/data/prod.db
 
@@ -96,7 +96,7 @@ RUN chown nextjs:nodejs /usr/local/bin/docker-entrypoint.sh
 USER nextjs
 
 # Expose the port the app runs on
-EXPOSE 3000
+EXPOSE 3004
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
