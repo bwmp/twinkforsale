@@ -2,13 +2,14 @@ import fs from "fs";
 import path from "path";
 import { db } from "~/lib/db";
 import { getEnvConfig } from "~/lib/env";
-import { getStorageProvider } from "~/lib/storage-server";
+
 /**
  * Cleanup expired files and files that exceeded view limits
  */
 export async function cleanupExpiredFiles() {
   try {
     const now = new Date();
+    const { getStorageProvider } = await import("~/lib/storage-server");
     const storage = getStorageProvider();
 
     // Find files that are expired or exceeded view limits

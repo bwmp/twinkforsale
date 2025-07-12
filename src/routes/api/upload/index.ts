@@ -5,7 +5,6 @@ import { getEnvConfig } from "~/lib/env";
 import { monitorUploadEvent, monitorFailedUpload } from "~/lib/system-monitoring";
 import { nanoid } from "nanoid";
 import { extractDimensionsFromBuffer } from "~/lib/media-utils";
-import { getStorageProvider } from "~/lib/storage-server";
 
 export const onPost: RequestHandler = async ({ request, json }) => {
   // Check for API key authentication - now required
@@ -122,6 +121,7 @@ export const onPost: RequestHandler = async ({ request, json }) => {
   const filename = `${shortCode}_${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
 
   // Save file to storage (supports both filesystem and R2)
+  const { getStorageProvider } = await import("~/lib/storage-server");
   const storage = getStorageProvider();
   const uploadResult = await storage.uploadFile(file, filename, userId);
 
