@@ -21,13 +21,13 @@ COPY package.json ./
 COPY pnpm-lock.yaml* ./
 COPY prisma ./prisma/
 
-# Install dependencies with pnpm
-RUN pnpm install
+# Install dependencies with pnpm and allow build scripts for Prisma
+RUN pnpm install --enable-build-scripts-for=@prisma/client,@prisma/engines,prisma
 
 # Copy source code
 COPY . .
 
-# Generate Prisma client
+# Generate Prisma client explicitly
 RUN pnpm exec prisma generate
 
 # Build the application
@@ -59,8 +59,11 @@ COPY package.json ./
 COPY pnpm-lock.yaml* ./
 COPY prisma ./prisma/
 
-# Install all dependencies with pnpm (including dev dependencies for runtime)
-RUN pnpm install
+# Install all dependencies with pnpm (including dev dependencies for runtime) and allow build scripts
+RUN pnpm install --enable-build-scripts-for=@prisma/client,@prisma/engines,prisma
+
+# Generate Prisma client explicitly in production stage
+RUN pnpm exec prisma generate
 
 # Copy built application from build stage
 COPY --from=base /app/server ./server

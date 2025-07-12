@@ -11,11 +11,11 @@ fi
 
 # Run Prisma migrations
 echo "Running Prisma migrations..."
-npx prisma migrate deploy
+pnpm exec prisma migrate deploy
 
 # Generate Prisma client (in case it wasn't properly copied)
 echo "Generating Prisma client..."
-npx prisma generate
+pnpm exec prisma generate
 
 echo "Database setup complete, starting application..."
 
