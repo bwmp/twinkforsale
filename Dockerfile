@@ -12,11 +12,11 @@ RUN apt-get update && apt-get install -y \
 # Copy package files first for better caching
 COPY package.json bun.lock* ./
 
+COPY . .
+
 # Install dependencies with frozen lockfile
 RUN bun install --frozen-lockfile
 
-# Copy source code
-COPY . .
 
 # Set environment variables needed for Prisma during build
 ENV UPLOADS_DIR=/app/uploads
