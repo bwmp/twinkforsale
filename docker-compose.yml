@@ -10,22 +10,23 @@ services:
       - PORT=3000
       - DATABASE_URL=file:/app/data/prod.db
       # Add your environment variables here or use an .env file
-      - AUTH_SECRET=$AUTH_SECRET
-      - DISCORD_CLIENT_ID=$DISCORD_CLIENT_ID
-      - DISCORD_CLIENT_SECRET=$DISCORD_CLIENT_SECRET
-      - ORIGIN=https://test.twink.forsale
-      - BASE_URL=https://test.twink.forsale
+      - AUTH_SECRET=${AUTH_SECRET}
+      - DISCORD_CLIENT_ID=${DISCORD_CLIENT_ID}
+      - DISCORD_CLIENT_SECRET=${DISCORD_CLIENT_SECRET}
+      - ORIGIN=${ORIGIN:-https://test.twink.forsale}
+      - BASE_URL=${BASE_URL:-https://test.twink.forsale}
     volumes:
       # Persistent storage for uploads
       - uploads_data:/app/uploads
       # Persistent storage for SQLite database
       - db_data:/app/data
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+    # Temporarily disable health check for debugging
+    # healthcheck:
+    #   test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
+    #   interval: 30s
+    #   timeout: 10s
+    #   retries: 3
+    #   start_period: 60s
     restart: unless-stopped
 
 volumes:
