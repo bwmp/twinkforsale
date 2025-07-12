@@ -85,16 +85,6 @@ ENV PORT=3004
 ENV UPLOAD_DIR=/app/uploads
 ENV DATABASE_URL=file:/app/data/prod.db
 
-# Create a non-root user
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S nextjs -u 1001
-
-# Change ownership of the app directory to the nodejs user
-RUN chown -R nextjs:nodejs /app
-# Also make sure the entrypoint is accessible
-RUN chown nextjs:nodejs /usr/local/bin/docker-entrypoint.sh
-USER nextjs
-
 # Expose the port the app runs on
 EXPOSE 3004
 
