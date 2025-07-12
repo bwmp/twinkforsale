@@ -10,9 +10,9 @@ services:
       - PORT=3000
       - DATABASE_URL=file:/app/data/prod.db
       # Add your environment variables here or use an .env file
-      - AUTH_SECRET=${AUTH_SECRET}
-      - DISCORD_CLIENT_ID=${DISCORD_CLIENT_ID}
-      - DISCORD_CLIENT_SECRET=${DISCORD_CLIENT_SECRET}
+      - AUTH_SECRET=$AUTH_SECRET
+      - DISCORD_CLIENT_ID=$DISCORD_CLIENT_ID
+      - DISCORD_CLIENT_SECRET=$DISCORD_CLIENT_SECRET
       # - ORIGIN=https://your-domain.com
       # - BASE_URL=https://your-domain.com
     volumes:
