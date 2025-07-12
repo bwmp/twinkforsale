@@ -19,10 +19,11 @@ RUN apk add --no-cache \
 COPY package.json ./
 # Copy pnpm-lock.yaml if it exists
 COPY pnpm-lock.yaml* ./
+COPY .pnpmrc ./
 COPY prisma ./prisma/
 
-# Install dependencies with pnpm and allow build scripts for Prisma
-RUN pnpm install --enable-build-scripts-for=@prisma/client,@prisma/engines,prisma
+# Install dependencies with pnpm
+RUN pnpm install
 
 # Copy source code
 COPY . .
@@ -57,10 +58,11 @@ RUN mkdir -p /app/data && chmod 755 /app/data
 COPY package.json ./
 # Copy pnpm-lock.yaml if it exists
 COPY pnpm-lock.yaml* ./
+COPY .pnpmrc ./
 COPY prisma ./prisma/
 
-# Install all dependencies with pnpm (including dev dependencies for runtime) and allow build scripts
-RUN pnpm install --enable-build-scripts-for=@prisma/client,@prisma/engines,prisma
+# Install all dependencies with pnpm
+RUN pnpm install
 
 # Generate Prisma client explicitly in production stage
 RUN pnpm exec prisma generate
@@ -98,7 +100,7 @@ EXPOSE 3000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:3000/ || exit 1
+    CMD wget --no-verbose --tries=1 --spider http://localhost:3004/ || exit 1
 
 # Set entrypoint and command
 ENTRYPOINT ["docker-entrypoint.sh"]
