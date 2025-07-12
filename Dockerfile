@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y \
     make \
     g++ \
     libvips-dev \
+    libvips \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy package files first for better caching
